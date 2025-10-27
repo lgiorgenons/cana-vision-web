@@ -1,0 +1,6 @@
+numpy
+rasterio
+requests
+folium
+matplotlib
+scipy
