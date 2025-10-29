@@ -143,6 +143,80 @@ python scripts/render_truecolor_map.py \
 
 Para alternar entre uso offline e um basemap de alta resolução (Esri World Imagery), utilize o seletor do mapa gerado. Se quiser forçar modo offline, use `--tiles none`; para uma visualização mais nítida online, use qualquer camada suportada (`--tiles OpenStreetMap`) e ative a camada “Esri World Imagery” diretamente no mapa. (O script adiciona automaticamente a camada Esri quando um tileset online é usado.)
 
+### Guia passo a passo: mapas e CSVs
+1. Identifique o produto processado mais recente (a pasta dentro de `data/processed`):
+   ```bash
+   ls data/processed
+   ```
+2. Gere um mapa interativo de um indice especifico (exemplo com NDVI):
+   ```bash
+   python scripts/render_index_map.py \
+     --index data/processed/<produto>/indices/ndvi.tif \
+     --geojson dados/map.geojson \
+     --clip --upsample 12 --smooth-radius 1 \
+     --sharpen --sharpen-radius 1.2 --sharpen-amount 1.5 \
+     --output mapas/ndvi.html
+   ```
+3. Monte um HTML com varias camadas de indices:
+   ```bash
+   python scripts/render_multi_index_map.py \
+     --index data/processed/<produto>/indices/ndvi.tif \
+     --index data/processed/<produto>/indices/ndre.tif \
+     --index data/processed/<produto>/indices/ndmi.tif \
+     --index data/processed/<produto>/indices/ndwi.tif \
+     --index data/processed/<produto>/indices/evi.tif \
+     --geojson dados/map.geojson \
+     --clip --upsample 12 --smooth-radius 1 --sharpen \
+     --output mapas/compare_indices.html
+   ```
+4. Crie a visualizacao true color usando as bandas red/green/blue:
+   ```bash
+   python scripts/render_truecolor_map.py \
+     --red data/processed/<produto>/red.tif \
+     --green data/processed/<produto>/green.tif \
+     --blue data/processed/<produto>/blue.tif \
+     --geojson dados/map.geojson \
+     --sharpen \
+     --tiles OpenStreetMap \
+     --output mapas/truecolor.html
+   ```
+5. Exporte o raster de um indice direto para CSV (sem gerar HTML) com o proprio `render_index_map.py`:
+   ```bash
+   python scripts/render_index_map.py \
+     --index data/processed/<produto>/indices/ndvi.tif \
+     --geojson dados/map.geojson \
+     --clip --upsample 12 \
+     --csv-output tabelas/ndvi.csv \
+     --no-html
+   ```
+6. Exporte todos os indices de uma vez para CSV com o utilitario dedicado:
+   ```bash
+   python scripts/export_indices_csv.py \
+     --indices-dir data/processed/<produto>/indices \
+     --geojson dados/map.geojson \
+     --clip \
+     --output-dir tabelas
+   ```
+7. Opcional: reconstrua mapas a partir dos CSVs ou monte um dashboard interativo.
+   ```bash
+   # Mapa de um CSV especifico
+   python scripts/render_csv_map.py \
+     --csv tabelas/ndvi.csv \
+     --geojson dados/map.geojson \
+     --clip \
+     --output mapas/ndvi_from_csv.html
+
+   # Dashboard com todos os CSVs exportados + true color
+   python scripts/render_csv_dashboard.py \
+     --csv-dir tabelas \
+     --truecolor-red data/processed/<produto>/red.tif \
+     --truecolor-green data/processed/<produto>/green.tif \
+     --truecolor-blue data/processed/<produto>/blue.tif \
+     --geojson dados/map.geojson \
+     --clip \
+     --output mapas/dashboard_indices.html
+   ```
+
 ## Estrutura sugerida
 ```
 data/
