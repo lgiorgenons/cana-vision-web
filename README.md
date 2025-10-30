@@ -228,6 +228,27 @@ Para alternar entre uso offline e um basemap de alta resolução (Esri World Ima
      --output mapas/overlay_indices.html
    ```
 
+### Workflow automatizado
+
+Quando precisar executar todas as etapas de uma vez (download/extra��o, c��lculo de ��ndices, exporta��o para CSV e gera��o de mapas), use o utilit��rio integrado:
+
+```bash
+python scripts/run_full_workflow.py \
+  --date 2025-10-20 \
+  --geojson dados/map.geojson \
+  --cloud 0 30 \
+  --username "$SENTINEL_USERNAME" \
+  --password "$SENTINEL_PASSWORD"
+```
+
+Por padr��o ele:
+- baixa a cena mais recente no intervalo informado (ou reaproveita um SAFE com `--safe-path`);
+- calcula todos os ��ndices definidos em `satellite_pipeline.py`;
+- salva os CSVs em `tabelas/`;
+- gera os mapas `mapas/ndvi.html`, `mapas/compare_indices.html`, `mapas/compare_indices_all.html`, `mapas/truecolor.html` e `mapas/ndvi_from_csv.html`.
+
+Passe `--generate-overlay` se quiser incluir `mapas/overlay_indices.html` (arquivo grande com true color completa). Todos os par��metros aceitam overrides (`--upsample`, `--smooth-radius`, `--tiles`, etc.), mantendo o mesmo comportamento dos scripts individuais.
+
 ## Estrutura sugerida
 ```
 data/
