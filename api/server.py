@@ -10,10 +10,10 @@ import uuid
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, date
 from enum import Enum
 from pathlib import Path
-from typing import Any, Deque, Dict, List, Optional
+from typing import Any, Deque, Dict, List, Optional, Tuple
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -26,6 +26,13 @@ if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
 from render_multi_index_map import build_multi_map  # type: ignore  # noqa: E402
+from satellite_pipeline import (  # type: ignore  # noqa: E402
+    AreaOfInterest,
+    authenticate_from_env,
+    create_dataspace_session,
+    query_latest_product,
+    _normalise_date,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PROCESSED_DIR = REPO_ROOT / "data" / "processed"
@@ -167,6 +174,19 @@ def _resolve_path(path: Optional[str]) -> Optional[str]:
     return str(resolved)
 
 
+def _require_dataspace_credentials() -> None:
+    username = os.environ.get("SENTINEL_USERNAME")
+    password = os.environ.get("SENTINEL_PASSWORD")
+    if not username or not password:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Credenciais do Copernicus ausentes. Configure SENTINEL_USERNAME e SENTINEL_PASSWORD "
+                "ou forneça um arquivo SAFE existente via 'safe_path'."
+            ),
+        )
+
+
 def _build_workflow_command(payload: RunWorkflowPayload) -> List[str]:
     if not WORKFLOW_SCRIPT.exists():
         raise RuntimeError("Script run_full_workflow.py não encontrado.")
@@ -234,16 +254,7 @@ def _build_workflow_command(payload: RunWorkflowPayload) -> List[str]:
 def _ensure_credentials(payload: RunWorkflowPayload) -> None:
     if payload.safe_path:
         return
-    username = os.environ.get("SENTINEL_USERNAME")
-    password = os.environ.get("SENTINEL_PASSWORD")
-    if not username or not password:
-        raise HTTPException(
-            status_code=400,
-            detail=(
-                "Credenciais do Copernicus ausentes. Configure SENTINEL_USERNAME e SENTINEL_PASSWORD ou forneça "
-                "um arquivo SAFE existente via 'safe_path'."
-            ),
-        )
+    _require_dataspace_credentials()
 
 
 def _append_log(job_id: str, message: str) -> None:
@@ -278,7 +289,38 @@ def _serialise_job(job: JobInfo) -> Dict[str, Any]:
         "return_code": job.return_code,
         "error": job.error,
         "product": job.product,
-    }
+}
+
+
+def _resolve_input_dates(
+    *,
+    date_value: Optional[str] = None,
+    start_value: Optional[str] = None,
+    end_value: Optional[str] = None,
+) -> Tuple[str, str]:
+    """Resolve CLI-like inputs into a (start, end) tuple in YYYY-MM-DD."""
+
+    try:
+        if date_value:
+            start_str = end_str = _normalise_date(date_value)
+        else:
+            if start_value and end_value:
+                start_str = _normalise_date(start_value)
+                end_str = _normalise_date(end_value)
+            elif start_value and not end_value:
+                start_str = end_str = _normalise_date(start_value)
+            elif end_value and not start_value:
+                start_str = end_str = _normalise_date(end_value)
+            else:
+                today = date.today().isoformat()
+                start_str = end_str = _normalise_date(today)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    if start_str > end_str:
+        start_str, end_str = end_str, start_str
+
+    return start_str, end_str
 
 
 def _load_history() -> List[Dict[str, Any]]:
@@ -399,6 +441,64 @@ def health() -> Dict[str, str]:
 @app.get("/api/products")
 def products() -> Dict[str, List[str]]:
     return {"products": _list_products()}
+
+
+@app.get("/api/products/availability")
+def product_availability(
+    date: Optional[str] = None,
+    start: Optional[str] = None,
+    end: Optional[str] = None,
+    cloud_min: int = 0,
+    cloud_max: int = 30,
+    geojson: Optional[str] = None,
+) -> Dict[str, Any]:
+    if cloud_min > cloud_max:
+        cloud_min, cloud_max = cloud_max, cloud_min
+
+    start_date, end_date = _resolve_input_dates(date_value=date, start_value=start, end_value=end)
+
+    _require_dataspace_credentials()
+
+    config = authenticate_from_env()
+    geojson_path = Path(geojson) if geojson else DADOS_DIR / "map.geojson"
+    geojson_path = geojson_path.expanduser().resolve()
+    if not geojson_path.exists():
+        raise HTTPException(status_code=404, detail=f"GeoJSON não encontrado: {geojson_path}")
+
+    area = AreaOfInterest.from_geojson(geojson_path)
+
+    session = create_dataspace_session(config)
+    try:
+        product = query_latest_product(
+            session,
+            config,
+            area,
+            start_date,
+            end_date,
+            (cloud_min, cloud_max),
+        )
+    finally:
+        session.close()
+
+    if not product:
+        raise HTTPException(
+            status_code=404,
+            detail="Nenhum produto Sentinel-2 encontrado para o intervalo informado.",
+        )
+
+    product_name = product.get("Name") or product.get("Id") or "unnamed_product"
+    content_date = product.get("ContentDate", {}) or {}
+    start_time = content_date.get("Start")
+    end_time = content_date.get("End")
+
+    return {
+        "product": product_name,
+        "id": product.get("Id"),
+        "start": start_date,
+        "end": end_date,
+        "acquired_start": start_time,
+        "acquired_end": end_time,
+    }
 
 
 @app.get("/api/indices")

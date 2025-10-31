@@ -90,6 +90,7 @@ const Analises = () => {
   const [jobLogs, setJobLogs] = useState<string[]>([]);
   const [jobError, setJobError] = useState<string>("");
   const [isTriggeringJob, setIsTriggeringJob] = useState(false);
+  const [nextProduct, setNextProduct] = useState<string | null>(null);
 
   const [history, setHistory] = useState<JobHistoryItem[]>([]);
   const [historyError, setHistoryError] = useState<string>("");
@@ -204,6 +205,12 @@ const Analises = () => {
   }, [loadProducts, loadHistory]);
 
   useEffect(() => {
+    if (jobStatus === "succeeded" || jobStatus === "failed") {
+      setNextProduct(null);
+    }
+  }, [jobStatus]);
+
+  useEffect(() => {
     if (isLoadingProducts) {
       return;
     }
@@ -255,22 +262,58 @@ const Analises = () => {
 
   const handleTriggerWorkflow = async () => {
     setJobError("");
+    setNextProduct(null);
     setIsTriggeringJob(true);
 
     const payload: Record<string, unknown> = {};
+    const availabilityParams = new URLSearchParams();
+
     if (startDate && endDate) {
       const range = [startDate, endDate].sort();
       payload.date_range = range;
+      availabilityParams.set("start", range[0]);
+      availabilityParams.set("end", range[1]);
     } else if (startDate) {
       payload.date = startDate;
+      availabilityParams.set("date", startDate);
     } else if (endDate) {
       payload.date = endDate;
+      availabilityParams.set("date", endDate);
     } else {
       payload.date = defaultDate;
+      availabilityParams.set("date", defaultDate);
     }
+
     payload.geojson = "dados/map.geojson";
     payload.cloud = [0, 30];
     payload.log_level = "INFO";
+
+    availabilityParams.set("cloud_min", "0");
+    availabilityParams.set("cloud_max", "30");
+    availabilityParams.set("geojson", "dados/map.geojson");
+
+    try {
+      const availabilityRes = await fetch(`/api/products/availability?${availabilityParams.toString()}`);
+      if (!availabilityRes.ok) {
+        let detail = `HTTP ${availabilityRes.status}`;
+        try {
+          const body = (await availabilityRes.json()) as { detail?: string };
+          if (body?.detail) {
+            detail = body.detail;
+          }
+        } catch (error) {
+          console.warn("Não foi possível interpretar resposta de disponibilidade", error);
+        }
+        throw new Error(detail);
+      }
+      const availabilityData = (await availabilityRes.json()) as { product?: string | null };
+      setNextProduct(availabilityData.product ?? null);
+    } catch (err) {
+      const message = err instanceof Error && err.message ? err.message : "Não foi possível verificar disponibilidade do Sentinel-2.";
+      setJobError(message);
+      setIsTriggeringJob(false);
+      return;
+    }
 
     try {
       const res = await fetch("/api/jobs/run-workflow", {
@@ -305,6 +348,7 @@ const Analises = () => {
 
   const handleLoadFromHistory = (product?: string | null) => {
     if (!product) return;
+    setNextProduct(null);
     setSelectedProduct(product);
     void loadMap(product);
     void loadIndices(product);
@@ -497,6 +541,11 @@ const Analises = () => {
                     {jobStatusLabel}
                   </Badge>
                 </div>
+                {nextProduct && (
+                  <div className="text-xs text-muted-foreground">
+                    Próxima cena disponível: {nextProduct}
+                  </div>
+                )}
                 {jobError && <div className="text-sm text-red-500">{jobError}</div>}
                 {jobId && (
                   <>
