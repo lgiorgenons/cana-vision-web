@@ -98,6 +98,10 @@ python scripts/render_index_map.py \
   --clip \
   --upsample 12 --smooth-radius 1 \
   --sharpen --sharpen-radius 1.2 --sharpen-amount 1.5 \
+  --truecolor-red data/processed/<produto>/red.tif \
+  --truecolor-green data/processed/<produto>/green.tif \
+  --truecolor-blue data/processed/<produto>/blue.tif \
+  --max-zoom 22 \
   --output mapas/ndvi.html
 ```
 
@@ -108,6 +112,8 @@ A visualização usa, por padrão, o mapa `CartoDB positron` (necessita internet
 A página resultante pode ser aberta diretamente no navegador. Ajuste `--colormap`, `--vmin`, `--vmax` e os parâmetros de nitidez (`--sharpen-radius`, `--sharpen-amount`) conforme necessário.
 Use `--clip` para recortar o raster ao(s) polígono(s) do(s) GeoJSON(s) (sem distorcer o overlay).
 Use `--upsample` (ex.: 10–12) e `--smooth-radius` para suavizar pixels e aproximar a escala visual do basemap.
+Use `--max-zoom` para permitir zooms mais altos sem perder o plano de fundo (padrão 22, com `max_native_zoom`=19).
+Informe as três bandas com `--truecolor-*` para adicionar a imagem Sentinel-2 (10 m) como camada local, evitando a mensagem “Map data not yet available” em zoom alto; utilize `--truecolor-hide` se preferir que ela permaneça desligada ao abrir o HTML.
 
 ### Comparação em múltiplas camadas
 Gere um único HTML com várias camadas de índices alternáveis (controle de camadas):
@@ -204,7 +210,13 @@ Para alternar entre uso offline e um basemap de alta resolução (Esri World Ima
      --csv tabelas/ndvi.csv \
      --geojson dados/map.geojson \
      --clip \
+     --truecolor-red data/processed/<produto>/red.tif \
+     --truecolor-green data/processed/<produto>/green.tif \
+     --truecolor-blue data/processed/<produto>/blue.tif \
+     --truecolor-show \
      --output mapas/ndvi_from_csv.html
+
+   # Ajuste --truecolor-opacity, --truecolor-sharpen, --truecolor-show conforme necessário
 
    # Dashboard com todos os CSVs exportados + true color
    python scripts/render_csv_dashboard.py \
@@ -227,6 +239,7 @@ Para alternar entre uso offline e um basemap de alta resolução (Esri World Ima
      --indices ndvi ndmi \
      --output mapas/overlay_indices.html
    ```
+   Ao informar as bandas true color, o mapa reconstruído a partir do CSV passa a usar um overlay local (10 m) que permanece visível mesmo quando o tileset externo deixa de ter dados em zoom alto. A camada aparece desligada por padrão; use `--truecolor-show` para ativá-la já no carregamento. Ajuste `--truecolor-opacity` e os parâmetros de nitidez para equilibrar o visual com o índice.
 
 ### Workflow automatizado
 
@@ -271,4 +284,3 @@ As bandas salvas incluem `blue`, `green`, `red`, `rededge1-4`, `nir`, `swir1` e 
 - Enriquecer os indicadores com novos índices (SIPI, NDVIre, MCARI2) e estatísticas de anomalia por talhão.
 - Integrar sensores adicionais (Landsat/ECOSTRESS para temperatura, SMAP/CHIRPS para umidade/chuva, Sentinel-1 para estrutural) e combinar com o Sentinel-2.
 - Definir governança de armazenamento (rotina de limpeza dos SAFEs ou upload para bucket dedicado) e entrega de relatórios/alertas agronômicos automaticamente.
-

@@ -24,6 +24,11 @@ from rasterio.transform import array_bounds, xy
 from rasterio.warp import calculate_default_transform, reproject, transform_bounds
 from rasterio.windows import from_bounds
 from scipy.ndimage import gaussian_filter
+from render_truecolor_map import (  # type: ignore
+    _create_rgb_image,
+    _reproject_to_wgs84,
+    _apply_unsharp_mask as _apply_unsharp_mask_rgb,
+)
 
 
 DEFAULT_CMAP = "RdYlGn"
@@ -156,6 +161,43 @@ def _apply_overlay_mask(
 
 def _add_geojson_layer(map_obj: folium.Map, geojson_data: Dict[str, Any]) -> None:
     folium.GeoJson(data=geojson_data, name="Area de interesse", style_function=lambda _: {"fillOpacity": 0}).add_to(map_obj)
+
+
+def _prepare_truecolor_overlay(
+    red_path: Path,
+    green_path: Path,
+    blue_path: Path,
+    clip_bounds: Optional[Tuple[float, float, float, float]],
+    *,
+    sharpen: bool,
+    sharpen_radius: float,
+    sharpen_amount: float,
+) -> Tuple[np.ndarray, Tuple[float, float, float, float]]:
+    red_array, transform, bounds = _reproject_to_wgs84(red_path, clip_bounds_wgs84=clip_bounds)
+    height, width = red_array.shape
+    green_array, _, _ = _reproject_to_wgs84(
+        green_path,
+        clip_bounds_wgs84=clip_bounds,
+        dst_transform=transform,
+        dst_width=width,
+        dst_height=height,
+    )
+    blue_array, _, _ = _reproject_to_wgs84(
+        blue_path,
+        clip_bounds_wgs84=clip_bounds,
+        dst_transform=transform,
+        dst_width=width,
+        dst_height=height,
+    )
+
+    if sharpen:
+        red_array = _apply_unsharp_mask_rgb(red_array, sharpen_radius, sharpen_amount)
+        green_array = _apply_unsharp_mask_rgb(green_array, sharpen_radius, sharpen_amount)
+        blue_array = _apply_unsharp_mask_rgb(blue_array, sharpen_radius, sharpen_amount)
+
+    image = _create_rgb_image(red_array, green_array, blue_array)
+    effective_bounds = clip_bounds if clip_bounds is not None else bounds
+    return image, effective_bounds
 
 
 def _extract_geometry_bounds(geojson_data: Dict[str, Any]) -> Optional[Tuple[float, float, float, float]]:
@@ -367,6 +409,13 @@ def build_map(
     opacity: float = 0.75,
     tiles: str = "CartoDB positron",
     tile_attr: Optional[str] = None,
+    max_zoom: int = 22,
+    max_native_zoom: Optional[int] = 19,
+    background_image: Optional[np.ndarray] = None,
+    background_bounds: Optional[Tuple[float, float, float, float]] = None,
+    background_name: str = "True color",
+    background_opacity: float = 1.0,
+    background_visible: bool = True,
 ) -> Path:
     image, min_value, max_value = _generate_rgba(prepared.data, cmap_name, vmin, vmax, opacity)
 
@@ -377,17 +426,39 @@ def build_map(
     centre_lat = (min_lat + max_lat) / 2
     centre_lon = (min_lon + max_lon) / 2
 
-    if tiles.lower() == "none":
-        base_map = folium.Map(location=[centre_lat, centre_lon], zoom_start=11, tiles=None)
-    else:
-        base_map = folium.Map(location=[centre_lat, centre_lon], zoom_start=11, tiles=tiles, attr=tile_attr)
+    base_map = folium.Map(location=[centre_lat, centre_lon], zoom_start=11, tiles=None, max_zoom=max_zoom)
+
+    if tiles.lower() != "none":
+        folium.TileLayer(
+            tiles=tiles,
+            attr=tile_attr,
+            name=tiles,
+            control=False,
+            max_zoom=max_zoom,
+            max_native_zoom=max_native_zoom,
+        ).add_to(base_map)
+
+    if tiles.lower() != "none":
         folium.TileLayer(
             tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
             attr="Esri World Imagery",
             name="Esri World Imagery",
             overlay=False,
             control=True,
+            max_zoom=max_zoom,
+            max_native_zoom=max_native_zoom,
         ).add_to(base_map)
+
+    if background_image is not None and background_bounds is not None:
+        bg_min_lon, bg_min_lat, bg_max_lon, bg_max_lat = background_bounds
+        feature = folium.FeatureGroup(name=background_name, show=background_visible, control=True)
+        folium.raster_layers.ImageOverlay(
+            image=background_image,
+            bounds=[[bg_min_lat, bg_min_lon], [bg_max_lat, bg_max_lon]],
+            opacity=background_opacity,
+            name=background_name,
+        ).add_to(feature)
+        feature.add_to(base_map)
     folium.raster_layers.ImageOverlay(
         image=image,
         bounds=[[min_lat, min_lon], [max_lat, max_lon]],
@@ -445,6 +516,40 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser.add_argument("--clip", action="store_true", help="Recorta o raster ao(s) poligono(s) do(s) GeoJSON(s).")
     parser.add_argument("--csv-output", type=Path, help="Salva os pixels (lon, lat, valor) em um arquivo CSV.")
     parser.add_argument("--no-html", action="store_true", help="Nao gera o HTML; apenas exporta os dados.")
+    parser.add_argument("--max-zoom", type=int, default=22, help="Zoom máximo permitido no mapa (default: 22).")
+    parser.add_argument(
+        "--max-native-zoom",
+        type=int,
+        default=19,
+        help="Zoom nativo máximo das camadas de tiles (default: 19 para Esri/Carto).",
+    )
+    parser.add_argument("--truecolor-red", type=Path, help="GeoTIFF da banda vermelha (B04) para servir de base local.")
+    parser.add_argument("--truecolor-green", type=Path, help="GeoTIFF da banda verde (B03) para servir de base local.")
+    parser.add_argument("--truecolor-blue", type=Path, help="GeoTIFF da banda azul (B02) para servir de base local.")
+    parser.add_argument(
+        "--truecolor-opacity",
+        type=float,
+        default=1.0,
+        help="Opacidade da composição true color adicionada como fundo (default: 1.0).",
+    )
+    parser.add_argument("--truecolor-hide", action="store_true", help="Mantém a camada true color local desligada ao carregar o mapa.")
+    parser.add_argument(
+        "--truecolor-sharpen",
+        action="store_true",
+        help="Aplica unsharp mask à composição true color antes de sobrepor.",
+    )
+    parser.add_argument(
+        "--truecolor-sharpen-radius",
+        type=float,
+        default=1.0,
+        help="Raio (sigma) da unsharp mask na true color (default: 1.0).",
+    )
+    parser.add_argument(
+        "--truecolor-sharpen-amount",
+        type=float,
+        default=1.2,
+        help="Intensidade da unsharp mask na true color (default: 1.2).",
+    )
     return parser.parse_args(argv)
 
 
@@ -465,6 +570,22 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
         smooth_radius=args.smooth_radius,
     )
 
+    background_image: Optional[np.ndarray] = None
+    background_bounds: Optional[Tuple[float, float, float, float]] = None
+
+    if args.truecolor_red or args.truecolor_green or args.truecolor_blue:
+        if not (args.truecolor_red and args.truecolor_green and args.truecolor_blue):
+            raise SystemExit("Para usar true color local, informe as três bandas: --truecolor-red, --truecolor-green e --truecolor-blue.")
+        background_image, background_bounds = _prepare_truecolor_overlay(
+            args.truecolor_red.expanduser().resolve(),
+            args.truecolor_green.expanduser().resolve(),
+            args.truecolor_blue.expanduser().resolve(),
+            prepared.clip_bounds,
+            sharpen=args.truecolor_sharpen,
+            sharpen_radius=args.truecolor_sharpen_radius,
+            sharpen_amount=args.truecolor_sharpen_amount,
+        )
+
     if args.csv_output:
         csv_output = args.csv_output.expanduser().resolve()
         export_csv(prepared, csv_output)
@@ -480,6 +601,12 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
             opacity=args.opacity,
             tiles=args.tiles,
             tile_attr=args.tile_attr,
+            max_zoom=args.max_zoom,
+            max_native_zoom=args.max_native_zoom,
+            background_image=background_image,
+            background_bounds=background_bounds,
+            background_opacity=args.truecolor_opacity,
+            background_visible=not args.truecolor_hide,
         )
         print(f"Mapa salvo em {output}")
     elif not args.csv_output:
@@ -488,4 +615,3 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
 
 if __name__ == "__main__":
     main()
-

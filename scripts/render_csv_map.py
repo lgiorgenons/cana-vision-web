@@ -24,6 +24,7 @@ from render_index_map import (  # type: ignore
     _collect_overlays,
     _upsample_raster,
     build_map,
+    _prepare_truecolor_overlay,
 )
 
 
@@ -176,6 +177,44 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser.add_argument("--sharpen-amount", type=float, default=1.3, help="Intensidade da unsharp mask.")
     parser.add_argument("--upsample", type=float, default=1.0, help="Fator de upsample para suavizar pixels.")
     parser.add_argument("--smooth-radius", type=float, default=0.0, help="Raio da suavização gaussiana após upsample.")
+    parser.add_argument("--max-zoom", type=int, default=22, help="Zoom máximo permitido no mapa (default: 22).")
+    parser.add_argument(
+        "--max-native-zoom",
+        type=int,
+        default=19,
+        help="Zoom nativo máximo das camadas de tiles (default: 19 para Esri/Carto).",
+    )
+    parser.add_argument("--truecolor-red", type=Path, help="GeoTIFF da banda vermelha (B04) para servir de base local.")
+    parser.add_argument("--truecolor-green", type=Path, help="GeoTIFF da banda verde (B03) para servir de base local.")
+    parser.add_argument("--truecolor-blue", type=Path, help="GeoTIFF da banda azul (B02) para servir de base local.")
+    parser.add_argument(
+        "--truecolor-opacity",
+        type=float,
+        default=1.0,
+        help="Opacidade da composição true color adicionada como fundo (default: 1.0).",
+    )
+    parser.add_argument(
+        "--truecolor-sharpen",
+        action="store_true",
+        help="Aplica unsharp mask à composição true color antes de sobrepor.",
+    )
+    parser.add_argument(
+        "--truecolor-sharpen-radius",
+        type=float,
+        default=1.0,
+        help="Raio (sigma) da unsharp mask na true color (default: 1.0).",
+    )
+    parser.add_argument(
+        "--truecolor-sharpen-amount",
+        type=float,
+        default=1.2,
+        help="Intensidade da unsharp mask na true color (default: 1.2).",
+    )
+    parser.add_argument(
+        "--truecolor-show",
+        action="store_true",
+        help="Exibe a camada true color local por padrão (caso contrário fica disponível para alternar no controle).",
+    )
     return parser.parse_args(argv)
 
 
@@ -196,6 +235,21 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
         smooth_radius=args.smooth_radius,
     )
 
+    background_image: Optional[np.ndarray] = None
+    background_bounds: Optional[Tuple[float, float, float, float]] = None
+    if args.truecolor_red or args.truecolor_green or args.truecolor_blue:
+        if not (args.truecolor_red and args.truecolor_green and args.truecolor_blue):
+            raise SystemExit("Para usar true color local, informe as três bandas: --truecolor-red, --truecolor-green e --truecolor-blue.")
+        background_image, background_bounds = _prepare_truecolor_overlay(
+            args.truecolor_red.expanduser().resolve(),
+            args.truecolor_green.expanduser().resolve(),
+            args.truecolor_blue.expanduser().resolve(),
+            prepared.clip_bounds,
+            sharpen=args.truecolor_sharpen,
+            sharpen_radius=args.truecolor_sharpen_radius,
+            sharpen_amount=args.truecolor_sharpen_amount,
+        )
+
     output = build_map(
         prepared=prepared,
         output_path=args.output.expanduser().resolve(),
@@ -205,6 +259,13 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
         opacity=args.opacity,
         tiles=args.tiles,
         tile_attr=args.tile_attr,
+        max_zoom=args.max_zoom,
+        max_native_zoom=args.max_native_zoom,
+        background_image=background_image,
+        background_bounds=background_bounds,
+        background_opacity=args.truecolor_opacity,
+        background_name="True color (local)",
+        background_visible=args.truecolor_show,
     )
     print(f"Mapa salvo em {output}")
 
