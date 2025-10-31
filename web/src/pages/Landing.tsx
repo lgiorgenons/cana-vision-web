@@ -1,18 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Satellite, 
-  TrendingUp, 
-  Activity, 
-  MapPin, 
-  AlertCircle,
-  BarChart3,
-  Eye,
-  Shield,
-  ArrowRight,
-  Leaf
-} from "lucide-react";
+import { Satellite, TrendingUp, Activity, MapPin, AlertCircle, BarChart3, Eye, Shield, ArrowRight, Leaf } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Landing = () => {
@@ -44,15 +33,14 @@ const Landing = () => {
           <Badge className="bg-primary/20 text-primary border-primary/30 px-4 py-2 text-sm">
             Monitoramento Inteligente de Lavouras
           </Badge>
-          
+
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
-            Detecte problemas nas suas lavouras{" "}
+            Detecte problemas nas suas lavouras {" "}
             <span className="text-primary">antes que seja tarde</span>
           </h1>
-          
+
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Use o poder das imagens de satélite e inteligência artificial para monitorar a saúde 
-            das suas plantações em tempo real. Identifique pragas, doenças e estresse hídrico com precisão.
+            Use o poder das imagens de satélite e algoritmos para monitorar a saúde das suas plantações em tempo real. Identifique pragas, doenças e estresse hídrico com precisão.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
@@ -92,8 +80,7 @@ const Landing = () => {
               Monitoramento Completo e Inteligente
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Nossa plataforma utiliza índices espectrais avançados para diagnosticar 
-              problemas com precisão científica
+              Nossa plataforma utiliza índices espectrais avançados para diagnosticar problemas com precisão científica
             </p>
           </div>
 
@@ -105,8 +92,7 @@ const Landing = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Monitoramento contínuo com imagens de alta resolução. 
-                  Acompanhe a evolução da sua lavoura dia após dia.
+                  Monitoramento contínuo com imagens de alta resolução. Acompanhe a evolução da sua lavoura dia após dia.
                 </p>
               </CardContent>
             </Card>
@@ -118,60 +104,19 @@ const Landing = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  NDVI, EVI, NDRE, NDMI e mais. Análise científica para 
-                  detectar vigor, clorofila e conteúdo de água.
+                  NDVI, NDRE, NDWI, NDMI e outros indicadores para avaliar vigor, clorofila e água no dossel.
                 </p>
               </CardContent>
             </Card>
 
             <Card className="bg-card-dark border-border hover:border-primary/50 transition-colors">
               <CardHeader>
-                <AlertCircle className="h-10 w-10 text-alert-high mb-2" />
+                <AlertCircle className="h-10 w-10 text-primary mb-2" />
                 <CardTitle>Alertas Inteligentes</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Receba notificações automáticas quando problemas forem 
-                  detectados. Aja antes que o dano se espalhe.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-card-dark border-border hover:border-primary/50 transition-colors">
-              <CardHeader>
-                <MapPin className="h-10 w-10 text-primary mb-2" />
-                <CardTitle>Mapas de Calor</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Visualize hotspots e áreas críticas em mapas interativos. 
-                  Identifique padrões e tome decisões informadas.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-card-dark border-border hover:border-primary/50 transition-colors">
-              <CardHeader>
-                <BarChart3 className="h-10 w-10 text-primary mb-2" />
-                <CardTitle>Análises Comparativas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Compare talhões e acompanhe a evolução temporal. 
-                  Entenda o que funciona melhor.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-card-dark border-border hover:border-primary/50 transition-colors">
-              <CardHeader>
-                <TrendingUp className="h-10 w-10 text-primary mb-2" />
-                <CardTitle>Diagnóstico Preciso</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Diferencie seca de pragas, estresse hídrico de doenças. 
-                  Aplique o tratamento correto.
+                  Identifique áreas críticas automaticamente e priorize as ações de manejo.
                 </p>
               </CardContent>
             </Card>
@@ -179,87 +124,34 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Detection Rules Section */}
+      {/* Insights Section */}
       <section className="container mx-auto px-4 py-20">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold">
-              Regras de Diagnóstico Inteligente
-            </h2>
-            <p className="text-muted-foreground text-lg">
-              Sistema baseado em ciência para identificar a causa raiz dos problemas
-            </p>
-          </div>
-
-          <div className="space-y-4">
-            <Card className="bg-card-dark border-border">
-              <CardHeader>
-                <div className="flex items-start gap-4">
-                  <Badge className="bg-primary/20 text-primary border-primary/30 text-lg px-3 py-1 shrink-0">
-                    1
-                  </Badge>
-                  <div>
-                    <CardTitle className="text-xl mb-2">Seca Provável</CardTitle>
-                    <p className="text-muted-foreground">
-                      NDVI↓ + baixa precipitação → Indica déficit hídrico. 
-                      Priorize manejo de irrigação.
-                    </p>
-                  </div>
-                </div>
-              </CardHeader>
-            </Card>
-
-            <Card className="bg-card-dark border-border">
-              <CardHeader>
-                <div className="flex items-start gap-4">
-                  <Badge className="bg-primary/20 text-primary border-primary/30 text-lg px-3 py-1 shrink-0">
-                    2
-                  </Badge>
-                  <div>
-                    <CardTitle className="text-xl mb-2">Estresse Não Hídrico</CardTitle>
-                    <p className="text-muted-foreground">
-                      NDRE↓ com NDMI estável → Sugere praga, doença ou deficiência nutricional. 
-                      Investigação necessária.
-                    </p>
-                  </div>
-                </div>
-              </CardHeader>
-            </Card>
-
-            <Card className="bg-card-dark border-border">
-              <CardHeader>
-                <div className="flex items-start gap-4">
-                  <Badge className="bg-alert-high text-white text-lg px-3 py-1 shrink-0">
-                    3
-                  </Badge>
-                  <div>
-                    <CardTitle className="text-xl mb-2">Área Crítica Imediata</CardTitle>
-                    <p className="text-muted-foreground">
-                      Queda abrupta localizada vs. áreas vizinhas → Hotspot que requer 
-                      vistoria cirúrgica urgente.
-                    </p>
-                  </div>
-                </div>
-              </CardHeader>
-            </Card>
-
-            <Card className="bg-card-dark border-border">
-              <CardHeader>
-                <div className="flex items-start gap-4">
-                  <Badge className="bg-alert-resolved text-white text-lg px-3 py-1 shrink-0">
-                    4
-                  </Badge>
-                  <div>
-                    <CardTitle className="text-xl mb-2">Recuperação</CardTitle>
-                    <p className="text-muted-foreground">
-                      NDVI/NDRE↑ após intervenção → Confirma eficácia do manejo aplicado. 
-                      Continue o monitoramento.
-                    </p>
-                  </div>
-                </div>
-              </CardHeader>
-            </Card>
-          </div>
+        <div className="max-w-4xl mx-auto text-center space-y-4 mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold">Resultados que importam</h2>
+          <p className="text-muted-foreground text-lg">Ganhe visibilidade, reduza perdas e aumente a produtividade.</p>
+        </div>
+        <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <Card className="bg-card-dark border-border">
+            <CardHeader>
+              <BarChart3 className="h-8 w-8 text-primary" />
+              <CardTitle>Rastreie indicadores</CardTitle>
+            </CardHeader>
+            <CardContent className="text-muted-foreground">Acompanhe séries temporais por talhão e por índice.</CardContent>
+          </Card>
+          <Card className="bg-card-dark border-border">
+            <CardHeader>
+              <MapPin className="h-8 w-8 text-primary" />
+              <CardTitle>Delimite áreas</CardTitle>
+            </CardHeader>
+            <CardContent className="text-muted-foreground">Analise somente onde importa com polígonos GeoJSON.</CardContent>
+          </Card>
+          <Card className="bg-card-dark border-border">
+            <CardHeader>
+              <TrendingUp className="h-8 w-8 text-primary" />
+              <CardTitle>Priorize ações</CardTitle>
+            </CardHeader>
+            <CardContent className="text-muted-foreground">Direcione equipes para os hotspots com maior impacto.</CardContent>
+          </Card>
         </div>
       </section>
 
@@ -270,12 +162,11 @@ const Landing = () => {
             Pronto para transformar o manejo da sua lavoura?
           </h2>
           <p className="text-xl text-muted-foreground">
-            Junte-se aos agricultores que já estão usando tecnologia de ponta 
-            para aumentar a produtividade e reduzir perdas.
+            Junte-se aos agricultores que já usam tecnologia de ponta para aumentar a produtividade e reduzir perdas.
           </p>
           <Link to="/login">
             <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 text-lg px-10 py-6">
-              Começar Agora - É Grátis
+              Começar Agora - 100% Grátis
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>
@@ -301,3 +192,4 @@ const Landing = () => {
 };
 
 export default Landing;
+

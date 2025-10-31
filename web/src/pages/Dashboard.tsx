@@ -166,19 +166,19 @@ const Dashboard = () => {
               <div>
                 <h3 className="font-semibold mb-2">Índices Espectrais Monitorados</h3>
                 <ul className="space-y-1 text-sm text-muted-foreground">
-                  <li>• <strong>NDVI, EVI, SAVI</strong> - Vigor e biomassa aérea</li>
-                  <li>• <strong>NDRE, CIred-edge</strong> - Clorofila e estado nutricional</li>
-                  <li>• <strong>NDWI, NDMI</strong> - Conteúdo de água no dossel</li>
-                  <li>• <strong>MSI</strong> - Estresse hídrico</li>
+                  <li>- <strong>NDVI, EVI, SAVI</strong> - Vigor e biomassa aérea</li>
+                  <li>- <strong>NDRE, CI red-edge</strong> - Clorofila e estado nutricional</li>
+                  <li>- <strong>NDWI, NDMI</strong> - Conteúdo de água no dossel</li>
+                  <li>- <strong>MSI</strong> - Estresse hídrico</li>
                 </ul>
               </div>
               <div>
                 <h3 className="font-semibold mb-2">Regras de Diagnóstico</h3>
                 <ul className="space-y-1 text-sm text-muted-foreground">
-                  <li>• <strong>Regra 1</strong> - Seca provável: NDVI↓ + baixa chuva</li>
-                  <li>• <strong>Regra 2</strong> - Estresse não hídrico: NDRE↓ com NDMI estável</li>
-                  <li>• <strong>Regra 3</strong> - Área crítica: queda abrupta localizada</li>
-                  <li>• <strong>Regra 4</strong> - Recuperação: subida após intervenção</li>
+                  <li>- <strong>Regra 1</strong> - Seca provável: NDVI baixo + baixa chuva</li>
+                  <li>- <strong>Regra 2</strong> - Estresse não hídrico: NDRE baixo com NDMI estável</li>
+                  <li>- <strong>Regra 3</strong> - Área crítica: queda abrupta localizada</li>
+                  <li>- <strong>Regra 4</strong> - Recuperação: subida após intervenção</li>
                 </ul>
               </div>
             </div>
@@ -190,3 +190,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+

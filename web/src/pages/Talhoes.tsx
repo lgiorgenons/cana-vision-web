@@ -19,7 +19,7 @@ const selectedFields = [
     status: "Atenção",
     statusColor: "bg-alert-medium",
     description: "Sinais de início de estresse hídrico detectados na bordadura leste.",
-    chartPlaceholder: "📊",
+    chartPlaceholder: "📈",
   },
 ];
 
@@ -159,3 +159,4 @@ const Talhoes = () => {
 };
 
 export default Talhoes;
+

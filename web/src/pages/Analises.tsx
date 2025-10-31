@@ -39,7 +39,7 @@ const Analises = () => {
   }, []);
 
   const applyFilters = () => {
-    // Placeholder: numa próxima etapa, passaremos search/data para a API
+    // Placeholder: em próximas etapas, passaremos search/data para a API
     load();
   };
 
@@ -197,3 +197,4 @@ const Analises = () => {
 };
 
 export default Analises;
+

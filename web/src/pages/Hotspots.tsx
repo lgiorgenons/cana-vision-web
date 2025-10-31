@@ -131,7 +131,7 @@ const Hotspots = () => {
                     <div className="space-y-2">
                       <p className="text-lg font-semibold">Mapa de Hotspots</p>
                       <p className="text-sm text-muted-foreground max-w-md">
-                        Visualização interativa com overlay de calor mostrando áreas críticas detectadas
+                        Visualização interativa com sobreposição de calor mostrando áreas críticas detectadas
                       </p>
                     </div>
                   </div>
@@ -201,3 +201,4 @@ const Hotspots = () => {
 };
 
 export default Hotspots;
+
