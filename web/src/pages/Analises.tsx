@@ -24,6 +24,19 @@ type JobResponse = {
   started_at: string | null;
   finished_at: string | null;
   return_code: number | null;
+  product?: string | null;
+};
+
+type JobHistoryItem = {
+  job_id: string;
+  status: JobStatusValue;
+  product?: string | null;
+  created_at?: string | null;
+  started_at?: string | null;
+  finished_at?: string | null;
+  updated_at?: string | null;
+  error?: string | null;
+  params?: Record<string, unknown>;
 };
 
 type AlertSeverity = "ALTA" | "MÉDIA" | "BAIXA" | "RESOLVIDO";
@@ -77,6 +90,10 @@ const Analises = () => {
   const [jobLogs, setJobLogs] = useState<string[]>([]);
   const [jobError, setJobError] = useState<string>("");
   const [isTriggeringJob, setIsTriggeringJob] = useState(false);
+
+  const [history, setHistory] = useState<JobHistoryItem[]>([]);
+  const [historyError, setHistoryError] = useState<string>("");
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
   const hasProducts = products.length > 0;
   const jobStatusLabel = jobStatus ? JOB_STATUS_LABELS[jobStatus] : "Pronto para executar";
@@ -165,9 +182,26 @@ const Analises = () => {
     }
   }, []);
 
+  const loadHistory = useCallback(async () => {
+    setHistoryError("");
+    setIsLoadingHistory(true);
+    try {
+      const res = await fetch("/api/jobs/history?limit=15");
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = (await res.json()) as { jobs?: JobHistoryItem[] };
+      setHistory(data.jobs ?? []);
+    } catch (err) {
+      setHistory([]);
+      setHistoryError("Não foi possível carregar o histórico de análises.");
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  }, []);;
+
   useEffect(() => {
     void loadProducts();
-  }, [loadProducts]);
+    void loadHistory();
+  }, [loadProducts, loadHistory]);
 
   useEffect(() => {
     if (isLoadingProducts) {
@@ -194,8 +228,12 @@ const Analises = () => {
   useEffect(() => {
     if (jobStatus === "succeeded") {
       void loadProducts();
+      void loadHistory();
     }
-  }, [jobStatus, loadProducts]);
+    if (jobStatus === "failed") {
+      void loadHistory();
+    }
+  }, [jobStatus, loadProducts, loadHistory]);
 
   const applyFilters = () => {
     if (!hasProducts) {
@@ -263,6 +301,13 @@ const Analises = () => {
     } finally {
       setIsTriggeringJob(false);
     }
+  };
+
+  const handleLoadFromHistory = (product?: string | null) => {
+    if (!product) return;
+    setSelectedProduct(product);
+    void loadMap(product);
+    void loadIndices(product);
   };
 
   const totalAtivos = alerts.filter((a) => a.status === "active").length;
@@ -471,6 +516,67 @@ const Analises = () => {
                   <p className="text-xs text-muted-foreground">
                     Inicie uma nova geração para baixar a cena mais recente e atualizar os mapas.
                   </p>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="bg-card-dark border-border">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Histórico recente</CardTitle>
+                <Button variant="ghost" size="sm" onClick={() => void loadHistory()} disabled={isLoadingHistory}>
+                  Atualizar
+                </Button>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {historyError && <div className="text-sm text-red-500">{historyError}</div>}
+                {isLoadingHistory ? (
+                  <div className="text-sm text-muted-foreground">Carregando histórico…</div>
+                ) : history.length === 0 ? (
+                  <div className="text-sm text-muted-foreground">Nenhuma execução registrada.</div>
+                ) : (
+                  <div className="space-y-2">
+                    {history.map((item) => {
+                      const productLabel = item.product ?? "Produto não informado";
+                      const finishedAt = item.finished_at ? new Date(item.finished_at).toLocaleString() : "Em andamento";
+                      const canLoad = item.status === "succeeded" && Boolean(item.product);
+                      return (
+                        <div key={item.job_id} className="rounded-md border border-border bg-background/40 p-3 space-y-2">
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <p className="text-sm font-semibold truncate" title={productLabel}>
+                                {productLabel}
+                              </p>
+                              <p className="text-xs text-muted-foreground">Finalizado: {finishedAt}</p>
+                            </div>
+                            <Badge
+                              className={
+                                item.status === "failed"
+                                  ? "bg-destructive text-destructive-foreground"
+                                  : item.status === "succeeded"
+                                  ? "bg-alert-resolved text-white"
+                                  : "bg-secondary text-secondary-foreground"
+                              }
+                            >
+                              {JOB_STATUS_LABELS[item.status]}
+                            </Badge>
+                          </div>
+                          {item.error && item.status === "failed" && (
+                            <p className="text-xs text-destructive-foreground">{item.error}</p>
+                          )}
+                          <div className="flex justify-end">
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              disabled={!canLoad}
+                              onClick={() => handleLoadFromHistory(item.product)}
+                            >
+                              Carregar mapa
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
               </CardContent>
             </Card>

@@ -270,16 +270,40 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
                 raise SystemExit("No Sentinel-2 product matched the provided filters.")
 
             product_name = product.get("Name") or product.get("Id") or "unnamed_product"
-            LOGGER.info("Downloading product %s", product_name)
-            product_path = download_product(session, product, download_dir, config.api_url)
-            product_title = _infer_product_name(product_path, fallback=product_name)
+            archive_name = product_name if product_name.endswith(".zip") else f"{product_name}.zip"
+            cached_zip = download_dir / archive_name
+            cached_dir = download_dir / product_name
+
+            if cached_zip.exists():
+                product_path = cached_zip
+                LOGGER.info("Reusing cached SAFE archive at %s", product_path)
+            elif cached_dir.exists():
+                product_path = cached_dir
+                LOGGER.info("Reusing cached SAFE directory at %s", product_path)
+            else:
+                LOGGER.info("Downloading product %s", product_name)
+                product_path = download_product(session, product, download_dir, config.api_url)
         finally:
             session.close()
 
+        product_title = _infer_product_name(product_path, fallback=product_name)
         LOGGER.info("Extracting spectral bands for %s", product_title)
         bands = extract_bands_from_safe(product_path, workdir / product_title)
-        LOGGER.info("Computing spectral indices: %s", ", ".join(selected_indices))
-        outputs = analyse_scene(bands, workdir / product_title / "indices", indices=selected_indices)
+
+        indices_dir = workdir / product_title / "indices"
+        cached_outputs: Dict[str, Path] = {}
+        if indices_dir.exists():
+            for name in selected_indices:
+                candidate = indices_dir / f"{name}.tif"
+                if candidate.exists():
+                    cached_outputs[name] = candidate
+
+        if len(cached_outputs) == len(selected_indices):
+            LOGGER.info("Reusing existing indices for %s", product_title)
+            outputs = cached_outputs
+        else:
+            LOGGER.info("Computing spectral indices: %s", ", ".join(selected_indices))
+            outputs = analyse_scene(bands, indices_dir, indices=selected_indices)
 
     LOGGER.info("Total indices generated: %d", len(outputs))
 

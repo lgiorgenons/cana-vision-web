@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import os
 import shlex
 import subprocess
 import sys
@@ -11,7 +13,6 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-import os
 from typing import Any, Deque, Dict, List, Optional
 
 from fastapi import FastAPI, HTTPException
@@ -32,9 +33,11 @@ MAPAS_DIR = REPO_ROOT / "mapas"
 TABELAS_DIR = REPO_ROOT / "tabelas"
 DADOS_DIR = REPO_ROOT / "dados"
 WORKFLOW_SCRIPT = SCRIPTS_DIR / "run_full_workflow.py"
+HISTORY_PATH = REPO_ROOT / "data" / "jobs_history.json"
 
 MAPAS_DIR.mkdir(parents=True, exist_ok=True)
 TABELAS_DIR.mkdir(parents=True, exist_ok=True)
+HISTORY_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 MAX_LOG_LINES = 500
 JOB_EXECUTOR = ThreadPoolExecutor(max_workers=1)
@@ -60,6 +63,7 @@ class JobInfo:
     finished_at: Optional[datetime] = None
     return_code: Optional[int] = None
     error: Optional[str] = None
+    product: Optional[str] = None
 
 
 _jobs: Dict[str, JobInfo] = {}
@@ -273,7 +277,44 @@ def _serialise_job(job: JobInfo) -> Dict[str, Any]:
         "logs": list(job.logs),
         "return_code": job.return_code,
         "error": job.error,
+        "product": job.product,
     }
+
+
+def _load_history() -> List[Dict[str, Any]]:
+    if not HISTORY_PATH.exists():
+        return []
+    try:
+        with HISTORY_PATH.open("r", encoding="utf-8") as file:
+            data = json.load(file)
+            if isinstance(data, list):
+                return data
+    except json.JSONDecodeError:
+        pass
+    return []
+
+
+def _persist_history(job: JobInfo) -> None:
+    entry = {
+        "job_id": job.job_id,
+        "status": job.status.value,
+        "product": job.product,
+        "created_at": job.created_at.isoformat(),
+        "started_at": job.started_at.isoformat() if job.started_at else None,
+        "finished_at": job.finished_at.isoformat() if job.finished_at else None,
+        "updated_at": job.updated_at.isoformat(),
+        "error": job.error,
+        "return_code": job.return_code,
+        "params": job.params,
+    }
+
+    history = _load_history()
+    history = [item for item in history if item.get("job_id") != job.job_id]
+    history.append(entry)
+    history.sort(key=lambda item: item.get("finished_at") or item.get("updated_at") or item.get("created_at"))
+
+    with HISTORY_PATH.open("w", encoding="utf-8") as file:
+        json.dump(history, file, ensure_ascii=False, indent=2)
 
 
 def _run_workflow_job(job_id: str, payload_dict: Dict[str, Any]) -> None:
@@ -308,7 +349,14 @@ def _run_workflow_job(job_id: str, payload_dict: Dict[str, Any]) -> None:
         process.stdout.close()
 
     if return_code == 0:
-        _update_job(job_id, status=JobStatus.SUCCEEDED, finished_at=datetime.utcnow(), return_code=return_code)
+        product_name = _latest_product()
+        _update_job(
+            job_id,
+            status=JobStatus.SUCCEEDED,
+            finished_at=datetime.utcnow(),
+            return_code=return_code,
+            product=product_name,
+        )
     else:
         message = f"Workflow finalizado com código {return_code}."
         _append_log(job_id, message)
@@ -319,6 +367,11 @@ def _run_workflow_job(job_id: str, payload_dict: Dict[str, Any]) -> None:
             return_code=return_code,
             error=message,
         )
+
+    with _jobs_lock:
+        job = _jobs.get(job_id)
+        if job:
+            _persist_history(job)
 
 
 app = FastAPI(title="Cana Virus API", version="1.1")
@@ -413,6 +466,21 @@ def list_jobs() -> Dict[str, List[Dict[str, Any]]]:
         return {"jobs": [_serialise_job(job) for job in _jobs.values()]}
 
 
+@app.get("/api/jobs/history")
+def jobs_history(limit: Optional[int] = None, status: Optional[str] = None) -> Dict[str, List[Dict[str, Any]]]:
+    history = _load_history()
+    if status:
+        status_lower = status.lower()
+        history = [item for item in history if str(item.get("status", "")).lower() == status_lower]
+
+    history.sort(key=lambda item: item.get("finished_at") or item.get("updated_at") or item.get("created_at") or "")
+    if limit is not None and limit > 0:
+        history = history[-limit:]
+
+    history = list(reversed(history))
+
+    return {"jobs": history}
+
 @app.get("/api/jobs/{job_id}")
 def job_status(job_id: str) -> Dict[str, Any]:
     with _jobs_lock:
@@ -420,3 +488,5 @@ def job_status(job_id: str) -> Dict[str, Any]:
         if not job:
             raise HTTPException(status_code=404, detail="Job não encontrado.")
         return _serialise_job(job)
+
+
