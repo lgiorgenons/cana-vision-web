@@ -29,6 +29,14 @@ from satellite_pipeline import (
     _infer_product_name,
 )
 
+# OO orchestration (optional, used when available)
+try:
+    from canasat.workflow.orchestrator import WorkflowService
+    from canasat.config.settings import AppConfig
+    _HAS_CANASAT = True
+except Exception:  # pragma: no cover - optional during migration
+    _HAS_CANASAT = False
+
 from render_index_map import (
     build_map as build_index_map,
     export_csv,
@@ -253,57 +261,96 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
         bands = extract_bands_from_safe(product_path, workdir / product_title)
         outputs = analyse_scene(bands, workdir / product_title / "indices", indices=selected_indices)
     else:
-        config = authenticate_from_env(
-            username=args.username,
-            password=args.password,
-            api_url=args.api_url,
-            token_url=args.token_url,
-            client_id=args.client_id,
-        )
-        area = AreaOfInterest.from_geojson(args.geojson)
+        if _HAS_CANASAT:
+            # Preferir a orquestração OO quando disponível
+            cfg = AppConfig(
+                DATA_RAW_DIR=download_dir,
+                DATA_PROCESSED_DIR=workdir,
+                MAPAS_DIR=maps_dir,
+                TABELAS_DIR=tables_dir,
+                SENTINEL_USERNAME=args.username,
+                SENTINEL_PASSWORD=args.password,
+                SENTINEL_API_URL=(args.api_url or None),
+                SENTINEL_TOKEN_URL=(args.token_url or None),
+                SENTINEL_CLIENT_ID=(args.client_id or None) or "cdse-public",
+            )
+            svc = WorkflowService(cfg)
+            from datetime import datetime as _dt
 
-        LOGGER.info("Searching Sentinel-2 products between %s and %s", start_date, end_date)
-        session = create_dataspace_session(config)
-        try:
-            product = query_latest_product(session, config, area, start_date, end_date, tuple(args.cloud))
-            if not product:
-                raise SystemExit("No Sentinel-2 product matched the provided filters.")
+            start_dt = _dt.fromisoformat(start_date).date()
+            end_dt = _dt.fromisoformat(end_date).date()
 
-            product_name = product.get("Name") or product.get("Id") or "unnamed_product"
-            archive_name = product_name if product_name.endswith(".zip") else f"{product_name}.zip"
-            cached_zip = download_dir / archive_name
-            cached_dir = download_dir / product_name
-
-            if cached_zip.exists():
-                product_path = cached_zip
-                LOGGER.info("Reusing cached SAFE archive at %s", product_path)
-            elif cached_dir.exists():
-                product_path = cached_dir
-                LOGGER.info("Reusing cached SAFE directory at %s", product_path)
-            else:
-                LOGGER.info("Downloading product %s", product_name)
-                product_path = download_product(session, product, download_dir, config.api_url)
-        finally:
-            session.close()
-
-        product_title = _infer_product_name(product_path, fallback=product_name)
-        LOGGER.info("Extracting spectral bands for %s", product_title)
-        bands = extract_bands_from_safe(product_path, workdir / product_title)
-
-        indices_dir = workdir / product_title / "indices"
-        cached_outputs: Dict[str, Path] = {}
-        if indices_dir.exists():
-            for name in selected_indices:
-                candidate = indices_dir / f"{name}.tif"
-                if candidate.exists():
-                    cached_outputs[name] = candidate
-
-        if len(cached_outputs) == len(selected_indices):
-            LOGGER.info("Reusing existing indices for %s", product_title)
-            outputs = cached_outputs
+            LOGGER.info("Searching Sentinel-2 products between %s and %s (OO)", start_date, end_date)
+            result = svc.run_date_range(
+                start=start_dt,
+                end=end_dt,
+                aoi_geojson=args.geojson.expanduser().resolve(),
+                cloud=tuple(args.cloud),
+                indices=selected_indices,
+                upsample=upsample,
+                smooth_radius=smooth_radius,
+                sharpen=apply_sharpen,
+                sharpen_radius=args.sharpen_radius,
+                sharpen_amount=args.sharpen_amount,
+                tiles=args.tiles,
+                padding=args.padding,
+            )
+            product_title = result.product_title
+            bands = result.bands
+            outputs = result.indices
         else:
-            LOGGER.info("Computing spectral indices: %s", ", ".join(selected_indices))
-            outputs = analyse_scene(bands, indices_dir, indices=selected_indices)
+            # Caminho legado (sem OO)
+            config = authenticate_from_env(
+                username=args.username,
+                password=args.password,
+                api_url=args.api_url,
+                token_url=args.token_url,
+                client_id=args.client_id,
+            )
+            area = AreaOfInterest.from_geojson(args.geojson)
+
+            LOGGER.info("Searching Sentinel-2 products between %s and %s", start_date, end_date)
+            session = create_dataspace_session(config)
+            try:
+                product = query_latest_product(session, config, area, start_date, end_date, tuple(args.cloud))
+                if not product:
+                    raise SystemExit("No Sentinel-2 product matched the provided filters.")
+
+                product_name = product.get("Name") or product.get("Id") or "unnamed_product"
+                archive_name = product_name if product_name.endswith(".zip") else f"{product_name}.zip"
+                cached_zip = download_dir / archive_name
+                cached_dir = download_dir / product_name
+
+                if cached_zip.exists():
+                    product_path = cached_zip
+                    LOGGER.info("Reusing cached SAFE archive at %s", product_path)
+                elif cached_dir.exists():
+                    product_path = cached_dir
+                    LOGGER.info("Reusing cached SAFE directory at %s", product_path)
+                else:
+                    LOGGER.info("Downloading product %s", product_name)
+                    product_path = download_product(session, product, download_dir, config.api_url)
+            finally:
+                session.close()
+
+            product_title = _infer_product_name(product_path, fallback=product_name)
+            LOGGER.info("Extracting spectral bands for %s", product_title)
+            bands = extract_bands_from_safe(product_path, workdir / product_title)
+
+            indices_dir = workdir / product_title / "indices"
+            cached_outputs: Dict[str, Path] = {}
+            if indices_dir.exists():
+                for name in selected_indices:
+                    candidate = indices_dir / f"{name}.tif"
+                    if candidate.exists():
+                        cached_outputs[name] = candidate
+
+            if len(cached_outputs) == len(selected_indices):
+                LOGGER.info("Reusing existing indices for %s", product_title)
+                outputs = cached_outputs
+            else:
+                LOGGER.info("Computing spectral indices: %s", ", ".join(selected_indices))
+                outputs = analyse_scene(bands, indices_dir, indices=selected_indices)
 
     LOGGER.info("Total indices generated: %d", len(outputs))
 
@@ -472,4 +519,3 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
 
 if __name__ == "__main__":
     main()
-

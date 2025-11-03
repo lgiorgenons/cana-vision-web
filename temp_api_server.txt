@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 import os
@@ -20,14 +20,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
-
-# OO path (optional during migration)
-try:  # pragma: no cover - optional import
-    from canasat.workflow.orchestrator import WorkflowService
-    from canasat.config.settings import AppConfig
-    _HAS_CANASAT = True
-except Exception:  # pragma: no cover - environment may miss the package during early migration
-    _HAS_CANASAT = False
 
 SCRIPTS_DIR = Path(__file__).resolve().parents[1] / "scripts"
 if str(SCRIPTS_DIR) not in sys.path:
@@ -139,11 +131,11 @@ def _ensure_compare_map(product: str) -> str:
     compare_path = MAPAS_DIR / "compare_indices_all.html"
     indices_dir = PROCESSED_DIR / product / "indices"
     if not indices_dir.exists():
-        raise HTTPException(status_code=404, detail=f"Diretório de índices não encontrado para {product}.")
+        raise HTTPException(status_code=404, detail=f"DiretÃ³rio de Ã­ndices nÃ£o encontrado para {product}.")
 
     index_paths = sorted(indices_dir.glob("*.tif"))
     if not index_paths:
-        raise HTTPException(status_code=404, detail=f"Nenhum GeoTIFF de índice encontrado para {product}.")
+        raise HTTPException(status_code=404, detail=f"Nenhum GeoTIFF de Ã­ndice encontrado para {product}.")
 
     needs_build = True
     if compare_path.exists():
@@ -168,7 +160,7 @@ def _ensure_compare_map(product: str) -> str:
                 sharpen_amount=1.5,
             )
         except Exception as exc:  # pragma: no cover - defensive
-            raise HTTPException(status_code=500, detail=f"Falha ao gerar mapa de comparação: {exc}") from exc
+            raise HTTPException(status_code=500, detail=f"Falha ao gerar mapa de comparaÃ§Ã£o: {exc}") from exc
 
     return "/mapas/compare_indices_all.html"
 
@@ -190,14 +182,14 @@ def _require_dataspace_credentials() -> None:
             status_code=400,
             detail=(
                 "Credenciais do Copernicus ausentes. Configure SENTINEL_USERNAME e SENTINEL_PASSWORD "
-                "ou forneça um arquivo SAFE existente via 'safe_path'."
+                "ou forneÃ§a um arquivo SAFE existente via 'safe_path'."
             ),
         )
 
 
 def _build_workflow_command(payload: RunWorkflowPayload) -> List[str]:
     if not WORKFLOW_SCRIPT.exists():
-        raise RuntimeError("Script run_full_workflow.py não encontrado.")
+        raise RuntimeError("Script run_full_workflow.py nÃ£o encontrado.")
 
     cmd: List[str] = [sys.executable, str(WORKFLOW_SCRIPT)]
 
@@ -207,7 +199,7 @@ def _build_workflow_command(payload: RunWorkflowPayload) -> List[str]:
     elif payload.date:
         cmd.extend(["--date", payload.date])
     else:
-        raise ValueError("É necessário informar 'date' ou 'date_range'.")
+        raise ValueError("Ã‰ necessÃ¡rio informar 'date' ou 'date_range'.")
 
     if payload.geojson:
         cmd.extend(["--geojson", str(Path(payload.geojson))])
@@ -367,112 +359,9 @@ def _persist_history(job: JobInfo) -> None:
         json.dump(history, file, ensure_ascii=False, indent=2)
 
 
-def _run_workflow_job_inproc(job_id: str, payload_dict: Dict[str, Any]) -> bool:
-    """Executa o workflow em-processo via WorkflowService (quando disponível).
-
-    Retorna True em caso de sucesso; False se não for possível executar.
-    """
-    if not _HAS_CANASAT:
-        return False
-
-    payload = RunWorkflowPayload(**payload_dict)
-
-    # Resolver datas (aceita date ou date_range)
-    start_str, end_str = _resolve_input_dates(
-        date_value=payload.date,
-        start_value=(payload.date_range[0] if payload.date_range else None),
-        end_value=(payload.date_range[1] if payload.date_range else None),
-    )
-
-    from datetime import datetime as _dt
-
-    start_dt = _dt.fromisoformat(start_str).date()
-    end_dt = _dt.fromisoformat(end_str).date()
-
-    # Diretórios e config
-    download_dir = Path(_resolve_path(payload.download_dir) or (REPO_ROOT / "data" / "raw")).resolve()
-    workdir = Path(_resolve_path(payload.workdir) or (REPO_ROOT / "data" / "processed")).resolve()
-    maps_dir = Path(_resolve_path(payload.maps_dir) or (REPO_ROOT / "mapas")).resolve()
-    tables_dir = Path(_resolve_path(payload.tables_dir) or (REPO_ROOT / "tabelas")).resolve()
-
-    cfg = AppConfig(
-        DATA_RAW_DIR=download_dir,
-        DATA_PROCESSED_DIR=workdir,
-        MAPAS_DIR=maps_dir,
-        TABELAS_DIR=tables_dir,
-    )
-    svc = WorkflowService(cfg)
-
-    geojson_path = Path(_resolve_path(payload.geojson) or (REPO_ROOT / "dados" / "map.geojson"))
-    if not geojson_path.exists():
-        raise HTTPException(status_code=404, detail=f"GeoJSON no encontrado: {geojson_path}")
-
-    cloud_tuple: Tuple[int, int] = (0, 30)
-    if payload.cloud and len(payload.cloud) >= 2:
-        cloud_tuple = (int(payload.cloud[0]), int(payload.cloud[1]))
-
-    _append_log(job_id, "Executando workflow in-processo (canasat)")
-
-    try:
-        result = svc.run_date_range(
-            start=start_dt,
-            end=end_dt,
-            aoi_geojson=geojson_path,
-            cloud=cloud_tuple,
-            indices=payload.indices,
-            upsample=payload.upsample or 12.0,
-            smooth_radius=payload.smooth_radius or 1.0,
-            sharpen=not bool(payload.no_sharpen),
-            sharpen_radius=payload.sharpen_radius or 1.2,
-            sharpen_amount=payload.sharpen_amount or 1.5,
-            tiles=payload.tiles or "none",
-            padding=payload.padding or 0.3,
-        )
-
-        _append_log(job_id, f"Produto: {result.product_title}")
-        _append_log(job_id, f"Indices gerados: {', '.join(sorted(result.indices.keys()))}")
-        _append_log(job_id, f"Mapas: {', '.join(str(p) for p in result.maps)}")
-
-        _update_job(
-            job_id,
-            status=JobStatus.SUCCEEDED,
-            finished_at=datetime.utcnow(),
-            return_code=0,
-            product=result.product_title,
-        )
-        with _jobs_lock:
-            job = _jobs.get(job_id)
-            if job:
-                _persist_history(job)
-        return True
-    except Exception as exc:  # pragma: no cover - defensivo
-        _append_log(job_id, f"Falha no workflow in-processo: {exc}")
-        _update_job(
-            job_id,
-            status=JobStatus.FAILED,
-            finished_at=datetime.utcnow(),
-            return_code=1,
-            error=str(exc),
-        )
-        with _jobs_lock:
-            job = _jobs.get(job_id)
-            if job:
-                _persist_history(job)
-        return True
-
 def _run_workflow_job(job_id: str, payload_dict: Dict[str, Any]) -> None:
     payload = RunWorkflowPayload(**payload_dict)
     _update_job(job_id, status=JobStatus.RUNNING, started_at=datetime.utcnow(), error=None, return_code=None)
-
-    # Tenta caminho OO (in-process). Se retornar False, usa subprocess como fallback.
-    try:
-        handled = _run_workflow_job_inproc(job_id, payload_dict)
-        if handled:
-            return
-    except HTTPException:
-        raise
-    except Exception as exc:  # pragma: no cover
-        _append_log(job_id, f"Erro no modo OO: {exc}; usando fallback via script.")
 
     try:
         command = _build_workflow_command(payload)
@@ -511,7 +400,7 @@ def _run_workflow_job(job_id: str, payload_dict: Dict[str, Any]) -> None:
             product=product_name,
         )
     else:
-        message = f"Workflow finalizado com código {return_code}."
+        message = f"Workflow finalizado com cÃ³digo {return_code}."
         _append_log(job_id, message)
         _update_job(
             job_id,
@@ -574,7 +463,7 @@ def product_availability(
     geojson_path = Path(geojson) if geojson else DADOS_DIR / "map.geojson"
     geojson_path = geojson_path.expanduser().resolve()
     if not geojson_path.exists():
-        raise HTTPException(status_code=404, detail=f"GeoJSON não encontrado: {geojson_path}")
+        raise HTTPException(status_code=404, detail=f"GeoJSON nÃ£o encontrado: {geojson_path}")
 
     area = AreaOfInterest.from_geojson(geojson_path)
 
@@ -624,7 +513,7 @@ def indices(product: Optional[str] = None) -> Dict[str, Any]:
 def get_csv(index_name: str):
     path = (TABELAS_DIR / f"{index_name}.csv").resolve()
     if not path.exists():
-        raise HTTPException(status_code=404, detail="CSV não encontrado.")
+        raise HTTPException(status_code=404, detail="CSV nÃ£o encontrado.")
     return FileResponse(str(path), media_type="text/csv", filename=path.name)
 
 
@@ -643,7 +532,7 @@ def overlay_map() -> Dict[str, str]:
     target = MAPAS_DIR / "overlay_indices.html"
     if target.exists():
         return {"url": "/mapas/overlay_indices.html"}
-    raise HTTPException(status_code=404, detail="Overlay não encontrado.")
+    raise HTTPException(status_code=404, detail="Overlay nÃ£o encontrado.")
 
 
 @app.post("/api/jobs/run-workflow")
@@ -697,6 +586,8 @@ def job_status(job_id: str) -> Dict[str, Any]:
     with _jobs_lock:
         job = _jobs.get(job_id)
         if not job:
-            raise HTTPException(status_code=404, detail="Job não encontrado.")
+            raise HTTPException(status_code=404, detail="Job nÃ£o encontrado.")
         return _serialise_job(job)
+
+
 
