@@ -9,24 +9,24 @@ All colors MUST be HSL.
 @layer base {
   :root {
     --background: 246 40% 97%;
-    --foreground: 150 10% 15%;
+    --foreground: 76 58% 7%;
 
     --card: 0 0% 100%;
-    --card-foreground: 150 10% 15%;
+    --card-foreground: 76 58% 7%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 150 10% 15%;
+    --popover-foreground: 76 58% 7%;
 
-    --primary: 110 65% 45%;
+    --primary: 136 53% 43%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 150 5% 90%;
-    --secondary-foreground: 150 10% 15%;
+    --secondary-foreground: 76 58% 7%;
 
     --muted: 150 5% 94%;
     --muted-foreground: 150 5% 45%;
 
-    --accent: 110 65% 45%;
+    --accent: 136 53% 43%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
@@ -34,7 +34,7 @@ All colors MUST be HSL.
 
     --border: 150 10% 88%;
     --input: 150 10% 88%;
-    --ring: 110 65% 45%;
+    --ring: 136 53% 43%;
 
     --radius: 0.5rem;
 
@@ -59,7 +59,7 @@ All colors MUST be HSL.
     --popover: 150 20% 12%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 110 65% 45%;
+    --primary: 136 53% 43%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 150 15% 20%;
@@ -68,7 +68,7 @@ All colors MUST be HSL.
     --muted: 150 15% 20%;
     --muted-foreground: 150 10% 65%;
 
-    --accent: 110 65% 45%;
+    --accent: 136 53% 43%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 73% 57%;
@@ -76,7 +76,7 @@ All colors MUST be HSL.
 
     --border: 150 15% 20%;
     --input: 150 15% 20%;
-    --ring: 110 65% 45%;
+    --ring: 136 53% 43%;
 
     /* Alert colors */
     --alert-high: 0 73% 57%;

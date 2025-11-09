@@ -10,6 +10,7 @@ import Analises from "./pages/Analises";
 import Talhoes from "./pages/Talhoes";
 import Relatorios from "./pages/Relatorios";
 import NotFound from "./pages/NotFound";
+import Login from "./pages/Login";
 
 const queryClient = new QueryClient();
 
@@ -21,7 +22,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Landing />} />
-          <Route path="/login" element={<Dashboard />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/analises" element={<Analises />} />
           <Route path="/talhoes" element={<Talhoes />} />
