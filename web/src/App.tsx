@@ -11,6 +11,8 @@ import Talhoes from "./pages/Talhoes";
 import Relatorios from "./pages/Relatorios";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
+import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
 
 const queryClient = new QueryClient();
 
@@ -23,10 +25,12 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/registrar" element={<Register />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/analises" element={<Analises />} />
           <Route path="/talhoes" element={<Talhoes />} />
           <Route path="/relatorios" element={<Relatorios />} />
+          <Route path="/recuperar" element={<ForgotPassword />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
