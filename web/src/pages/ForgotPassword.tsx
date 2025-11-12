@@ -1,15 +1,71 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useToast } from "@/hooks/use-toast";
+import { requestPasswordReset } from "@/services/password";
+import { ApiError } from "@/lib/api-client";
 
 const heroImage = "/images/img_login.png";
 const brandLogo = "/images/icon_atmos_agro.svg";
 const envelopeIcon = "/images/icon_reset_password.svg";
 const arrowIcon = "/images/ic_arrow.svg";
 
+const forgotSchema = z.object({
+  email: z.string().email("Digite um e-mail válido."),
+});
+
+type ForgotFormValues = z.infer<typeof forgotSchema>;
+
+const canDisplayDevToken = import.meta.env.MODE !== "production" && import.meta.env.VITE_SHOW_RESET_TOKEN !== "false";
+
 const ForgotPassword = () => {
+  const [resetToken, setResetToken] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const form = useForm<ForgotFormValues>({
+    resolver: zodResolver(forgotSchema),
+    defaultValues: { email: "" },
+  });
+
+  const mutation = useMutation({
+    mutationFn: requestPasswordReset,
+    onSuccess: (data) => {
+      setResetToken(data.resetToken ?? null);
+      toast({
+        title: "Se o e-mail estiver cadastrado",
+        description: data.message,
+      });
+      form.reset();
+    },
+    onError: (error: unknown) => {
+      let description = "Não foi possível enviar o link de redefinição.";
+      if (error instanceof ApiError) {
+        description = error.message;
+      }
+      toast({ variant: "destructive", title: "Falha ao enviar link", description });
+    },
+  });
+
+  const onSubmit = (values: ForgotFormValues) => {
+    mutation.mutate(values);
+  };
+
+  const handleResend = () => {
+    const email = form.getValues("email");
+    if (!email) {
+      toast({ variant: "destructive", title: "Informe o e-mail", description: "Preencha o e-mail para reenviar o link." });
+      return;
+    }
+    mutation.mutate({ email });
+  };
+
   return (
     <div className="grid min-h-screen bg-white lg:h-screen lg:grid-cols-2">
       <div className="relative hidden overflow-hidden lg:block">
@@ -46,33 +102,58 @@ const ForgotPassword = () => {
             </div>
             <div className="space-y-3">
               <h1 className="text-3xl font-semibold text-[#181E08]">Esqueceu sua senha?</h1>
-              <p className="text-base text-muted-foreground">Nao se preocupe, redefina a sua senha seguindo as instruções</p>
+              <p className="text-base text-muted-foreground">Nao se preocupe, redefina a sua senha seguindo as instruções.</p>
             </div>
 
-            <form className="space-y-5 text-left">
-              <div className="space-y-2">
-                <Label htmlFor="recovery-email" className="text-base font-medium text-[#181E08]">
-                  Email
-                </Label>
-                <Input
-                  id="recovery-email"
-                  type="email"
-                  placeholder="Entre com o seu email cadastrado"
-                  className="h-12 text-base"
+            <Form {...form}>
+              <form className="space-y-5 text-left" onSubmit={form.handleSubmit(onSubmit)}>
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem className="space-y-2">
+                      <FormLabel className="text-base font-medium text-[#181E08]">Email</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="Entre com o seu email cadastrado"
+                          className="h-12 text-base"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
 
-              <Button type="submit" className="h-12 w-full rounded-[10px] bg-[#34A853] text-base font-normal hover:bg-[#249b4a]">
-                Redefinir senha
-              </Button>
-            </form>
+                <Button
+                  type="submit"
+                  disabled={mutation.isPending}
+                  className="h-12 w-full rounded-[10px] bg-[#34A853] text-base font-normal hover:bg-[#249b4a]"
+                >
+                  {mutation.isPending ? "Enviando..." : "Redefinir senha"}
+                </Button>
+              </form>
+            </Form>
+
+            {resetToken && canDisplayDevToken && (
+              <div className="rounded-md bg-muted/40 p-4 text-left text-sm">
+                <p className="font-semibold">Token de teste:</p>
+                <p className="break-all text-muted-foreground">{resetToken}</p>
+              </div>
+            )}
 
             <div className="flex flex-wrap items-center justify-between gap-4 text-sm text-[#181E08]">
               <Link to="/login" className="inline-flex items-center gap-2 font-semibold hover:text-primary">
                 <img src={arrowIcon} alt="Voltar" className="h-6 w-6" />
                 Voltar para o login
               </Link>
-              <button type="button" className="text-primary font-semibold hover:underline">
+              <button
+                type="button"
+                onClick={handleResend}
+                className="text-primary font-semibold hover:underline"
+                disabled={mutation.isPending}
+              >
                 Reenviar link
               </button>
             </div>
