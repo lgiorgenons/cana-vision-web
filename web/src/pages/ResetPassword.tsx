@@ -4,7 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,15 +38,24 @@ const ResetPassword = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const accessToken = useMemo(
-    () => searchParams.get("access_token") || searchParams.get("token") || "",
-    [searchParams],
-  );
+  const accessToken = useMemo(() => {
+    const hash = typeof window !== "undefined" ? window.location.hash.replace(/^#/, "") : "";
+    const hashParams = new URLSearchParams(hash);
+    return (
+      searchParams.get("access_token") ||
+      searchParams.get("token") ||
+      hashParams.get("access_token") ||
+      hashParams.get("token") ||
+      ""
+    );
+  }, [searchParams]);
 
   const [viewMode, setViewMode] = useState<ViewMode>(accessToken ? "form" : "error");
   const [errorMessage, setErrorMessage] = useState(
-    "Link inválido ou expirado. Solicite um novo e-mail na tela 'Esqueci minha senha'.",
+    "Solicite um novo e-mail de recuperação na tela 'Esqueci minha senha'.",
   );
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const form = useForm<ResetFormValues>({
     resolver: zodResolver(resetSchema),
@@ -130,7 +139,22 @@ const ResetPassword = () => {
                         <FormItem className="space-y-2">
                           <FormLabel className="text-base font-medium text-[#181E08]">Nova senha</FormLabel>
                           <FormControl>
-                            <Input type="password" placeholder="Digite a nova senha" className="h-12 text-base" {...field} />
+                            <div className="relative">
+                              <Input
+                                type={showPassword ? "text" : "password"}
+                                placeholder="Digite a nova senha"
+                                className="h-12 pr-12 text-base"
+                                {...field}
+                              />
+                              <button
+                                type="button"
+                                className="absolute inset-y-0 right-4 flex items-center text-slate-400 transition hover:text-slate-600"
+                                onClick={() => setShowPassword((prev) => !prev)}
+                                aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                              >
+                                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                              </button>
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -143,12 +167,22 @@ const ResetPassword = () => {
                         <FormItem className="space-y-2">
                           <FormLabel className="text-base font-medium text-[#181E08]">Confirmar senha</FormLabel>
                           <FormControl>
-                            <Input
-                              type="password"
-                              placeholder="Repita a nova senha"
-                              className="h-12 text-base"
-                              {...field}
-                            />
+                            <div className="relative">
+                              <Input
+                                type={showConfirmPassword ? "text" : "password"}
+                                placeholder="Repita a nova senha"
+                                className="h-12 pr-12 text-base"
+                                {...field}
+                              />
+                              <button
+                                type="button"
+                                className="absolute inset-y-0 right-4 flex items-center text-slate-400 transition hover:text-slate-600"
+                                onClick={() => setShowConfirmPassword((prev) => !prev)}
+                                aria-label={showConfirmPassword ? "Ocultar senha" : "Mostrar senha"}
+                              >
+                                {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                              </button>
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -181,9 +215,7 @@ const ResetPassword = () => {
                   <h1 className="text-3xl font-semibold text-[#181E08]">Sua senha foi redefinida</h1>
                   <p className="text-base text-muted-foreground">Você já pode acessar a plataforma com a nova senha.</p>
                 </div>
-                <Button
-                  className="h-12 w-full rounded-[10px] bg-[#34A853] text-base font-normal hover:bg-[#249b4a]"
-                  onClick={() => navigate("/login")}
+                <Button className="h-12 w-full rounded-[10px] bg-[#34A853] text-base font-normal hover:bg-[#249b4a]" onClick={() => navigate("/login")}
                 >
                   Ir para o login
                 </Button>
