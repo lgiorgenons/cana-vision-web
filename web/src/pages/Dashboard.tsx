@@ -2,9 +2,9 @@
 import { Link } from "react-router-dom";
 
 const navItems = [
-  { icon: "/images/ic_dashboard.svg", label: "Dashboard", to: "/analises" },
+  { icon: "/images/ic_dashboard.svg", label: "Dashboard", to: "/analises", active: true },
   { icon: "/images/ic_mapa_interativo.svg", label: "Mapa interativo", to: "/analises" },
-  { icon: "/images/ic_monitoramento.svg", label: "Dashboard", to: "/dashboard", active: true },
+  { icon: "/images/ic_monitoramento.svg", label: "Dashboard", to: "/dashboard"},
   { icon: "/images/ic_dados_satelitais.svg", label: "Dados satelitais", to: "/talhoes" },
   { icon: "/images/ic_propriedades.svg", label: "Propriedades", to: "/propriedades" },
 ];
@@ -32,7 +32,7 @@ const Dashboard = () => {
               key={item.label}
               to={item.to}
               className={`flex h-10 w-10 items-center justify-center rounded-[10px] transition-colors ${
-                item.active ? "bg-[#242B36] text-white" : "text-slate-400 hover:text-slate-900"
+                item.active ? "bg-[#242B36] text-white" : "text-slate-400 hover:text-slate-900 hover:bg-[#F0F0F0]"
               }`}
               aria-label={item.label}
             >
@@ -46,7 +46,7 @@ const Dashboard = () => {
             <button
               key={item.label}
               type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-400 transition hover:text-slate-900"
+              className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-400 transition hover:text-slate-900 hover:bg-[#F0F0F0]"
               aria-label={item.label}
             >
               <img src={item.icon} alt="" className="h-6 w-6" />
