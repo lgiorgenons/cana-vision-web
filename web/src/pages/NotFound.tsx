@@ -6,7 +6,11 @@ import landscape404 from "@/assets/404-agro-real.jpg";
 
 const NotFound = () => {
   const location = useLocation();
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  // Initialize spotlight in the center
+  const [mousePosition, setMousePosition] = useState({
+    x: typeof window !== 'undefined' ? window.innerWidth / 2 : 0,
+    y: typeof window !== 'undefined' ? window.innerHeight / 2 : 0
+  });
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -23,11 +27,22 @@ const NotFound = () => {
     }
   };
 
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (containerRef.current && e.touches[0]) {
+      const rect = containerRef.current.getBoundingClientRect();
+      setMousePosition({
+        x: e.touches[0].clientX - rect.left,
+        y: e.touches[0].clientY - rect.top,
+      });
+    }
+  };
+
   return (
     <div
       ref={containerRef}
       onMouseMove={handleMouseMove}
-      className="relative min-h-screen w-full overflow-hidden flex flex-col items-center justify-center bg-black cursor-none"
+      onTouchMove={handleTouchMove}
+      className="relative min-h-screen w-full overflow-hidden flex flex-col items-center justify-center bg-black cursor-none touch-none"
     >
       {/* Background Layer - Always visible but dark */}
       <div
