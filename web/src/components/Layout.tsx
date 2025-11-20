@@ -8,6 +8,7 @@ type LayoutProps = {
   description?: string;
   headerActions?: ReactNode;
   children: ReactNode;
+  hideChrome?: boolean;
 };
 
 type NavItem = { icon: string; label: string; to: string };
@@ -54,7 +55,7 @@ const utilityItems = [
   { icon: "/images/ic_configuracoes.svg", label: "Configuracoes" },
 ];
 
-export const Layout = ({ title, description, headerActions, children }: LayoutProps) => {
+export const Layout = ({ title, description, headerActions, children, hideChrome }: LayoutProps) => {
   const location = useLocation();
   const [themeMode, setThemeMode] = useState<"light" | "dark">("light");
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
@@ -109,6 +110,16 @@ export const Layout = ({ title, description, headerActions, children }: LayoutPr
       />
     </button>
   );
+
+  if (hideChrome) {
+    return (
+      <div className="flex min-h-screen bg-white text-slate-900">
+        <main className="flex flex-1 flex-col bg-white px-4 py-4 md:px-6 md:py-6">
+          <section className="flex-1">{children}</section>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-white text-slate-900">
@@ -288,7 +299,7 @@ export const Layout = ({ title, description, headerActions, children }: LayoutPr
         </aside>
       )}
 
-      <main className="flex flex-1 flex-col bg-white px-8 py-6">
+      <main className="flex flex-1 flex-col bg-white px-4 py-4 lg:px-6">
         <header className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">{pageTitle}</h1>
@@ -315,7 +326,7 @@ export const Layout = ({ title, description, headerActions, children }: LayoutPr
           </div>
         </header>
 
-        <section className="mt-8 flex-1">{children}</section>
+        <section className="mt-4 flex-1 overflow-hidden">{children}</section>
       </main>
     </div>
   );
