@@ -25,7 +25,10 @@ const selectedFields = [
 
 const Talhoes = () => {
   return (
-    <Layout>
+    <Layout
+      title="Talhoes"
+      description="Selecione 2 ou mais talhoes para visualizar uma analise lado a lado."
+    >
       <div className="space-y-8">
         {/* Header */}
         <div className="space-y-2">
@@ -159,4 +162,3 @@ const Talhoes = () => {
 };
 
 export default Talhoes;
-

@@ -7,7 +7,10 @@ import { Link } from "react-router-dom";
 
 const DashboardLegacy = () => {
   return (
-    <Layout>
+    <Layout
+      title="Dashboard de Monitoramento"
+      description="Visao geral da saude das lavouras com deteccao inteligente de hotspots"
+    >
       <div className="space-y-8">
         <div className="space-y-2">
           <h1 className="text-4xl font-bold tracking-tight">Dashboard de Monitoramento</h1>
@@ -166,4 +169,3 @@ const DashboardLegacy = () => {
 };
 
 export default DashboardLegacy;
-

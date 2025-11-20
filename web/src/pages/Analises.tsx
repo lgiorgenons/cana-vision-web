@@ -359,7 +359,7 @@ const Analises = () => {
   const riscoMedioLabel = "Alto"; // TODO: calcular a partir de dados reais
 
   return (
-    <Layout>
+    <Layout title="Analises" description="Mapa interativo com alternancia de indices">
       <div className="space-y-8">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div>

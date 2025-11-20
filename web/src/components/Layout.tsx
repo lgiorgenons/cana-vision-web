@@ -1,79 +1,321 @@
+import type { ReactNode } from "react";
+import { useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Bell, HelpCircle, User } from "lucide-react";
-import { Button } from "./ui/button";
+import { ChevronDown } from "lucide-react";
 
-const navigationItems = [
-  { name: "Dashboard", path: "/" },
-  { name: "Talhões", path: "/talhoes" },
-  { name: "Análises", path: "/analises" },
-  { name: "Relatórios", path: "/relatorios" },
+type LayoutProps = {
+  title?: string;
+  description?: string;
+  headerActions?: ReactNode;
+  children: ReactNode;
+};
+
+type NavItem = { icon: string; label: string; to: string };
+type NavSection = { key: string; icon: string; label: string; items: { label: string; to: string }[] };
+
+const mainNavItems: NavItem[] = [
+  { icon: "/images/ic_dashboard.svg", label: "Dashboard", to: "/dashboard" },
+  { icon: "/images/ic_mapa_interativo.svg", label: "Mapa Interativo", to: "/mapa-interativo" },
 ];
 
-export const Layout = ({ children }: { children: React.ReactNode }) => {
+const navSections: NavSection[] = [
+  {
+    key: "monitoramento",
+    icon: "/images/ic_monitoramento.svg",
+    label: "Monitoramento",
+    items: [
+      { label: "Analises", to: "/analises" },
+      { label: "Relatorios", to: "/relatorios" },
+    ],
+  },
+  {
+    key: "propriedades",
+    icon: "/images/ic_propriedades.svg",
+    label: "Propriedades",
+    items: [{ label: "Talhoes", to: "/talhoes" }],
+  },
+];
+
+const trailingNavItems: NavItem[] = [{ icon: "/images/ic_dados_satelitais.svg", label: "Dados Satelitais", to: "/analises" }];
+
+const collapsedNavItems: NavItem[] = [
+  ...mainNavItems,
+  ...navSections.map((section) => ({
+    icon: section.icon,
+    label: section.label,
+    to: section.items[0]?.to ?? "/dashboard",
+  })),
+  ...trailingNavItems,
+];
+
+const utilityItems = [
+  { icon: "/images/ic_documentacao.svg", label: "Documentacao" },
+  { icon: "/images/ic_suporte.svg", label: "Suporte" },
+  { icon: "/images/ic_configuracoes.svg", label: "Configuracoes" },
+];
+
+export const Layout = ({ title, description, headerActions, children }: LayoutProps) => {
   const location = useLocation();
+  const [themeMode, setThemeMode] = useState<"light" | "dark">("light");
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>(() =>
+    navSections.reduce<Record<string, boolean>>((acc, section) => {
+      acc[section.key] = true;
+      return acc;
+    }, {}),
+  );
+
+  const toggleSection = (key: string) => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+  const flatNavItems = useMemo(
+    () => [
+      ...mainNavItems,
+      ...navSections.flatMap((section) => section.items.map((item) => ({ ...item, icon: section.icon }))),
+      ...trailingNavItems,
+    ],
+    [],
+  );
+
+  const isActive = (to: string) => {
+    if (location.pathname === to || location.pathname.startsWith(`${to}/`)) return true;
+    if (to === "/mapa-interativo" && (location.pathname === "/hotspots" || location.pathname.startsWith("/hotspots/"))) {
+      return true;
+    }
+    return false;
+  };
+  const activeNavItem = useMemo(() => flatNavItems.find((item) => isActive(item.to)), [flatNavItems, location.pathname]);
+  const pageTitle = title ?? activeNavItem?.label ?? "Dashboard";
+
+  const renderToggleButton = (
+    expanded: boolean,
+    positionClass = "top-1/2 -translate-y-1/2",
+    rightOffsetClass = "-right-[18px]",
+  ) => (
+    <button
+      type="button"
+      onClick={() => setIsSidebarExpanded(!expanded)}
+      className={`absolute ${rightOffsetClass} flex h-8 w-8 items-center justify-center text-slate-500 transition hover:text-slate-900 focus-visible:outline-none ${positionClass}`}
+      aria-label={expanded ? "Recolher menu" : "Expandir menu"}
+    >
+      <img
+        src="/images/ic_arrow_hide_menu.svg"
+        alt=""
+        className={`h-6 w-6 transition-transform ${expanded ? "rotate-180" : ""}`}
+      />
+    </button>
+  );
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            {/* Logo */}
-            <Link to="/" className="flex items-center gap-3">
-              <div className="h-8 w-8">
-                <svg
-                  viewBox="0 0 48 48"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="text-primary"
-                >
-                  <path
-                    clipRule="evenodd"
-                    d="M24 4H6V17.3333V30.6667H24V44H42V30.6667V17.3333H24V4Z"
-                    fill="currentColor"
-                    fillRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <h1 className="text-xl font-bold tracking-tight">Cana-Virus</h1>
-            </Link>
+    <div className="flex min-h-screen bg-white text-slate-900">
+      {isSidebarExpanded ? (
+        <aside className="relative flex w-72 flex-col border-r border-[#EAEEF4] bg-white px-5 py-6">
+          <div className="flex items-center">
+            <img src="/images/ic_atmosAgro_full.svg" alt="AtmosAgro" className="h-10 w-auto" />
+          </div>
+          <div className="relative mt-5 flex w-full items-center justify-center py-3">
+            <div className="h-[1px] w-full bg-[#CBCAD7]" />
+            {renderToggleButton(true, "top-1/2 -translate-y-1/2", "-right-[36px]")}
+          </div>
 
-            {/* Navigation */}
-            <nav className="hidden md:flex items-center gap-8">
-              {navigationItems.map((item) => (
+          <nav className="mt-5 flex flex-1 flex-col gap-4 text-sm">
+            <div className="flex flex-col gap-2">
+              {mainNavItems.map((item) => (
                 <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`text-sm font-medium transition-colors hover:text-primary ${
-                    location.pathname === item.path
-                      ? "text-primary border-b-2 border-primary pb-[1px]"
-                      : "text-muted-foreground"
+                  key={item.label}
+                  to={item.to}
+                  className={`flex items-center gap-3 rounded-[10px] px-3 py-2 font-semibold transition ${
+                    isActive(item.to) ? "bg-[#121826] text-white" : "text-slate-500 hover:bg-[#F0F0F0] hover:text-slate-900"
                   }`}
                 >
-                  {item.name}
+                  <img src={item.icon} alt="" className={`h-6 w-6 transition ${isActive(item.to) ? "brightness-0 invert" : ""}`} />
+                  {item.label}
                 </Link>
               ))}
-            </nav>
+            </div>
 
-            {/* Actions */}
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon">
-                <Bell className="h-5 w-5" />
-              </Button>
-              <Button variant="ghost" size="icon">
-                <HelpCircle className="h-5 w-5" />
-              </Button>
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <User className="h-5 w-5" />
-              </Button>
+            {navSections.map((section) => {
+              const open = expandedSections[section.key];
+              const hasActiveChild = section.items.some((item) => isActive(item.to));
+              return (
+                <div key={section.key}>
+                  <button
+                    type="button"
+                    onClick={() => toggleSection(section.key)}
+                    className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left font-semibold transition ${
+                      hasActiveChild ? "text-slate-900" : "text-slate-600"
+                    } hover:bg-[#F0F0F0] hover:text-slate-900`}
+                    aria-expanded={open}
+                  >
+                    <span className="flex items-center gap-3">
+                      <img src={section.icon} alt="" className="h-6 w-6" />
+                      {section.label}
+                    </span>
+                    <ChevronDown className={`h-4 w-4 transition ${open ? "" : "-rotate-90"}`} />
+                  </button>
+                  {open && (
+                    <div className="ml-8 mt-1 flex flex-col gap-1 border-l border-slate-200 pl-4 text-slate-500">
+                      {section.items.map((item) => (
+                        <Link
+                          key={item.label}
+                          to={item.to}
+                          className={`rounded-md px-2 py-1 text-sm transition hover:bg-[#F0F0F0] hover:text-slate-900 ${
+                            isActive(item.to) ? "bg-[#F0F0F0] text-slate-900" : ""
+                          }`}
+                        >
+                          {item.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            {trailingNavItems.map((item) => (
+              <Link
+                key={item.label}
+                to={item.to}
+                className={`flex items-center gap-3 rounded-2xl px-3 py-2 font-semibold transition ${
+                  isActive(item.to) ? "bg-[#121826] text-white" : "text-slate-600 hover:bg-[#F0F0F0] hover:text-slate-900"
+                }`}
+              >
+                <img src={item.icon} alt="" className="h-6 w-6" />
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="mt-6 flex flex-col gap-2 text-sm font-medium">
+            {utilityItems.map((item) => (
+              <button
+                key={item.label}
+                type="button"
+                className="flex items-center gap-3 rounded-xl px-3 py-2 text-slate-500 transition hover:bg-[#F0F0F0] hover:text-slate-900"
+              >
+                <img src={item.icon} alt="" className="h-6 w-6" />
+                {item.label}
+              </button>
+            ))}
+
+            <div className="flex items-center gap-2 rounded-[10px] bg-[#F0F0F0] p-[6px]">
+              <button
+                type="button"
+                onClick={() => setThemeMode("light")}
+                className={`flex flex-1 items-center justify-center gap-2 rounded-[10px] px-3 py-2 text-sm font-semibold transition ${
+                  themeMode === "light" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"
+                }`}
+              >
+                <img src="/images/ic_light.svg" alt="Tema claro" className="h-6 w-6" />
+                Claro
+              </button>
+              <button
+                type="button"
+                onClick={() => setThemeMode("dark")}
+                className={`flex flex-1 items-center justify-center gap-2 rounded-[10px] px-3 py-2 text-sm font-semibold transition ${
+                  themeMode === "dark" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"
+                }`}
+              >
+                <img src="/images/ic_dark.svg" alt="Tema escuro" className="h-6 w-6" />
+                Escuro
+              </button>
             </div>
           </div>
-        </div>
-      </header>
+        </aside>
+      ) : (
+        <aside className="relative flex w-[88px] flex-col items-center border-r border-[#EAEEF4] bg-white py-6">
+          <div className="flex items-center justify-center">
+            <img src="/images/ic_atmos_agro_svg.svg" alt="AtmosAgro" className="h-10 w-10" />
+          </div>
+          <div className="relative mt-4 flex w-full items-center justify-center py-3">
+            <div className="h-[1px] w-10 bg-[#CBCAD7]" />
+            {renderToggleButton(false, "top-1/2 -translate-y-1/2")}
+          </div>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {children}
+          <nav className="mt-6 flex flex-col items-center gap-4">
+            {collapsedNavItems.map((item) => (
+              <Link
+                key={item.label}
+                to={item.to}
+                className={`flex h-10 w-10 items-center justify-center rounded-[10px] transition-colors ${
+                  isActive(item.to) ? "bg-[#242B36] text-white" : "text-slate-400 hover:bg-[#F0F0F0] hover:text-slate-900"
+                }`}
+                aria-label={item.label}
+              >
+                <img src={item.icon} alt="" className={`h-6 w-6 transition ${isActive(item.to) ? "invert" : ""}`} />
+              </Link>
+            ))}
+          </nav>
+
+          <div className="mt-auto flex flex-col items-center gap-2">
+            {utilityItems.map((item) => (
+              <button
+                key={item.label}
+                type="button"
+                className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-400 transition hover:bg-[#F0F0F0] hover:text-slate-900"
+                aria-label={item.label}
+              >
+                <img src={item.icon} alt="" className="h-6 w-6" />
+              </button>
+            ))}
+            <div className="flex w-12 flex-col items-center gap-2 rounded-[10px] bg-[#F0F0F0] p-2 text-slate-500">
+              <button
+                type="button"
+                onClick={() => setThemeMode("light")}
+                className={`flex h-10 w-10 items-center justify-center rounded-[10px] transition ${
+                  themeMode === "light" ? "bg-white shadow-sm" : ""
+                }`}
+                aria-label="Tema claro"
+              >
+                <img src="/images/ic_light.svg" alt="Tema claro" className="h-6 w-6" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setThemeMode("dark")}
+                className={`flex h-10 w-10 items-center justify-center rounded-[10px] transition ${
+                  themeMode === "dark" ? "bg-white shadow-sm" : ""
+                }`}
+                aria-label="Tema escuro"
+              >
+                <img src="/images/ic_dark.svg" alt="Tema escuro" className="h-6 w-6" />
+              </button>
+            </div>
+          </div>
+        </aside>
+      )}
+
+      <main className="flex flex-1 flex-col bg-white px-8 py-6">
+        <header className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">{pageTitle}</h1>
+            {description ? <p className="mt-1 text-sm text-slate-500">{description}</p> : null}
+          </div>
+          <div className="flex flex-1 flex-wrap items-center justify-end gap-3">
+            {headerActions ? <div className="flex flex-wrap items-center justify-end gap-2">{headerActions}</div> : null}
+            <div className="flex items-center">
+              <button type="button" className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F0F0F0]" aria-label="Notificacoes">
+                <img src="/images/ic_notificacao.svg" alt="" className="h-6 w-6" />
+              </button>
+              <div className="mx-[15px] h-5 w-[1px] bg-[#CBCAD7]" />
+              <div className="flex items-center gap-3 rounded-full border border-slate-200 px-3 py-1.5">
+                <img src="/images/ic_perfil.svg" alt="Usuario" className="h-8 w-8 rounded-full" />
+                <div className="text-left">
+                  <p className="text-sm font-semibold">Andrew Smith</p>
+                  <p className="text-xs text-slate-500">Administrador</p>
+                </div>
+                <svg viewBox="0 0 24 24" className="h-4 w-4 text-slate-500" aria-hidden="true">
+                  <path d="M7 10l5 5 5-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <section className="mt-8 flex-1">{children}</section>
       </main>
     </div>
   );

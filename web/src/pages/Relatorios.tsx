@@ -2,7 +2,10 @@ import { Layout } from "@/components/Layout";
 
 const Relatorios = () => {
   return (
-    <Layout>
+    <Layout
+      title="Relatorios"
+      description="Pagina em desenvolvimento"
+    >
       <div className="space-y-8">
         <div className="space-y-2">
           <h1 className="text-4xl font-bold tracking-tight">Relatórios</h1>
@@ -16,4 +19,3 @@ const Relatorios = () => {
 };
 
 export default Relatorios;
-

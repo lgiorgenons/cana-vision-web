@@ -10,7 +10,7 @@ const alerts = [
     id: 1,
     type: "Praga",
     icon: Bug,
-    talhao: "Talhão A-03",
+    talhao: "Talhao A-03",
     severity: "ALTA",
     severityColor: "bg-alert-high",
     date: "15/07/2024",
@@ -20,15 +20,15 @@ const alerts = [
     id: 2,
     type: "Ferrugem",
     icon: Wind,
-    talhao: "Talhão B-07",
-    severity: "MÉDIA",
+    talhao: "Talhao B-07",
+    severity: "MEDIA",
     severityColor: "bg-alert-medium",
     date: "14/07/2024",
     status: "active",
   },
   {
     id: 3,
-    type: "Estresse Hídrico",
+    type: "Estresse Hidrico",
     icon: Droplet,
     talhao: "C-12",
     severity: "BAIXA",
@@ -40,7 +40,7 @@ const alerts = [
     id: 4,
     type: "Praga",
     icon: CheckCircle,
-    talhao: "Talhão A-01",
+    talhao: "Talhao A-01",
     severity: "RESOLVIDO",
     severityColor: "bg-alert-resolved",
     date: "10/07/2024",
@@ -50,13 +50,16 @@ const alerts = [
 
 const Hotspots = () => {
   return (
-    <Layout>
+    <Layout
+      title="Mapa Interativo"
+      description="Veja suas propriedades e talhoes no mapa junto com alertas recentes."
+    >
       <div className="space-y-8">
         {/* Header */}
         <div className="space-y-2">
-          <h1 className="text-4xl font-bold tracking-tight">Dashboard de Hotspots</h1>
+          <h1 className="text-4xl font-bold tracking-tight">Mapa Interativo</h1>
           <p className="text-muted-foreground text-lg">
-            Visualize e monitore áreas críticas detectadas via satélite
+            Visualize e monitore as areas criticas detectadas via satelite
           </p>
         </div>
 
@@ -76,7 +79,7 @@ const Hotspots = () => {
           <Card className="bg-card-dark border-border">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Área Afetada
+                Area Afetada
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -87,7 +90,7 @@ const Hotspots = () => {
           <Card className="bg-card-dark border-border">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Nível de Risco Médio
+                Nivel de Risco Medio
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -105,7 +108,7 @@ const Hotspots = () => {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Buscar por talhão ou ID"
+                  placeholder="Buscar por talhao ou ID"
                   className="pl-10 bg-background border-border"
                 />
               </div>
@@ -127,11 +130,11 @@ const Hotspots = () => {
               <CardContent className="p-0 h-full relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 flex items-center justify-center">
                   <div className="text-center space-y-4">
-                    <div className="text-6xl">🗺️</div>
+                    <div className="text-6xl">MAPA</div>
                     <div className="space-y-2">
-                      <p className="text-lg font-semibold">Mapa de Hotspots</p>
+                      <p className="text-lg font-semibold">Mapa Interativo</p>
                       <p className="text-sm text-muted-foreground max-w-md">
-                        Visualização interativa com sobreposição de calor mostrando áreas críticas detectadas
+                        Visualizacao interativa com sobreposicao de calor mostrando areas criticas detectadas
                       </p>
                     </div>
                   </div>
@@ -164,14 +167,21 @@ const Hotspots = () => {
                     >
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-3">
-                          <Icon className={`h-5 w-5 ${
-                            alert.severity === "ALTA" ? "text-alert-high" :
-                            alert.severity === "MÉDIA" ? "text-alert-medium" :
-                            alert.severity === "BAIXA" ? "text-alert-low" :
-                            "text-alert-resolved"
-                          }`} />
+                          <Icon
+                            className={`h-5 w-5 ${
+                              alert.severity === "ALTA"
+                                ? "text-alert-high"
+                                : alert.severity === "MEDIA"
+                                ? "text-alert-medium"
+                                : alert.severity === "BAIXA"
+                                ? "text-alert-low"
+                                : "text-alert-resolved"
+                            }`}
+                          />
                           <div>
-                            <p className="font-semibold">{alert.type} - {alert.talhao}</p>
+                            <p className="font-semibold">
+                              {alert.type} - {alert.talhao}
+                            </p>
                             <p className="text-xs text-muted-foreground">
                               Detectado em: {alert.date}
                             </p>
@@ -186,7 +196,7 @@ const Hotspots = () => {
                         size="sm"
                         className="w-full mt-2 bg-primary/20 text-primary hover:bg-primary/30"
                       >
-                        {alert.status === "active" ? "Ver Detalhes" : "Ver Histórico"}
+                        {alert.status === "active" ? "Ver Detalhes" : "Ver Historico"}
                       </Button>
                     </div>
                   );
@@ -201,4 +211,3 @@ const Hotspots = () => {
 };
 
 export default Hotspots;
-
