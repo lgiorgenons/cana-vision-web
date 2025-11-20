@@ -43,6 +43,7 @@ type Field = {
   lst: string;
   rainfall: string;
   ndwi: string;
+  pestRisk: "High" | "Medium" | "Low";
 };
 
 const currentScene = {
@@ -79,6 +80,7 @@ const fields: Field[] = [
     lst: "28°C",
     rainfall: "45mm",
     ndwi: "0.35",
+    pestRisk: "Low",
   },
   {
     id: "talhao-2",
@@ -102,9 +104,11 @@ const fields: Field[] = [
     daysToHarvest: 61,
     cloudCover: "8%",
     productId: "S2B_MSIL2A_20240815",
+    productId: "S2B_MSIL2A_20240815",
     lst: "29°C",
     rainfall: "42mm",
-    ndwi: "0.28",
+    ndwi: "0.15",
+    pestRisk: "High",
   },
   {
     id: "talhao-3",
@@ -131,6 +135,7 @@ const fields: Field[] = [
     lst: "27°C",
     rainfall: "50mm",
     ndwi: "0.38",
+    pestRisk: "Low",
   },
   {
     id: "talhao-4",
@@ -157,6 +162,7 @@ const fields: Field[] = [
     lst: "29°C",
     rainfall: "40mm",
     ndwi: "0.32",
+    pestRisk: "Low",
   },
   {
     id: "talhao-5",
@@ -183,6 +189,7 @@ const fields: Field[] = [
     lst: "28°C",
     rainfall: "48mm",
     ndwi: "0.36",
+    pestRisk: "Low",
   },
   {
     id: "talhao-6",
@@ -209,6 +216,7 @@ const fields: Field[] = [
     lst: "28°C",
     rainfall: "44mm",
     ndwi: "0.34",
+    pestRisk: "Low",
   },
   {
     id: "talhao-7",
@@ -235,6 +243,7 @@ const fields: Field[] = [
     lst: "38°C",
     rainfall: "5mm",
     ndwi: "-0.10",
+    pestRisk: "High",
   },
   {
     id: "talhao-8",
@@ -261,6 +270,7 @@ const fields: Field[] = [
     lst: "29°C",
     rainfall: "41mm",
     ndwi: "0.30",
+    pestRisk: "Low",
   },
 ];
 
@@ -276,7 +286,18 @@ const getDiagnostic = (field: Field) => {
   const ndwi = parseFloat(field.ndwi);
   const lst = parseFloat(field.lst.replace("°C", ""));
   const rainfall = parseFloat(field.rainfall.replace("mm", ""));
+  const ndvi = parseFloat(field.ndvi);
   const health = field.health;
+
+  // Vascular Blockage (SMC) Pattern: Low NDWI (Water stress) but High NDVI (Green)
+  if (ndwi < 0.2 && ndvi > 0.6) {
+    return {
+      diagnosis: "Bloqueio Vascular (SMC)",
+      probability: "Muito Alta",
+      action: "Investigar Sphenophorus e realizar corte de salvamento",
+      color: "text-red-700 bg-red-100 border-red-300 ring-1 ring-red-400",
+    };
+  }
 
   if (ndwi < 0 && lst > 35 && rainfall < 10) {
     return {
@@ -292,7 +313,7 @@ const getDiagnostic = (field: Field) => {
       diagnosis: "Possível Murcha Infecciosa",
       probability: "Média",
       action: "Realizar inspeção fitossanitária em campo",
-      color: "text-red-600 bg-red-50 border-red-200",
+      color: "text-amber-600 bg-amber-50 border-amber-200",
     };
   }
 
@@ -302,6 +323,12 @@ const getDiagnostic = (field: Field) => {
     action: "Manter monitoramento padrão",
     color: "text-emerald-600 bg-emerald-50 border-emerald-200",
   };
+};
+
+const getPolygonColor = (label: Field["healthLabel"]) => {
+  if (label === "Good") return "bg-emerald-500/30 hover:bg-emerald-500/40 border-emerald-400/50";
+  if (label === "Low") return "bg-amber-500/30 hover:bg-amber-500/40 border-amber-400/50";
+  return "bg-red-500/30 hover:bg-red-500/40 border-red-400/50";
 };
 
 const layerOptions = ["NDVI", "EVI", "NDRE", "NDMI", "True Color"];
@@ -520,7 +547,7 @@ const Hotspots = () => {
                   className={`h-full w-full cursor-pointer rounded-[32px] border-2 backdrop-blur-sm transition-all ${
                     field.id === selectedFieldId
                       ? "border-white bg-white/10 shadow-[0_0_40px_rgba(255,255,255,0.2)]"
-                      : "border-white/30 bg-white/5 hover:bg-white/10"
+                      : getPolygonColor(field.healthLabel)
                   }`}
                 >
                   {field.id === selectedFieldId && (
@@ -713,7 +740,19 @@ const Hotspots = () => {
                           {alert}
                         </div>
                       ))
+
                     )}
+                  </div>
+
+                  {/* Pest Risk Indicator */}
+                  <div className="flex items-center justify-between rounded-xl bg-slate-50 p-3">
+                    <div className="flex items-center gap-2">
+                      <div className={`h-2 w-2 rounded-full ${selectedField.pestRisk === "High" ? "bg-red-500 animate-pulse" : selectedField.pestRisk === "Medium" ? "bg-amber-500" : "bg-emerald-500"}`} />
+                      <p className="text-xs font-medium text-slate-600">Risco de Vetores (Bicudo/Broca)</p>
+                    </div>
+                    <span className={`text-xs font-bold ${selectedField.pestRisk === "High" ? "text-red-600" : selectedField.pestRisk === "Medium" ? "text-amber-600" : "text-emerald-600"}`}>
+                      {selectedField.pestRisk === "High" ? "ALTO RISCO" : selectedField.pestRisk === "Medium" ? "MEDIO" : "BAIXO"}
+                    </span>
                   </div>
                 </div>
               </div>
