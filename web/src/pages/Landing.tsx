@@ -50,15 +50,12 @@ const Landing = () => {
       <div className="fixed left-0 right-0 top-8 z-50 flex justify-center">
         <nav className="flex items-center gap-8 rounded-full bg-slate-950 px-8 py-3 text-sm font-medium text-white shadow-2xl">
           <div className="flex items-center gap-2 pr-4">
-            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-slate-950">
-              <Leaf className="h-4 w-4" />
-            </div>
-            <span className="font-bold tracking-tight">AtmosAgro</span>
+            <img src="/images/ic_atmosAgro_full_white.svg" alt="AtmosAgro" className="h-8" />
           </div>
           
-          <a href="#solutions" className="text-slate-300 transition hover:text-white">Soluções</a>
-          <a href="#technology" className="text-slate-300 transition hover:text-white">Tecnologia</a>
-          <a href="#about" className="text-slate-300 transition hover:text-white">Sobre</a>
+          <a href="#solutions" className="text-white transition hover:text-slate-300">Soluções</a>
+          <a href="#technology" className="text-white transition hover:text-slate-300">Tecnologia</a>
+          <a href="#about" className="text-white transition hover:text-slate-300">Sobre</a>
 
           <div className="pl-4 border-l border-white/20">
              <Link to="/app" className="flex items-center gap-2 text-emerald-400 hover:text-emerald-300">
