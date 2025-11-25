@@ -58,7 +58,7 @@ const Landing = () => {
       {/* Navbar (Sticky & Adaptive) */}
       <nav 
         className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 transition-all duration-300 md:px-12 ${
-          isScrolled ? "bg-slate-950/90 py-4 shadow-md backdrop-blur-md" : "bg-transparent py-6"
+          isScrolled ? "bg-black py-4 shadow-md backdrop-blur-md" : "bg-transparent py-6"
         }`}
       >
         {/* Logo */}
@@ -68,9 +68,9 @@ const Landing = () => {
         
         {/* Center Links (Desktop) */}
         <div className="hidden items-center gap-8 md:flex">
-          <a href="#solutions" className="text-[16px] font-normal text-white transition hover:text-slate-200">Soluções</a>
-          <a href="#technology" className="text-[16px] font-normal text-white transition hover:text-slate-200">Tecnologia</a>
-          <a href="#about" className="text-[16px] font-normal text-white transition hover:text-slate-200">Sobre</a>
+          <a href="#solutions" className="text-[16px] font-normal text-white transition hover:text-[#34A853]">Soluções</a>
+          <a href="#technology" className="text-[16px] font-normal text-white transition hover:text-[#34A853]">Tecnologia</a>
+          <a href="#about" className="text-[16px] font-normal text-white transition hover:text-[#34A853]">Sobre</a>
         </div>
 
         {/* Right Actions */}
@@ -79,7 +79,7 @@ const Landing = () => {
              Log in
            </Link>
            <Link to="/app">
-             <Button className="h-10 rounded-full bg-[#34A853] px-6 text-sm font-bold text-white hover:bg-[#2E9648] shadow-lg shadow-[#34A853]/20">
+             <Button className="h-10 rounded-full bg-[#34A853] px-6 text-sm font-medium text-white hover:bg-[#2E9648]">
                Dashboard
              </Button>
            </Link>
@@ -93,32 +93,33 @@ const Landing = () => {
           <img
             src="/images/img_hero.png"
             alt="Sugarcane Field Top View"
-            className="h-full w-full object-cover brightness-[0.60]"
+            className="h-full w-full object-cover brightness-[0.30]"
           />
         </div>
 
         {/* Content (Left Aligned, Bottom) */}
         <div className="relative z-10 max-w-full text-center px-4">
           {/* Headline */}
-          <h1 className="text-5xl font-normal tracking-tight text-white drop-shadow-lg md:text-6xl lg:text-7xl leading-[1.1]">
-            Monitoramento de <br />
-            <span className="text-[#34A853] drop-shadow-md">Cana-de-Açúcar</span> com <br />
-            Inteligência Artificial
+          <h1 className="flex flex-col items-center gap-4 text-5xl font-normal tracking-[-3px] text-white drop-shadow-lg md:text-6xl lg:text-[72px] leading-[1.2]">
+            <span>
+              Transformando o <span className="text-[#34A853] drop-shadow-md">Agronegócio</span>
+            </span>
+            <span>com Monitoramento via Satélite</span>
           </h1>
 
           {/* Subheadline */}
-          <p className="mx-auto mt-8 max-w-2xl text-lg text-slate-100 drop-shadow-md leading-relaxed font-normal">
+          <p className="mx-auto mt-8 max-w-3xl text-[20px] tracking-[0px] text-slate-100 drop-shadow-md leading-[1.5] font-normal">
             Desbloqueie o potencial da sua lavoura. Explore técnicas avançadas para aumentar a produtividade e conectar-se com a terra através de dados precisos.
           </p>
 
           {/* CTA Buttons */}
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <Link to="/app">
-              <Button size="lg" className="h-14 rounded-full bg-[#34A853] px-10 text-lg font-bold text-white hover:bg-[#2E9648] transition-transform hover:scale-105 shadow-lg shadow-[#34A853]/20">
+              <Button size="lg" className="h-14 rounded-full bg-[#34A853] px-8 text-[16px] font-medium text-white hover:bg-[#2E9648] transition-transform hover:scale-105 shadow-lg shadow-[#34A853]/20">
                 Começar Agora <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
-            <Button variant="outline" size="lg" className="h-14 rounded-full border-white bg-transparent px-10 text-lg font-bold text-white hover:bg-white hover:text-slate-900 transition-all">
+            <Button variant="outline" size="lg" className="h-14 rounded-full border-white bg-transparent px-8 text-[16px] font-medium text-white hover:bg-white hover:text-slate-900 transition-all">
               Saiba Mais
             </Button>
           </div>
@@ -127,7 +128,7 @@ const Landing = () => {
 
         {/* Mouse Scroll Indicator */}
         <div 
-          className="absolute bottom-8 left-1/2 hidden -translate-x-1/2 cursor-pointer flex-col items-center gap-2 text-white opacity-70 transition-opacity hover:opacity-100 md:flex"
+          className="absolute bottom-8 left-1/2 hidden -translate-x-1/2 cursor-pointer flex-col items-center gap-2 text-white opacity-100 transition-opacity hover:opacity-60 md:flex"
           onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
         >
             <Mouse className="h-8 w-8 animate-bounce" />
