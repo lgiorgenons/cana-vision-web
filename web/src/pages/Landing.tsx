@@ -14,6 +14,12 @@ import {
   ShieldCheck,
   Sprout,
   Zap,
+  Map,
+  Bell,
+  TrendingUp,
+  CloudRain,
+  Bug,
+  Smartphone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -58,16 +64,15 @@ const Landing = () => {
   return (
     <div className="min-h-screen bg-white font-sans text-slate-900 selection:bg-emerald-500/30">
       {/* Navbar (Sticky & Adaptive) */}
-      <nav 
-        className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 transition-all duration-300 md:px-12 ${
-          isScrolled ? "bg-black py-4 shadow-md backdrop-blur-md" : "bg-transparent py-6"
-        }`}
+      <nav
+        className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 transition-all duration-300 md:px-12 ${isScrolled ? "bg-black py-4 shadow-md backdrop-blur-md" : "bg-transparent py-6"
+          }`}
       >
         {/* Logo */}
         <div className="flex items-center gap-2">
           <img src="/images/ic_atmosAgro_full_white.svg" alt="AtmosAgro" className="h-8" />
         </div>
-        
+
         {/* Center Links (Desktop) */}
         <div className="hidden items-center gap-8 md:flex">
           <a href="#solutions" className="text-[16px] font-normal text-white transition hover:text-[#34A853]">Soluções</a>
@@ -77,14 +82,14 @@ const Landing = () => {
 
         {/* Right Actions */}
         <div className="flex items-center gap-6">
-           <Link to="/login" className="hidden text-sm font-medium text-white transition hover:text-[#34A853] md:block">
-             Log in
-           </Link>
-           <Link to="/app">
-             <Button className="h-10 rounded-full bg-[#34A853] px-6 text-sm font-medium text-white hover:bg-[#2E9648]">
-               Dashboard
-             </Button>
-           </Link>
+          <Link to="/login" className="hidden text-sm font-medium text-white transition hover:text-[#34A853] md:block">
+            Log in
+          </Link>
+          <Link to="/app">
+            <Button className="h-10 rounded-full bg-[#34A853] px-6 text-sm font-medium text-white hover:bg-[#2E9648]">
+              Dashboard
+            </Button>
+          </Link>
         </div>
       </nav>
 
@@ -125,55 +130,117 @@ const Landing = () => {
               Saiba Mais
             </Button>
           </div>
-          
+
         </div>
 
         {/* Mouse Scroll Indicator */}
-        <div 
+        <div
           className="absolute bottom-8 left-1/2 hidden -translate-x-1/2 cursor-pointer flex-col items-center gap-2 text-white opacity-100 transition-opacity hover:opacity-60 md:flex"
           onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
         >
-            <Mouse className="h-8 w-8 animate-bounce" />
-            <span className="text-xs font-medium tracking-widest uppercase">Explore Mais</span>
+          <Mouse className="h-8 w-8 animate-bounce" />
+          <span className="text-xs font-medium tracking-widest uppercase">Explore Mais</span>
         </div>
       </section>
 
-      {/* Stats/Features Row */}
-      <section id="features" className="bg-white py-20">
+      {/* Productivity Section (Laptop Showcase) */}
+      <section className="bg-white py-24 overflow-hidden">
         <div className="mx-auto max-w-7xl px-4">
-          <div className="grid gap-12 md:grid-cols-4">
-            {[
-              {
-                icon: Globe2,
-                title: "Monitoramento 24/7",
-                desc: "Acesso a dados de satélite atualizados diariamente para tomada de decisão rápida.",
-              },
-              {
-                icon: Scan,
-                title: "Precisão de 98%",
-                desc: "Algoritmos de IA calibrados especificamente para a cultura da cana-de-açúcar.",
-              },
-              {
-                icon: Zap,
-                title: "Alertas em Tempo Real",
-                desc: "Receba notificações automáticas sobre riscos de pragas e doenças no seu celular.",
-              },
-              {
-                icon: Layers,
-                title: "Cobertura Total",
-                desc: "Escalabilidade para monitorar de pequenos talhões a grandes usinas.",
-              },
-            ].map((item, i) => (
-              <div key={i} className="flex flex-col items-start gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#34A853]/10 text-[#34A853]">
-                  <item.icon className="h-6 w-6" />
+          <div className="mb-20 text-center">
+            <h2 className="text-sm font-bold tracking-widest text-[#34A853] uppercase">INTELIGÊNCIA AGRONÔMICA</h2>
+            <h3 className="mt-4 text-3xl font-bold text-slate-900 md:text-5xl max-w-3xl mx-auto">
+              Antecipe problemas e maximize sua colheita.
+            </h3>
+            <p className="mt-6 text-lg text-slate-600 max-w-2xl mx-auto">
+              Monitoramento contínuo que identifica pragas, doenças e falhas nutricionais antes que afetem sua produtividade.
+            </p>
+          </div>
+
+          <div className="relative flex flex-col items-center justify-center lg:flex-row lg:items-center lg:justify-between gap-12">
+
+            {/* Left Features */}
+            <div className="flex flex-col gap-12 lg:w-1/4 lg:items-end lg:text-right">
+              <div className="group flex flex-col items-center lg:items-end gap-4">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-blue-500 shadow-sm transition-transform group-hover:scale-110">
+                  <Droplets className="h-8 w-8" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900">{item.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-500">{item.desc}</p>
+                  <h4 className="text-xl font-bold text-slate-900">Estresse Hídrico</h4>
+                  <p className="mt-2 text-sm text-slate-500 leading-relaxed">
+                    Visualize áreas com déficit hídrico antes que a cana sofra danos irreversíveis.
+                  </p>
                 </div>
               </div>
-            ))}
+
+              <div className="group flex flex-col items-center lg:items-end gap-4">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 shadow-sm transition-transform group-hover:scale-110">
+                  <Bug className="h-8 w-8" />
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold text-slate-900">Detecção de Pragas</h4>
+                  <p className="mt-2 text-sm text-slate-500 leading-relaxed">
+                    Identifique focos de infestação no estágio inicial e aplique defensivos apenas onde necessário.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Center Laptop Mockup */}
+            <div className="relative z-10 w-full max-w-2xl lg:w-1/2">
+              {/* Laptop Body */}
+              <div className="relative mx-auto bg-slate-950 rounded-t-[2rem] p-4 shadow-2xl border-[4px] border-slate-800">
+                {/* Screen */}
+                <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-slate-900">
+                  <img
+                    src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1000&auto=format&fit=crop"
+                    alt="AtmosAgro Dashboard"
+                    className="h-full w-full object-cover opacity-90"
+                  />
+                  {/* Floating UI Elements inside screen */}
+                  <div className="absolute top-4 right-4 rounded-lg bg-white/10 p-2 backdrop-blur-md border border-white/10">
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 w-2 rounded-full bg-[#34A853] animate-pulse" />
+                      <span className="text-xs font-medium text-white">Sistema Online</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {/* Laptop Base */}
+              <div className="relative mx-auto h-4 w-full max-w-[110%] rounded-b-xl bg-slate-800 shadow-xl">
+                <div className="absolute left-1/2 top-0 h-2 w-24 -translate-x-1/2 rounded-b-lg bg-slate-700" />
+              </div>
+
+              {/* Glow Effect behind laptop */}
+              <div className="absolute top-1/2 left-1/2 -z-10 h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#34A853]/20 blur-[100px]" />
+            </div>
+
+            {/* Right Features */}
+            <div className="flex flex-col gap-12 lg:w-1/4 lg:items-start lg:text-left">
+              <div className="group flex flex-col items-center lg:items-start gap-4">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 shadow-sm transition-transform group-hover:scale-110">
+                  <Sprout className="h-8 w-8" />
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold text-slate-900">Correção Nutricional</h4>
+                  <p className="mt-2 text-sm text-slate-500 leading-relaxed">
+                    Mapas de NDRE precisos para aplicação de nitrogênio em taxa variável.
+                  </p>
+                </div>
+              </div>
+
+              <div className="group flex flex-col items-center lg:items-start gap-4">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-sky-50 text-sky-500 shadow-sm transition-transform group-hover:scale-110">
+                  <Smartphone className="h-8 w-8" />
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold text-slate-900">Acompanhamento Simplificado</h4>
+                  <p className="mt-2 text-sm text-slate-500 leading-relaxed">
+                    Histórico completo da safra e relatórios automáticos na palma da sua mão.
+                  </p>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
@@ -201,15 +268,15 @@ const Landing = () => {
               </div>
               <h3 className="mb-4 text-2xl font-bold text-slate-900">1. Coleta e Processamento</h3>
               <p className="mb-8 text-slate-500">
-                Nossa plataforma ingere automaticamente imagens dos satélites Sentinel-2, Landsat e Planet. 
+                Nossa plataforma ingere automaticamente imagens dos satélites Sentinel-2, Landsat e Planet.
                 Processamos correções atmosféricas e removemos nuvens para garantir a melhor visualização.
               </p>
               <div className="relative h-64 w-full overflow-hidden rounded-3xl bg-slate-100">
-                 <img 
-                   src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1000&auto=format&fit=crop"
-                   className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                   alt="Satellite Data"
-                 />
+                <img
+                  src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1000&auto=format&fit=crop"
+                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  alt="Satellite Data"
+                />
               </div>
             </div>
 
@@ -224,18 +291,18 @@ const Landing = () => {
                 Você recebe um mapa de calor com as áreas que precisam de atenção imediata.
               </p>
               <div className="relative h-64 w-full overflow-hidden rounded-3xl bg-slate-800 border border-white/10">
-                <img 
-                   src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1000&auto=format&fit=crop"
-                   className="absolute inset-0 h-full w-full object-cover opacity-80 transition-transform duration-700 group-hover:scale-105"
-                   alt="Data Analysis"
-                 />
-                 {/* Overlay Card */}
-                 <div className="absolute bottom-4 left-4 right-4 rounded-xl bg-white/10 p-4 backdrop-blur-md border border-white/10">
-                    <div className="flex items-center gap-3">
-                      <div className="h-2 w-2 rounded-full bg-[#34A853] animate-pulse" />
-                      <p className="text-sm font-medium text-white">Análise Concluída: Talhão 7</p>
-                    </div>
-                 </div>
+                <img
+                  src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1000&auto=format&fit=crop"
+                  className="absolute inset-0 h-full w-full object-cover opacity-80 transition-transform duration-700 group-hover:scale-105"
+                  alt="Data Analysis"
+                />
+                {/* Overlay Card */}
+                <div className="absolute bottom-4 left-4 right-4 rounded-xl bg-white/10 p-4 backdrop-blur-md border border-white/10">
+                  <div className="flex items-center gap-3">
+                    <div className="h-2 w-2 rounded-full bg-[#34A853] animate-pulse" />
+                    <p className="text-sm font-medium text-white">Análise Concluída: Talhão 7</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -259,20 +326,18 @@ const Landing = () => {
             {/* Accordion List */}
             <div className="space-y-4">
               {accordionItems.map((item, i) => (
-                <div 
-                  key={i} 
-                  className={`cursor-pointer border-b border-slate-100 py-6 transition-all ${
-                    activeAccordion === i ? "opacity-100" : "opacity-50 hover:opacity-80"
-                  }`}
+                <div
+                  key={i}
+                  className={`cursor-pointer border-b border-slate-100 py-6 transition-all ${activeAccordion === i ? "opacity-100" : "opacity-50 hover:opacity-80"
+                    }`}
                   onClick={() => setActiveAccordion(i)}
                 >
                   <div className="flex items-center justify-between">
                     <h3 className="text-xl font-bold text-slate-900">{item.title}</h3>
                     <ChevronRight className={`h-5 w-5 transition-transform ${activeAccordion === i ? "rotate-90 text-[#34A853]" : "text-slate-400"}`} />
                   </div>
-                  <div className={`grid transition-all duration-300 ease-in-out ${
-                    activeAccordion === i ? "grid-rows-[1fr] mt-4 opacity-100" : "grid-rows-[0fr] opacity-0"
-                  }`}>
+                  <div className={`grid transition-all duration-300 ease-in-out ${activeAccordion === i ? "grid-rows-[1fr] mt-4 opacity-100" : "grid-rows-[0fr] opacity-0"
+                    }`}>
                     <div className="overflow-hidden">
                       <p className="text-slate-600 leading-relaxed">{item.desc}</p>
                     </div>
@@ -288,9 +353,8 @@ const Landing = () => {
                   key={i}
                   src={item.image}
                   alt={item.title}
-                  className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${
-                    activeAccordion === i ? "opacity-100" : "opacity-0"
-                  }`}
+                  className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${activeAccordion === i ? "opacity-100" : "opacity-0"
+                    }`}
                 />
               ))}
               {/* Floating Badge */}
@@ -339,8 +403,8 @@ const Landing = () => {
 
             {/* Card 2: Image */}
             <div className="relative overflow-hidden rounded-[2rem] shadow-xl md:col-span-2 md:row-span-1">
-              <img 
-                src="https://images.unsplash.com/photo-1605000797499-95a51c5269ae?q=80&w=1000&auto=format&fit=crop" 
+              <img
+                src="https://images.unsplash.com/photo-1605000797499-95a51c5269ae?q=80&w=1000&auto=format&fit=crop"
                 alt="Sustainable Field"
                 className="h-full w-full object-cover transition-transform hover:scale-105 duration-700"
               />
@@ -363,8 +427,8 @@ const Landing = () => {
 
             {/* Card 4: Image Drone */}
             <div className="relative overflow-hidden rounded-[2rem] shadow-xl md:col-span-3 md:row-span-1">
-               <img 
-                src="https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=80&w=1000&auto=format&fit=crop" 
+              <img
+                src="https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=80&w=1000&auto=format&fit=crop"
                 alt="Drone Technology"
                 className="h-full w-full object-cover transition-transform hover:scale-105 duration-700"
               />
@@ -405,8 +469,8 @@ const Landing = () => {
             ].map((news, i) => (
               <div key={i} className="group cursor-pointer">
                 <div className="mb-4 overflow-hidden rounded-2xl">
-                  <img 
-                    src={news.image} 
+                  <img
+                    src={news.image}
                     alt={news.title}
                     className="h-64 w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
@@ -446,7 +510,7 @@ const Landing = () => {
                 ))}
               </div>
             </div>
-            
+
             <div>
               <h4 className="mb-6 font-bold text-white">Plataforma</h4>
               <ul className="space-y-4 text-sm">
@@ -477,7 +541,7 @@ const Landing = () => {
               </ul>
             </div>
           </div>
-          
+
           <div className="mt-16 flex flex-col items-center justify-between border-t border-slate-800 pt-8 text-xs sm:flex-row">
             <p>© 2024 AtmosAgro. Todos os direitos reservados.</p>
             <div className="mt-4 flex gap-6 sm:mt-0">
