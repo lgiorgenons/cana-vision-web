@@ -25,6 +25,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 import heroGif from "../assets/gif_campo.gif";
+import imgIpad from "../assets/img_ipad.png";
+import imgTerreno from "../assets/img_terreno.png";
+import icGota from "../assets/ic_gota_agua.svg";
+import icVisualizacao from "../assets/ic_visualizacao.svg";
+import icPraga from "../assets/ic_praga.svg";
+import icControle from "../assets/ic_controle_safra.svg";
 
 const Landing = () => {
   const [isScrolled, setIsScrolled] = React.useState(false);
@@ -62,7 +68,7 @@ const Landing = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white font-sans text-slate-900 selection:bg-emerald-500/30">
+    <div className="min-h-screen bg-white font-sans text-slate-900 selection:bg-emerald-500/30" style={{ fontFamily: 'Geist Sans, sans-serif' }}>
       {/* Navbar (Sticky & Adaptive) */}
       <nav
         className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 transition-all duration-300 md:px-12 ${isScrolled ? "bg-black py-4 shadow-md backdrop-blur-md" : "bg-transparent py-6"
@@ -143,105 +149,91 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Productivity Section (Laptop Showcase) */}
-      <section className="bg-white py-24 overflow-hidden">
-        <div className="mx-auto max-w-7xl px-4">
+      {/* Productivity Section (Grid + Tablet Showcase) */}
+      <section className="bg-white pt-24 pb-0 relative overflow-hidden">
+        <div className="mx-auto max-w-7xl px-4 z-10 relative">
           <div className="mb-20 text-center">
-            <h2 className="text-sm font-bold tracking-widest text-[#34A853] uppercase">INTELIGÊNCIA AGRONÔMICA</h2>
-            <h3 className="mt-4 text-3xl font-bold text-slate-900 md:text-5xl max-w-3xl mx-auto">
-              Antecipe problemas e maximize sua colheita.
-            </h3>
-            <p className="mt-6 text-lg text-slate-600 max-w-2xl mx-auto">
-              Monitoramento contínuo que identifica pragas, doenças e falhas nutricionais antes que afetem sua produtividade.
+            <h2 className="text-4xl font-medium text-slate-900 md:text-5xl">
+              O que o AtmosAgro faz por você?
+            </h2>
+            <p className="mt-4 text-xl text-slate-600 max-w-3xl mx-auto">
+              Fornecemos <span className="text-[#34A853] font-normal">monitoramento</span> contínuo que identifica pragas,
+              doenças e falhas nutricionais antes que afetem sua produtividade.
             </p>
           </div>
 
-          <div className="relative flex flex-col items-center justify-center lg:flex-row lg:items-center lg:justify-between gap-12">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-20 mb-20">
 
-            {/* Left Features */}
-            <div className="flex flex-col gap-12 lg:w-1/4 lg:items-end lg:text-right">
-              <div className="group flex flex-col items-center lg:items-end gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-blue-500 shadow-sm transition-transform group-hover:scale-110">
-                  <Droplets className="h-8 w-8" />
+            {/* Left Features Grid */}
+            <div className="w-full lg:w-1/2">
+              <div className="grid gap-8 sm:grid-cols-2">
+                {/* Item 1 */}
+                <div className="flex flex-col items-start gap-4 p-6 border border-blue-400/30 bg-white hover:shadow-lg transition-shadow">
+                  <div className="flex items-center justify-center w-[45px] h-[45px] rounded-full bg-[#34A853] text-white shrink-0">
+                    <img src={icGota} alt="Gota" className="w-6 h-6" style={{ filter: 'brightness(0)' }} />
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-bold text-slate-900">Estresse Hídrico</h4>
+                    <p className="mt-2 text-sm text-slate-500 leading-relaxed">
+                      Identifique áreas com falta de água antes que afetem a produtividade.
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-xl font-bold text-slate-900">Estresse Hídrico</h4>
-                  <p className="mt-2 text-sm text-slate-500 leading-relaxed">
-                    Visualize áreas com déficit hídrico antes que a cana sofra danos irreversíveis.
-                  </p>
-                </div>
-              </div>
 
-              <div className="group flex flex-col items-center lg:items-end gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 shadow-sm transition-transform group-hover:scale-110">
-                  <Bug className="h-8 w-8" />
+                {/* Item 2 */}
+                <div className="flex flex-col items-start gap-4 p-6 border border-gray-100 bg-white hover:shadow-lg transition-shadow">
+                  <div className="flex items-center justify-center w-[45px] h-[45px] rounded-full bg-[#34A853] text-white shrink-0">
+                    <img src={icVisualizacao} alt="Visualização" className="w-6 h-6" style={{ filter: 'brightness(0)' }} />
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-bold text-slate-900">Visualização simplificada</h4>
+                    <p className="mt-2 text-sm text-slate-500 leading-relaxed">
+                      Veja índices avançados (NDVI, NDRE, NDMI) em mapas claros e simplificados.
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-xl font-bold text-slate-900">Detecção de Pragas</h4>
-                  <p className="mt-2 text-sm text-slate-500 leading-relaxed">
-                    Identifique focos de infestação no estágio inicial e aplique defensivos apenas onde necessário.
-                  </p>
-                </div>
-              </div>
-            </div>
 
-            {/* Center Laptop Mockup */}
-            <div className="relative z-10 w-full max-w-2xl lg:w-1/2">
-              {/* Laptop Body */}
-              <div className="relative mx-auto bg-slate-950 rounded-t-[2rem] p-4 shadow-2xl border-[4px] border-slate-800">
-                {/* Screen */}
-                <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-slate-900">
-                  <img
-                    src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1000&auto=format&fit=crop"
-                    alt="AtmosAgro Dashboard"
-                    className="h-full w-full object-cover opacity-90"
-                  />
-                  {/* Floating UI Elements inside screen */}
-                  <div className="absolute top-4 right-4 rounded-lg bg-white/10 p-2 backdrop-blur-md border border-white/10">
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-full bg-[#34A853] animate-pulse" />
-                      <span className="text-xs font-medium text-white">Sistema Online</span>
-                    </div>
+                {/* Item 3 */}
+                <div className="flex flex-col items-start gap-4 p-6 border border-blue-400/30 bg-white hover:shadow-lg transition-shadow">
+                  <div className="flex items-center justify-center w-[45px] h-[45px] rounded-full bg-[#34A853] text-white shrink-0">
+                    <img src={icPraga} alt="Praga" className="w-6 h-6" style={{ filter: 'brightness(0)' }} />
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-bold text-slate-900">Detecção de Pragas</h4>
+                    <p className="mt-2 text-sm text-slate-500 leading-relaxed">
+                      Detecte focos iniciais e aplique defensivos apenas onde necessário.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Item 4 */}
+                <div className="flex flex-col items-start gap-4 p-6 border border-gray-100 bg-white hover:shadow-lg transition-shadow">
+                  <div className="flex items-center justify-center w-[45px] h-[45px] rounded-full bg-[#34A853] text-white shrink-0">
+                    <img src={icControle} alt="Controle" className="w-6 h-6" style={{ filter: 'brightness(0)' }} />
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-bold text-slate-900">Controle de Safra</h4>
+                    <p className="mt-2 text-sm text-slate-500 leading-relaxed">
+                      Acompanhe o histórico da safra com relatórios automáticos.
+                    </p>
                   </div>
                 </div>
               </div>
-              {/* Laptop Base */}
-              <div className="relative mx-auto h-4 w-full max-w-[110%] rounded-b-xl bg-slate-800 shadow-xl">
-                <div className="absolute left-1/2 top-0 h-2 w-24 -translate-x-1/2 rounded-b-lg bg-slate-700" />
-              </div>
-
-              {/* Glow Effect behind laptop */}
-              <div className="absolute top-1/2 left-1/2 -z-10 h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#34A853]/20 blur-[100px]" />
             </div>
 
-            {/* Right Features */}
-            <div className="flex flex-col gap-12 lg:w-1/4 lg:items-start lg:text-left">
-              <div className="group flex flex-col items-center lg:items-start gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 shadow-sm transition-transform group-hover:scale-110">
-                  <Sprout className="h-8 w-8" />
-                </div>
-                <div>
-                  <h4 className="text-xl font-bold text-slate-900">Correção Nutricional</h4>
-                  <p className="mt-2 text-sm text-slate-500 leading-relaxed">
-                    Mapas de NDRE precisos para aplicação de nitrogênio em taxa variável.
-                  </p>
-                </div>
-              </div>
-
-              <div className="group flex flex-col items-center lg:items-start gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-sky-50 text-sky-500 shadow-sm transition-transform group-hover:scale-110">
-                  <Smartphone className="h-8 w-8" />
-                </div>
-                <div>
-                  <h4 className="text-xl font-bold text-slate-900">Acompanhamento Simplificado</h4>
-                  <p className="mt-2 text-sm text-slate-500 leading-relaxed">
-                    Histórico completo da safra e relatórios automáticos na palma da sua mão.
-                  </p>
-                </div>
+            {/* Right Tablet Mockup */}
+            <div className="w-full lg:w-1/2 flex justify-center lg:justify-end">
+              <div className="relative w-full max-w-lg">
+                <img src={imgIpad} alt="Tablet Dashboard" className="relative z-10 w-full drop-shadow-2xl hover:scale-105 transition-transform duration-500" />
               </div>
             </div>
 
           </div>
+        </div>
+
+        {/* Bottom Terrain Image */}
+        <div className="w-full mt-[-100px] z-0 relative">
+          <img src={imgTerreno} alt="Terreno" className="w-full object-cover h-[200px] md:h-auto" />
         </div>
       </section>
 
