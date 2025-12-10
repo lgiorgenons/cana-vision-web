@@ -164,7 +164,7 @@ const Landing = () => {
             </p>
           </div>
 
-          <div className="flex flex-col lg:flex-row items-start justify-start gap-12 lg:gap-[40px] mb-10 relative z-20">
+          <div className="flex flex-col xl:flex-row items-start justify-start gap-12 xl:gap-[40px] mb-10 relative z-20">
 
             {/* Left Features Grid */}
             <div className="flex-1 w-full">
@@ -224,7 +224,7 @@ const Landing = () => {
             </div>
 
             {/* Right Tablet Mockup */}
-            <div className="w-full lg:w-auto lg:shrink-0 flex justify-center lg:justify-end items-center">
+            <div className="w-full xl:w-1/2 flex justify-center xl:justify-end items-center">
               <div className="relative w-full max-w-[720px]">
                 <img src={imgIpad} alt="Tablet Dashboard" className="relative z-10 w-full drop-shadow-2xl hover:scale-105 transition-transform duration-500" />
               </div>
