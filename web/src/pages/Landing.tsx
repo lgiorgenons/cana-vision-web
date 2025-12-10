@@ -71,31 +71,33 @@ const Landing = () => {
     <div className="min-h-screen bg-white font-sans text-slate-900 selection:bg-emerald-500/30" style={{ fontFamily: 'Geist Sans, sans-serif' }}>
       {/* Navbar (Sticky & Adaptive) */}
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 transition-all duration-300 md:px-12 ${isScrolled ? "bg-black py-4 shadow-md backdrop-blur-md" : "bg-transparent py-6"
+        className={`fixed top-0 left-0 right-0 z-50 flex justify-center px-6 transition-all duration-300 md:px-[56px] ${isScrolled ? "bg-black py-4 shadow-md backdrop-blur-md" : "bg-transparent py-6"
           }`}
       >
-        {/* Logo */}
-        <div className="flex items-center gap-2">
-          <img src="/images/ic_atmosAgro_full_white.svg" alt="AtmosAgro" className="h-8" />
-        </div>
+        <div className="w-full max-w-[1600px] flex items-center justify-between">
+          {/* Logo */}
+          <div className="flex items-center gap-2">
+            <img src="/images/ic_atmosAgro_full_white.svg" alt="AtmosAgro" className="h-8" />
+          </div>
 
-        {/* Center Links (Desktop) */}
-        <div className="hidden items-center gap-8 md:flex">
-          <a href="#solutions" className="text-[16px] font-normal text-white transition hover:text-[#34A853]">Soluções</a>
-          <a href="#technology" className="text-[16px] font-normal text-white transition hover:text-[#34A853]">Tecnologia</a>
-          <a href="#about" className="text-[16px] font-normal text-white transition hover:text-[#34A853]">Sobre</a>
-        </div>
+          {/* Center Links (Desktop) */}
+          <div className="hidden items-center gap-8 md:flex">
+            <a href="#solutions" className="text-[16px] font-normal text-white transition hover:text-[#34A853]">Soluções</a>
+            <a href="#technology" className="text-[16px] font-normal text-white transition hover:text-[#34A853]">Tecnologia</a>
+            <a href="#about" className="text-[16px] font-normal text-white transition hover:text-[#34A853]">Sobre</a>
+          </div>
 
-        {/* Right Actions */}
-        <div className="flex items-center gap-6">
-          <Link to="/login" className="hidden text-sm font-medium text-white transition hover:text-[#34A853] md:block">
-            Log in
-          </Link>
-          <Link to="/app">
-            <Button className="h-10 rounded-full bg-[#34A853] px-6 text-sm font-medium text-white hover:bg-[#2E9648]">
-              Dashboard
-            </Button>
-          </Link>
+          {/* Right Actions */}
+          <div className="flex items-center gap-6">
+            <Link to="/login" className="hidden text-sm font-medium text-white transition hover:text-[#34A853] md:block">
+              Log in
+            </Link>
+            <Link to="/app">
+              <Button className="h-10 rounded-full bg-[#34A853] px-6 text-sm font-medium text-white hover:bg-[#2E9648]">
+                Dashboard
+              </Button>
+            </Link>
+          </div>
         </div>
       </nav>
 
@@ -150,70 +152,70 @@ const Landing = () => {
       </section>
 
       {/* Productivity Section (Grid + Tablet Showcase) */}
-      <section className="bg-white pt-24 pb-0 relative overflow-hidden">
-        <div className="mx-auto max-w-7xl px-4 z-10 relative">
-          <div className="mb-20 text-center">
-            <h2 className="text-4xl font-medium text-slate-900 md:text-5xl">
+      <section className="bg-white pt-16 pb-0 relative overflow-hidden">
+        <div className="w-full max-w-[1600px] mx-auto px-6 md:px-[56px] z-10 relative">
+          <div className="mb-[70px] text-center">
+            <h2 className="text-4xl font-medium text-slate-900 md:text-5xl tracking-[-0.03em]">
               O que o AtmosAgro faz por você?
             </h2>
-            <p className="mt-4 text-xl text-slate-600 max-w-3xl mx-auto">
+            <p className="mt-4 text-[24px] leading-[120%] text-[#494949] max-w-[700px] mx-auto tracking-[-0.03em]">
               Fornecemos <span className="text-[#34A853] font-normal">monitoramento</span> contínuo que identifica pragas,
               doenças e falhas nutricionais antes que afetem sua produtividade.
             </p>
           </div>
 
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-20 mb-20">
+          <div className="flex flex-col lg:flex-row items-start justify-start gap-12 lg:gap-[40px] mb-10 relative z-20">
 
             {/* Left Features Grid */}
-            <div className="w-full lg:w-1/2">
-              <div className="grid gap-8 sm:grid-cols-2">
+            <div className="flex-1 w-full">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-[20px] w-full">
                 {/* Item 1 */}
-                <div className="flex flex-col items-start gap-4 p-6 border border-blue-400/30 bg-white hover:shadow-lg transition-shadow">
+                <div className="flex flex-col items-start gap-4 p-6 w-full h-[190px] border-[2px] border-[#E3E3E3] bg-white hover:shadow-lg transition-shadow">
                   <div className="flex items-center justify-center w-[45px] h-[45px] rounded-full bg-[#34A853] text-white shrink-0">
                     <img src={icGota} alt="Gota" className="w-6 h-6" style={{ filter: 'brightness(0)' }} />
                   </div>
                   <div>
-                    <h4 className="text-xl font-bold text-slate-900">Estresse Hídrico</h4>
-                    <p className="mt-2 text-sm text-slate-500 leading-relaxed">
+                    <h4 className="text-xl font-medium text-black tracking-[-0.03em]">Estresse Hídrico</h4>
+                    <p className="mt-2 text-[14px] leading-[15px] text-[#494949]">
                       Identifique áreas com falta de água antes que afetem a produtividade.
                     </p>
                   </div>
                 </div>
 
                 {/* Item 2 */}
-                <div className="flex flex-col items-start gap-4 p-6 border border-gray-100 bg-white hover:shadow-lg transition-shadow">
+                <div className="flex flex-col items-start gap-4 p-6 w-full h-[190px] border-[2px] border-[#E3E3E3] bg-white hover:shadow-lg transition-shadow">
                   <div className="flex items-center justify-center w-[45px] h-[45px] rounded-full bg-[#34A853] text-white shrink-0">
                     <img src={icVisualizacao} alt="Visualização" className="w-6 h-6" style={{ filter: 'brightness(0)' }} />
                   </div>
                   <div>
-                    <h4 className="text-xl font-bold text-slate-900">Visualização simplificada</h4>
-                    <p className="mt-2 text-sm text-slate-500 leading-relaxed">
+                    <h4 className="text-xl font-medium text-black tracking-[-0.03em]">Visualização simplificada</h4>
+                    <p className="mt-2 text-[14px] leading-[15px] text-[#494949]">
                       Veja índices avançados (NDVI, NDRE, NDMI) em mapas claros e simplificados.
                     </p>
                   </div>
                 </div>
 
                 {/* Item 3 */}
-                <div className="flex flex-col items-start gap-4 p-6 border border-blue-400/30 bg-white hover:shadow-lg transition-shadow">
+                <div className="flex flex-col items-start gap-4 p-6 w-full h-[190px] border-[2px] border-[#E3E3E3] bg-white hover:shadow-lg transition-shadow">
                   <div className="flex items-center justify-center w-[45px] h-[45px] rounded-full bg-[#34A853] text-white shrink-0">
                     <img src={icPraga} alt="Praga" className="w-6 h-6" style={{ filter: 'brightness(0)' }} />
                   </div>
                   <div>
-                    <h4 className="text-xl font-bold text-slate-900">Detecção de Pragas</h4>
-                    <p className="mt-2 text-sm text-slate-500 leading-relaxed">
+                    <h4 className="text-xl font-medium text-black tracking-[-0.03em]">Detecção de Pragas</h4>
+                    <p className="mt-2 text-[14px] leading-[15px] text-[#494949]">
                       Detecte focos iniciais e aplique defensivos apenas onde necessário.
                     </p>
                   </div>
                 </div>
 
                 {/* Item 4 */}
-                <div className="flex flex-col items-start gap-4 p-6 border border-gray-100 bg-white hover:shadow-lg transition-shadow">
+                <div className="flex flex-col items-start gap-4 p-6 w-full h-[190px] border-[2px] border-[#E3E3E3] bg-white hover:shadow-lg transition-shadow">
                   <div className="flex items-center justify-center w-[45px] h-[45px] rounded-full bg-[#34A853] text-white shrink-0">
                     <img src={icControle} alt="Controle" className="w-6 h-6" style={{ filter: 'brightness(0)' }} />
                   </div>
                   <div>
-                    <h4 className="text-xl font-bold text-slate-900">Controle de Safra</h4>
-                    <p className="mt-2 text-sm text-slate-500 leading-relaxed">
+                    <h4 className="text-xl font-medium text-black tracking-[-0.03em]">Controle de Safra</h4>
+                    <p className="mt-2 text-[14px] leading-[15px] text-[#494949]">
                       Acompanhe o histórico da safra com relatórios automáticos.
                     </p>
                   </div>
@@ -222,8 +224,8 @@ const Landing = () => {
             </div>
 
             {/* Right Tablet Mockup */}
-            <div className="w-full lg:w-1/2 flex justify-center lg:justify-end">
-              <div className="relative w-full max-w-lg">
+            <div className="w-full lg:w-auto lg:shrink-0 flex justify-center lg:justify-end items-center">
+              <div className="relative w-full max-w-[720px]">
                 <img src={imgIpad} alt="Tablet Dashboard" className="relative z-10 w-full drop-shadow-2xl hover:scale-105 transition-transform duration-500" />
               </div>
             </div>
@@ -232,8 +234,9 @@ const Landing = () => {
         </div>
 
         {/* Bottom Terrain Image */}
-        <div className="w-full mt-[-100px] z-0 relative">
-          <img src={imgTerreno} alt="Terreno" className="w-full object-cover h-[200px] md:h-auto" />
+        {/* Bottom Terrain Image */}
+        <div className="w-full -mt-[130px] z-0 relative pointer-events-none">
+          <img src={imgTerreno} alt="Terreno" className="w-full object-cover min-h-[10px]" />
         </div>
       </section>
 
