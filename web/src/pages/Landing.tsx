@@ -170,7 +170,7 @@ const Landing = () => {
             <div className="flex-1 w-full">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-[20px] w-full">
                 {/* Item 1 */}
-                <div className="flex flex-col items-start gap-4 p-6 w-full h-[190px] border-[2px] border-[#E3E3E3] bg-white hover:shadow-lg transition-shadow">
+                <div className="flex flex-col items-start gap-4 p-6 w-full min-h-[190px] h-full border-[2px] border-[#E3E3E3] bg-white hover:shadow-lg transition-shadow">
                   <div className="flex items-center justify-center w-[45px] h-[45px] rounded-full bg-[#34A853] text-white shrink-0">
                     <img src={icGota} alt="Gota" className="w-6 h-6" style={{ filter: 'brightness(0)' }} />
                   </div>
@@ -183,7 +183,7 @@ const Landing = () => {
                 </div>
 
                 {/* Item 2 */}
-                <div className="flex flex-col items-start gap-4 p-6 w-full h-[190px] border-[2px] border-[#E3E3E3] bg-white hover:shadow-lg transition-shadow">
+                <div className="flex flex-col items-start gap-4 p-6 w-full min-h-[190px] h-full border-[2px] border-[#E3E3E3] bg-white hover:shadow-lg transition-shadow">
                   <div className="flex items-center justify-center w-[45px] h-[45px] rounded-full bg-[#34A853] text-white shrink-0">
                     <img src={icVisualizacao} alt="Visualização" className="w-6 h-6" style={{ filter: 'brightness(0)' }} />
                   </div>
@@ -196,7 +196,7 @@ const Landing = () => {
                 </div>
 
                 {/* Item 3 */}
-                <div className="flex flex-col items-start gap-4 p-6 w-full h-[190px] border-[2px] border-[#E3E3E3] bg-white hover:shadow-lg transition-shadow">
+                <div className="flex flex-col items-start gap-4 p-6 w-full min-h-[190px] h-full border-[2px] border-[#E3E3E3] bg-white hover:shadow-lg transition-shadow">
                   <div className="flex items-center justify-center w-[45px] h-[45px] rounded-full bg-[#34A853] text-white shrink-0">
                     <img src={icPraga} alt="Praga" className="w-6 h-6" style={{ filter: 'brightness(0)' }} />
                   </div>
@@ -209,7 +209,7 @@ const Landing = () => {
                 </div>
 
                 {/* Item 4 */}
-                <div className="flex flex-col items-start gap-4 p-6 w-full h-[190px] border-[2px] border-[#E3E3E3] bg-white hover:shadow-lg transition-shadow">
+                <div className="flex flex-col items-start gap-4 p-6 w-full min-h-[190px] h-full border-[2px] border-[#E3E3E3] bg-white hover:shadow-lg transition-shadow">
                   <div className="flex items-center justify-center w-[45px] h-[45px] rounded-full bg-[#34A853] text-white shrink-0">
                     <img src={icControle} alt="Controle" className="w-6 h-6" style={{ filter: 'brightness(0)' }} />
                   </div>
