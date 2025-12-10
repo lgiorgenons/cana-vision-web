@@ -164,10 +164,10 @@ const Landing = () => {
             </p>
           </div>
 
-          <div className="flex flex-col xl:flex-row items-start justify-start gap-12 xl:gap-[40px] mb-10 relative z-20">
+          <div className="flex flex-col xl:flex-row items-start justify-start gap-12 xl:gap-[40px] mb-0 relative z-20">
 
             {/* Left Features Grid */}
-            <div className="flex-1 w-full">
+            <div className="flex-1 w-full pb-0 xl:pb-[120px]">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-[20px] w-full">
                 {/* Item 1 */}
                 <div className="flex flex-col items-start gap-4 p-6 w-full min-h-[190px] h-full border-[2px] border-[#E3E3E3] bg-white hover:shadow-lg transition-shadow">
@@ -225,7 +225,7 @@ const Landing = () => {
 
             {/* Right Tablet Mockup */}
             <div className="w-full xl:w-1/2 flex justify-center xl:justify-end items-center">
-              <div className="relative w-full max-w-[720px]">
+              <div className="relative w-full max-w-md md:max-w-xl xl:max-w-[720px]">
                 <img src={imgIpad} alt="Tablet Dashboard" className="relative z-10 w-full drop-shadow-2xl hover:scale-105 transition-transform duration-500" />
               </div>
             </div>
@@ -235,8 +235,8 @@ const Landing = () => {
 
         {/* Bottom Terrain Image */}
         {/* Bottom Terrain Image */}
-        <div className="w-full -mt-[130px] z-0 relative pointer-events-none">
-          <img src={imgTerreno} alt="Terreno" className="w-full object-cover min-h-[10px]" />
+        <div className="w-full -mt-[80px] z-0 relative pointer-events-none">
+          <img src={imgTerreno} alt="Terreno" className="w-full object-cover min-h-[140px]" />
         </div>
       </section>
 
