@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
+  ChevronsUp,
   CheckCircle2,
   ChevronRight,
   Droplets,
@@ -571,16 +572,28 @@ const Landing = () => {
             <p className="text-sm text-white">
               &copy; {new Date().getFullYear()} AtmosAgro | Todos os direitos reservados
             </p>
+            <div className="flex flex-col md:flex-row items-center gap-6">
             <div className="flex items-center gap-4">
-              {[Facebook, Instagram, Twitter, Youtube].map((Icon, i) => (
-                <a key={i} href="#" className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white transition-colors hover:bg-white hover:text-black hover:border-white">
-                  <Icon className="h-5 w-5" />
-                </a>
-              ))}
+                {[Facebook, Instagram, Twitter, Youtube].map((Icon, i) => (
+                  <a key={i} href="#" className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white transition-colors hover:bg-white hover:text-black hover:border-white">
+                    <Icon className="h-5 w-5" />
+                  </a>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </footer>
+
+      {/* Back to Top Button (Fixed) */}
+      <button
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        style={{ position: 'fixed', bottom: '32px', right: '32px', zIndex: 9999 }}
+        className={`flex h-14 w-14 items-center justify-center rounded-full bg-[#34A853] text-white shadow-lg transition-all duration-300 hover:bg-[#2E9648] hover:scale-110 hover:shadow-xl ${isScrolled ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}
+      >
+        <ChevronsUp className="h-8 w-8" />
+      </button>
+
     </div>
   );
 };
