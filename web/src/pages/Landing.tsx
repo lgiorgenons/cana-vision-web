@@ -316,7 +316,7 @@ const Landing = () => {
         {/* Bottom Terrain Image */}
         {/* Bottom Terrain Image */}
         <div className="w-full -mt-[80px] z-0 relative pointer-events-none">
-          <img src={imgTerreno} alt="Terreno" className="w-full object-cover min-h-[140px]" />
+          <img src={imgTerreno} alt="Terreno" className="w-full object-cover min-h-[140px] max-h-[340px] object-top" />
         </div>
       </section>
 
@@ -448,9 +448,6 @@ const Landing = () => {
                     <span>Falar com Consultor</span>
                     <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
                   </button>
-
-                  {/* Subtle Agro Icon Watermark */}
-                  <Sprout className="absolute bottom-4 right-4 h-32 w-32 text-black/5 rotate-12 pointer-events-none" />
                 </div>
               </div>
             </div>
