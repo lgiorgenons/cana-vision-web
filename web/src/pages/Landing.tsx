@@ -18,6 +18,10 @@ import {
   CloudRain,
   Bug,
   Smartphone,
+  Facebook,
+  Instagram,
+  Twitter,
+  Youtube,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +31,7 @@ import { Menu } from "lucide-react";
 import heroGif from "../assets/gif_campo.gif";
 import imgIpad from "../assets/img_ipad.png";
 import imgTerreno from "../assets/img_terreno.png";
+import imgHero from "../assets/img_hero.png";
 import icGota from "../assets/ic_gota_agua.svg";
 import icVisualizacao from "../assets/ic_visualizacao.svg";
 import icPraga from "../assets/ic_praga.svg";
@@ -345,245 +350,100 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Accordion Section */}
-      <section className="bg-white py-24">
-        <div className="mx-auto max-w-7xl px-4">
-          <div className="mb-16 max-w-3xl">
-            <h2 className="text-4xl font-bold tracking-tight text-slate-900 md:text-5xl">
-              Simplifique a gestão e <br />
-              <span className="text-emerald-600">aumente a produtividade.</span>
-            </h2>
-            <div className="mt-8 flex items-center gap-2 text-[#34A853] font-medium cursor-pointer hover:underline">
-              VER TODOS OS RECURSOS <ChevronRight className="h-4 w-4" />
+
+
+      {/* CTA Section (NaturaX Style) */}
+      <section className="relative h-[600px] w-full overflow-hidden">
+        <div className="absolute inset-0">
+          <img
+            src={imgHero}
+            alt="Start Journey"
+            className="h-full w-full object-cover brightness-[0.4]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+        </div>
+
+        <div className="relative z-10 h-full w-full max-w-[1600px] mx-auto px-6 md:px-[56px] flex flex-col justify-between py-20">
+          <h2 className="max-w-2xl text-5xl font-medium tracking-[-0.03em] text-white md:text-[80px] leading-[1]">
+            Comece sua jornada
+          </h2>
+
+          <div className="flex flex-col md:flex-row items-end justify-between gap-10">
+            <Link to="/login">
+              <div className="group flex h-14 w-auto items-center gap-4 rounded-full bg-white pl-8 pr-2 transition-transform hover:scale-105 cursor-pointer">
+                <span className="text-lg font-medium text-black">Começar Agora</span>
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-black text-white transition-transform group-hover:rotate-45">
+                  <ArrowRight className="h-5 w-5" />
+                </div>
+              </div>
+            </Link>
+            <p className="max-w-md text-right text-lg font-light text-white/80">
+              Descubra como a AtmosAgro pode aumentar sua produtividade e otimizar seus recursos.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer (NaturaX Style) */}
+      <footer className="bg-black pt-20 pb-10 overflow-hidden">
+        <div className="mx-auto max-w-[1600px] px-6 md:px-[56px] flex flex-col">
+
+          {/* 1. Links Section */}
+          <div className="grid gap-12 md:grid-cols-4 lg:gap-20">
+            <div>
+              <h4 className="mb-8 text-sm font-semibold text-white/40 uppercase tracking-widest">Links Rápidos</h4>
+              <ul className="space-y-4">
+                <li><a href="#" className="text-base text-[#A7A7A7] hover:text-white transition-colors">Home</a></li>
+                <li><a href="#" className="text-base text-[#A7A7A7] hover:text-white transition-colors">Blog</a></li>
+                <li><a href="#" className="text-base text-[#A7A7A7] hover:text-white transition-colors">Notícias</a></li>
+                <li><a href="#" className="text-base text-[#A7A7A7] hover:text-white transition-colors">Serviços</a></li>
+                <li><a href="#" className="text-base text-[#A7A7A7] hover:text-white transition-colors">Contato</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="mb-8 text-sm font-semibold text-white/40 uppercase tracking-widest">Saiba Mais</h4>
+              <ul className="space-y-4">
+                <li><a href="#" className="text-base text-[#A7A7A7] hover:text-white transition-colors">Sobre Nós</a></li>
+                <li><a href="#" className="text-base text-[#A7A7A7] hover:text-white transition-colors">Carreiras</a></li>
+                <li><a href="#" className="text-base text-[#A7A7A7] hover:text-white transition-colors">Cases</a></li>
+                <li><a href="#" className="text-base text-[#A7A7A7] hover:text-white transition-colors">Política</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="mb-8 text-sm font-semibold text-white/40 uppercase tracking-widest">Produtos</h4>
+              <ul className="space-y-4">
+                <li><a href="#" className="text-base text-[#A7A7A7] hover:text-white transition-colors">Monitoramento Inteligente</a></li>
+                <li><a href="#" className="text-base text-[#A7A7A7] hover:text-white transition-colors">Análise Nutricional</a></li>
+                <li><a href="#" className="text-base text-[#A7A7A7] hover:text-white transition-colors">Gestão de Pragas</a></li>
+                <li><a href="#" className="text-base text-[#A7A7A7] hover:text-white transition-colors">Relatórios ESG</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="mb-8 text-sm font-semibold text-white/40 uppercase tracking-widest">Contato</h4>
+              <ul className="space-y-4">
+                <li className="text-base text-[#A7A7A7]">contato@atmosagro.com</li>
+                <li className="text-base text-[#A7A7A7]">+55 (11) 99999-9999</li>
+                <li className="text-base text-[#A7A7A7]">Av. Paulista, 1000 - SP</li>
+              </ul>
             </div>
           </div>
 
-          <div className="grid gap-16 lg:grid-cols-2">
-            {/* Accordion List */}
-            <div className="space-y-4">
-              {accordionItems.map((item, i) => (
-                <div
-                  key={i}
-                  className={`cursor-pointer border-b border-slate-100 py-6 transition-all ${activeAccordion === i ? "opacity-100" : "opacity-50 hover:opacity-80"
-                    }`}
-                  onClick={() => setActiveAccordion(i)}
-                >
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-bold text-slate-900">{item.title}</h3>
-                    <ChevronRight className={`h-5 w-5 transition-transform ${activeAccordion === i ? "rotate-90 text-[#34A853]" : "text-slate-400"}`} />
-                  </div>
-                  <div className={`grid transition-all duration-300 ease-in-out ${activeAccordion === i ? "grid-rows-[1fr] mt-4 opacity-100" : "grid-rows-[0fr] opacity-0"
-                    }`}>
-                    <div className="overflow-hidden">
-                      <p className="text-slate-600 leading-relaxed">{item.desc}</p>
-                    </div>
-                  </div>
-                </div>
+          {/* 2. Watermark Section (Dedicated Space) */}
+          <div className="py-10 flex justify-center items-center pointer-events-none select-none opacity-[0.05]">
+            <span className="text-[140px] md:text-[280px] lg:text-[23vw] font-bold text-white leading-none tracking-tighter whitespace-nowrap">AtmosAgro</span>
+          </div>
+
+          {/* 3. Bottom Bar */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8 border-t border-white/10 pt-8 z-20 relative bg-black">
+            <p className="text-sm text-white">
+              &copy; {new Date().getFullYear()} AtmosAgro | Todos os direitos reservados
+            </p>
+            <div className="flex items-center gap-4">
+              {[Facebook, Instagram, Twitter, Youtube].map((Icon, i) => (
+                <a key={i} href="#" className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white transition-colors hover:bg-white hover:text-black hover:border-white">
+                  <Icon className="h-5 w-5" />
+                </a>
               ))}
-            </div>
-
-            {/* Dynamic Image */}
-            <div className="relative h-[500px] overflow-hidden rounded-[2.5rem] shadow-2xl">
-              {accordionItems.map((item, i) => (
-                <img
-                  key={i}
-                  src={item.image}
-                  alt={item.title}
-                  className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${activeAccordion === i ? "opacity-100" : "opacity-0"
-                    }`}
-                />
-              ))}
-              {/* Floating Badge */}
-              <div className="absolute bottom-8 left-8 rounded-xl bg-white/90 p-4 backdrop-blur-md shadow-lg">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#34A853]/10 text-[#34A853]">
-                    <CheckCircle2 className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-slate-500 uppercase">Status</p>
-                    <p className="text-sm font-bold text-slate-900">Otimizado</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Bento Grid (Sustainability) */}
-      <section className="bg-slate-50 py-24">
-        <div className="mx-auto max-w-7xl px-4">
-          <div className="mb-12">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#34A853]/20 bg-[#34A853]/10 px-3 py-1 text-sm font-medium text-[#34A853]">
-              <Leaf className="h-4 w-4" />
-              Sustentabilidade
-            </div>
-            <h2 className="text-4xl font-bold tracking-tight text-slate-900 md:text-5xl">
-              Construindo cadeias de suprimentos <br />
-              <span className="text-emerald-600">mais verdes para o futuro.</span>
-            </h2>
-          </div>
-
-          <div className="grid h-auto gap-6 md:grid-cols-4 md:grid-rows-2 lg:h-[600px]">
-            {/* Card 1: Dark Brand */}
-            <div className="relative flex flex-col justify-between overflow-hidden rounded-[2rem] bg-slate-950 p-8 text-white shadow-xl md:col-span-1 md:row-span-2">
-              <div className="relative z-10">
-                <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-[#34A853] text-slate-950">
-                  <Leaf className="h-6 w-6" />
-                </div>
-                <h3 className="text-2xl font-bold">AtmosAgro <br />Carbon Zero</h3>
-                <p className="mt-4 text-slate-400">Compromisso com a redução da pegada de carbono no agronegócio.</p>
-              </div>
-              <div className="absolute bottom-0 right-0 h-64 w-64 translate-x-1/3 translate-y-1/3 rounded-full bg-[#34A853]/20 blur-3xl" />
-            </div>
-
-            {/* Card 2: Image */}
-            <div className="relative overflow-hidden rounded-[2rem] shadow-xl md:col-span-2 md:row-span-1">
-              <img
-                src="https://images.unsplash.com/photo-1605000797499-95a51c5269ae?q=80&w=1000&auto=format&fit=crop"
-                alt="Sustainable Field"
-                className="h-full w-full object-cover transition-transform hover:scale-105 duration-700"
-              />
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-6">
-                <p className="font-bold text-white">Mapeamento e Colaboração</p>
-              </div>
-            </div>
-
-            {/* Card 3: Light Stats */}
-            <div className="flex flex-col justify-center rounded-[2rem] bg-emerald-50 p-8 shadow-xl md:col-span-1 md:row-span-1">
-              <h3 className="text-lg font-bold text-[#34A853]">Risco e Compliance</h3>
-              <div className="mt-4 flex items-end gap-2">
-                <div className="h-16 w-4 rounded-t-lg bg-emerald-200" />
-                <div className="h-24 w-4 rounded-t-lg bg-emerald-300" />
-                <div className="h-32 w-4 rounded-t-lg bg-emerald-500" />
-                <div className="h-20 w-4 rounded-t-lg bg-emerald-400" />
-              </div>
-              <p className="mt-4 text-sm font-medium text-[#34A853]">+45% Eficiência</p>
-            </div>
-
-            {/* Card 4: Image Drone */}
-            <div className="relative overflow-hidden rounded-[2rem] shadow-xl md:col-span-3 md:row-span-1">
-              <img
-                src="https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=80&w=1000&auto=format&fit=crop"
-                alt="Drone Technology"
-                className="h-full w-full object-cover transition-transform hover:scale-105 duration-700"
-              />
-              <div className="absolute inset-0 bg-black/20" />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Agro News Section */}
-      <section className="bg-white py-24">
-        <div className="mx-auto max-w-7xl px-4">
-          <div className="mb-12 flex items-center justify-between">
-            <h2 className="text-3xl font-bold tracking-tight text-slate-900">Notícias do Agro</h2>
-            <Button variant="outline" className="rounded-full">Ver todas</Button>
-          </div>
-
-          <div className="grid gap-8 md:grid-cols-3">
-            {[
-              {
-                tag: "Mercado",
-                date: "21 Nov 2024",
-                title: "Preço da cana-de-açúcar atinge recorde histórico com alta demanda de etanol.",
-                image: "https://images.unsplash.com/photo-1598155523122-3842334d6c10?q=80&w=800&auto=format&fit=crop"
-              },
-              {
-                tag: "Tecnologia",
-                date: "20 Nov 2024",
-                title: "Nova IA da AtmosAgro promete reduzir uso de defensivos em até 30%.",
-                image: "https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?q=80&w=800&auto=format&fit=crop"
-              },
-              {
-                tag: "Clima",
-                date: "19 Nov 2024",
-                title: "Previsão de chuvas para o próximo trimestre anima produtores do Centro-Sul.",
-                image: "https://images.unsplash.com/photo-1516912481808-3406841bd33c?q=80&w=800&auto=format&fit=crop"
-              }
-            ].map((news, i) => (
-              <div key={i} className="group cursor-pointer">
-                <div className="mb-4 overflow-hidden rounded-2xl">
-                  <img
-                    src={news.image}
-                    alt={news.title}
-                    className="h-64 w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                </div>
-                <div className="flex items-center gap-3 text-sm text-slate-500">
-                  <span className="font-semibold text-[#34A853]">{news.tag}</span>
-                  <span>•</span>
-                  <span>{news.date}</span>
-                </div>
-                <h3 className="mt-2 text-xl font-bold text-slate-900 group-hover:text-[#34A853] transition-colors">
-                  {news.title}
-                </h3>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-slate-950 py-16 text-slate-400">
-        <div className="mx-auto max-w-7xl px-4">
-          <div className="grid gap-12 lg:grid-cols-4">
-            <div className="lg:col-span-1">
-              <div className="flex items-center gap-2 text-white">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500 text-slate-950">
-                  <Leaf className="h-5 w-5" />
-                </div>
-                <span className="text-xl font-bold">AtmosAgro</span>
-              </div>
-              <p className="mt-6 text-sm leading-relaxed">
-                Transformando cadeias de suprimentos globais para um futuro livre de desmatamento e mais produtivo.
-              </p>
-              <div className="mt-6 flex gap-4">
-                {/* Social Placeholders */}
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="h-8 w-8 rounded-full bg-slate-800 hover:bg-[#34A853] transition-colors cursor-pointer" />
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <h4 className="mb-6 font-bold text-white">Plataforma</h4>
-              <ul className="space-y-4 text-sm">
-                <li><a href="#" className="hover:text-[#34A853] transition-colors">CanaVision</a></li>
-                <li><a href="#" className="hover:text-[#34A853] transition-colors">SojaVision</a></li>
-                <li><a href="#" className="hover:text-[#34A853] transition-colors">BioClima</a></li>
-                <li><a href="#" className="hover:text-[#34A853] transition-colors">Integrações</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="mb-6 font-bold text-white">Empresa</h4>
-              <ul className="space-y-4 text-sm">
-                <li><a href="#" className="hover:text-[#34A853] transition-colors">Sobre nós</a></li>
-                <li><a href="#" className="hover:text-[#34A853] transition-colors">Carreiras</a></li>
-                <li><a href="#" className="hover:text-[#34A853] transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-[#34A853] transition-colors">Imprensa</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="mb-6 font-bold text-white">Recursos</h4>
-              <ul className="space-y-4 text-sm">
-                <li><a href="#" className="hover:text-[#34A853] transition-colors">Central de Ajuda</a></li>
-                <li><a href="#" className="hover:text-[#34A853] transition-colors">Documentação API</a></li>
-                <li><a href="#" className="hover:text-[#34A853] transition-colors">Status do Sistema</a></li>
-                <li><a href="#" className="hover:text-[#34A853] transition-colors">Contato</a></li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="mt-16 flex flex-col items-center justify-between border-t border-slate-800 pt-8 text-xs sm:flex-row">
-            <p>© 2024 AtmosAgro. Todos os direitos reservados.</p>
-            <div className="mt-4 flex gap-6 sm:mt-0">
-              <a href="#" className="hover:text-white">Política de Privacidade</a>
-              <a href="#" className="hover:text-white">Termos de Uso</a>
-              <a href="#" className="hover:text-white">Cookies</a>
             </div>
           </div>
         </div>
