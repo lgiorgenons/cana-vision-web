@@ -385,9 +385,9 @@ const Landing = () => {
       </section>
 
       {/* Footer (NaturaX Style) */}
-      <footer className="relative bg-black pt-20 pb-10 overflow-hidden">
+      <footer className="relative bg-black pt-20 overflow-hidden">
         {/* Watermark (Behind everything) */}
-        <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-72 md:bottom-44 select-none opacity-[0.05] w-full text-center z-0">
+        <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-64 md:bottom-36 select-none opacity-[0.05] w-full text-center z-0">
           <span className="text-[140px] md:text-[280px] lg:text-[23vw] font-bold text-white leading-none tracking-tighter whitespace-nowrap">AtmosAgro</span>
         </div>
 
