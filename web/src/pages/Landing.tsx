@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
@@ -10,7 +10,6 @@ import {
   Mouse,
   Scan,
   ShieldCheck,
-  Sprout,
   Zap,
   Map,
   Bell,
@@ -22,6 +21,10 @@ import {
   Instagram,
   Twitter,
   Youtube,
+  Plus,
+  X,
+  MessageCircle,
+  Sprout,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -37,7 +40,33 @@ import icVisualizacao from "../assets/ic_visualizacao.svg";
 import icPraga from "../assets/ic_praga.svg";
 import icControle from "../assets/ic_controle_safra.svg";
 
+// FAQ Data
+const faqData = [
+  {
+    question: "O que é a Plataforma AtmosAgro?",
+    answer: "A AtmosAgro é uma solução completa de agricultura de precisão que utiliza sensores IoT e inteligência artificial para monitorar sua lavoura em tempo real, otimizando o uso de recursos e aumentando a produtividade."
+  },
+  {
+    question: "Como funciona o monitoramento em tempo real?",
+    answer: "Nossos sensores coletam dados de umidade, temperatura, solo e clima a cada minuto. Essas informações são processadas e enviadas para o seu painel, permitindo decisões rápidas e baseadas em dados precisos."
+  },
+  {
+    question: "A plataforma serve para pequenos produtores?",
+    answer: "Sim! A AtmosAgro é escalável. Temos planos adaptados tanto para grandes latifúndios quanto para agricultura familiar, garantindo acesso à tecnologia de ponta para todos."
+  },
+  {
+    question: "Preciso de internet na fazenda toda?",
+    answer: "Não necessariamente. Nossos dispositivos utilizam tecnologia LoRaWAN de longo alcance, que permite a comunicação dos sensores mesmo em áreas com cobertura de internet limitada."
+  },
+  {
+    question: "Qual o suporte oferecido?",
+    answer: "Oferecemos suporte técnico especializado 24/7, além de acompanhamento agronômico para ajudar você a interpretar os dados e tomar as melhores decisões para sua safra."
+  }
+];
+
 const Landing = () => {
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0); // Start with first open if desired, or null
+
   const [isScrolled, setIsScrolled] = React.useState(false);
   const [activeAccordion, setActiveAccordion] = React.useState(0);
 
@@ -351,6 +380,84 @@ const Landing = () => {
       </section>
 
 
+      {/* FAQ Section (NaturaX Modern Style + Sidebar) */}
+      <section className="py-20 bg-gradient-to-b from-[#FFFFFF] to-[#F2F2F2]">
+        <div className="mx-auto max-w-[1600px] px-6 md:px-[56px]">
+
+          <div className="mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tighter text-black mb-6">
+              Perguntas Frequentes
+            </h2>
+            <p className="text-lg text-gray-500 max-w-2xl">
+              Entenda como a AtmosAgro transforma sua produção com tecnologia de ponta.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+
+            {/* Left Column: FAQ List (8 cols) */}
+            <div className="lg:col-span-8">
+              <div className="space-y-4">
+                {faqData.map((item, index) => (
+                  <div
+                    key={index}
+                    className="group rounded-[2rem] bg-white p-8 transition-all duration-300 shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] hover:-translate-y-1 cursor-pointer"
+                    onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
+                  >
+                    <div className="flex items-center justify-between gap-6">
+                      <h3 className="text-xl font-medium text-[#111] tracking-tight pr-8">
+                        {item.question}
+                      </h3>
+                      <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full transition-all duration-300 ${openFaqIndex === index ? 'bg-[#16A34A] rotate-90' : 'bg-[#F3F4F6] group-hover:bg-[#E5E7EB]'}`}>
+                        {openFaqIndex === index ? <X className="h-6 w-6 text-white" /> : <Plus className="h-6 w-6 text-gray-600" />}
+                      </div>
+                    </div>
+                    <div className={`grid transition-[grid-template-rows] duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] ${openFaqIndex === index ? 'grid-rows-[1fr] mt-6' : 'grid-rows-[0fr]'}`}>
+                      <div className="overflow-hidden">
+                        <p className="text-lg text-gray-500 leading-relaxed max-w-3xl">
+                          {item.answer}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right Column: Contact Card (4 cols) */}
+            <div className="lg:col-span-4 relative">
+              <div className="sticky top-32 rounded-[10px] bg-[#16A34A] p-8 md:p-10 text-white shadow-2xl overflow-hidden relative">
+                {/* Decorative Elements (Agro Theme) */}
+                <div className="absolute -right-10 -top-10 h-64 w-64 rounded-full bg-white/10 blur-3xl"></div>
+                <div className="absolute -left-10 bottom-0 h-40 w-40 rounded-full bg-black/5 blur-2xl"></div>
+
+                <div className="relative z-10 flex flex-col items-start h-full justify-between min-h-[300px]">
+                  <div>
+                    <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm">
+                      <MessageCircle className="h-7 w-7 text-white" />
+                    </div>
+                    <h3 className="mb-3 text-3xl font-bold leading-tight">
+                      Ainda possui dúvidas?
+                    </h3>
+                    <p className="mb-8 text-white/80 text-lg leading-relaxed">
+                      Nossa equipe de especialistas está pronta para analisar a sua lavoura.
+                    </p>
+                  </div>
+
+                  <button className="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-full bg-white px-8 py-4 font-semibold text-[#16A34A] transition-all hover:bg-gray-50 hover:shadow-lg active:scale-95">
+                    <span>Falar com Consultor</span>
+                    <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
+                  </button>
+
+                  {/* Subtle Agro Icon Watermark */}
+                  <Sprout className="absolute bottom-4 right-4 h-32 w-32 text-black/5 rotate-12 pointer-events-none" />
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
 
       {/* CTA Section (NaturaX Style) */}
       <section className="relative h-[600px] w-full overflow-hidden">
