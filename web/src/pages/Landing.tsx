@@ -385,8 +385,13 @@ const Landing = () => {
       </section>
 
       {/* Footer (NaturaX Style) */}
-      <footer className="bg-black pt-20 pb-10 overflow-hidden">
-        <div className="mx-auto max-w-[1600px] px-6 md:px-[56px] flex flex-col">
+      <footer className="relative bg-black pt-20 pb-10 overflow-hidden">
+        {/* Watermark (Behind everything) */}
+        <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-72 md:bottom-44 select-none opacity-[0.05] w-full text-center z-0">
+          <span className="text-[140px] md:text-[280px] lg:text-[23vw] font-bold text-white leading-none tracking-tighter whitespace-nowrap">AtmosAgro</span>
+        </div>
+
+        <div className="relative z-10 mx-auto max-w-[1600px] px-6 md:px-[56px] flex flex-col">
 
           {/* 1. Links Section */}
           <div className="grid gap-12 md:grid-cols-4 lg:gap-20">
@@ -428,13 +433,20 @@ const Landing = () => {
             </div>
           </div>
 
-          {/* 2. Watermark Section (Dedicated Space) */}
-          <div className="py-10 flex justify-center items-center pointer-events-none select-none opacity-[0.05]">
-            <span className="text-[140px] md:text-[280px] lg:text-[23vw] font-bold text-white leading-none tracking-tighter whitespace-nowrap">AtmosAgro</span>
+          {/* 2. Logo Section (Left Aligned on Desktop, Centered on Mobile) */}
+          <div className="py-20 flex justify-center md:justify-start items-center">
+            <img
+              src="/images/ic_atmosAgro_full_white.svg"
+              alt="AtmosAgro"
+              className="h-24 md:h-32 lg:h-40 opacity-100"
+            />
           </div>
 
-          {/* 3. Bottom Bar */}
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8 border-t border-white/10 pt-8 z-20 relative bg-black">
+        </div>
+
+        {/* 3. Bottom Bar (Full Width Background) */}
+        <div className="w-full border-t border-white/10 bg-black z-20 relative mt-8">
+          <div className="mx-auto max-w-[1600px] px-6 md:px-[56px] py-8 flex flex-col md:flex-row items-center justify-between gap-8">
             <p className="text-sm text-white">
               &copy; {new Date().getFullYear()} AtmosAgro | Todos os direitos reservados
             </p>
