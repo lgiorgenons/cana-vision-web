@@ -263,7 +263,7 @@ const Landing = () => {
       </section>
 
       {/* How it Works Section */}
-      <section id="technology" className="relative overflow-hidden bg-[#0b0b0b] pt-16 pb-8 text-white">
+      <section id="technology" className="relative overflow-hidden bg-[#0b0b0b] pt-16 pb-20 text-white">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute inset-0 bg-gradient-to-b from-[#07110a] via-[#0b0b0b] to-[#070807]" />
           <div className="absolute -top-24 -left-24 h-64 w-64 rounded-full bg-[#34A853]/20 blur-[120px]" />
@@ -284,8 +284,8 @@ const Landing = () => {
           </div>
 
           <div className="relative mt-10">
-            <div className="absolute left-0 right-0 md:top-[16.5px] lg:top-[22.5px] h-[3px] bg-white hidden md:block" />
-            <div className="absolute right-0 md:top-[13px] lg:top-[18px] h-3 w-3 rotate-45 border-t-[3px] border-r-[3px] border-white hidden md:block" />
+            <div className="absolute left-0 right-0 md:top-[16.5px] lg:top-[21px] h-[3px] bg-white hidden md:block" />
+            <div className="absolute right-0 md:top-[13px] lg:top-[17.5px] h-3 w-3 rotate-45 border-t-[3px] border-r-[3px] border-white hidden md:block" />
             <div className="relative z-10 grid gap-10 md:grid-cols-3">
               {howItWorksSteps.map((step) => (
                 <div key={step.step} className="flex flex-col">
@@ -315,7 +315,7 @@ const Landing = () => {
             </div>
           </div>
 
-          <p className="mt-16 text-[16px] font-normal leading-[140%] tracking-[-0.02em] text-center italic text-white/50">
+          <p className="mt-20 text-[16px] font-normal leading-[140%] tracking-[-0.02em] text-center italic text-white/50">
             "A matemática é a linguagem com a qual Deus escreveu o universo." <br /> Galileu Galilei (1564-1642)
           </p>
         </div>
