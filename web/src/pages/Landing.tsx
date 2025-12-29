@@ -387,7 +387,7 @@ const Landing = () => {
       {/* Footer (NaturaX Style) */}
       <footer className="relative bg-black pt-20 overflow-hidden">
         {/* Watermark (Behind everything) */}
-        <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-64 md:bottom-36 select-none opacity-[0.05] w-full text-center z-0">
+        <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-64 md:bottom-[115px] select-none opacity-[0.05] w-full text-center z-0">
           <span className="text-[140px] md:text-[280px] lg:text-[23vw] font-bold text-white leading-none tracking-tighter whitespace-nowrap">AtmosAgro</span>
         </div>
 
@@ -424,12 +424,27 @@ const Landing = () => {
               </ul>
             </div>
             <div>
-              <h4 className="mb-8 text-sm font-semibold text-white/40 uppercase tracking-widest">Contato</h4>
-              <ul className="space-y-4">
-                <li className="text-base text-[#A7A7A7]">contato@atmosagro.com</li>
-                <li className="text-base text-[#A7A7A7]">+55 (11) 99999-9999</li>
-                <li className="text-base text-[#A7A7A7]">Av. Paulista, 1000 - SP</li>
-              </ul>
+              <h4 className="mb-8 text-sm font-semibold text-white/40 uppercase tracking-widest">Newsletter</h4>
+              <div className="flex flex-col gap-6">
+                {/* Newsletter Form */}
+                <div className="relative w-full max-w-sm">
+                  <input
+                    type="email"
+                    placeholder="Enter your email"
+                    className="w-full h-14 bg-[#111] border border-white/20 rounded-full px-6 pr-32 text-white placeholder-white/40 focus:outline-none focus:border-white transition-colors"
+                  />
+                  <button className="absolute right-2 top-2 bottom-2 bg-white text-black font-medium px-6 rounded-full hover:bg-gray-200 transition-colors">
+                    Subscribe
+                  </button>
+                </div>
+
+                {/* Contact Info (Compact) */}
+                <ul className="space-y-2">
+                  <li className="text-base text-[#A7A7A7]">contato@atmosagro.com</li>
+                  <li className="text-base text-[#A7A7A7]">+55 (11) 99999-9999</li>
+                  <li className="text-base text-[#A7A7A7]">Av. Paulista, 1000 - SP</li>
+                </ul>
+              </div>
             </div>
           </div>
 
