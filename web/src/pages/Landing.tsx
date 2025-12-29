@@ -401,7 +401,7 @@ const Landing = () => {
                 {faqData.map((item, index) => (
                   <div
                     key={index}
-                    className="group rounded-[2rem] bg-white p-8 transition-all duration-300 shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] hover:-translate-y-1 cursor-pointer"
+                    className="group rounded-[2rem] bg-white p-8 transition-all duration-300 border border-gray-200 shadow-[0_4px_20px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)] hover:-translate-y-1 cursor-pointer"
                     onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
                   >
                     <div className="flex items-center justify-between gap-6">
@@ -495,7 +495,7 @@ const Landing = () => {
       <footer className="relative bg-black pt-20 overflow-hidden">
         {/* Watermark (Behind everything) */}
         <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-64 md:bottom-[115px] select-none opacity-[0.05] w-full text-center z-0">
-          <span className="text-[140px] md:text-[280px] lg:text-[23vw] font-bold text-white leading-none tracking-tighter whitespace-nowrap">AtmosAgro</span>
+          <span className="text-[140px] md:text-[280px] lg:text-[min(23vw,400px)] font-bold text-white leading-none tracking-tighter whitespace-nowrap">AtmosAgro</span>
         </div>
 
         <div className="relative z-10 mx-auto max-w-[1600px] px-6 md:px-[56px] flex flex-col">
