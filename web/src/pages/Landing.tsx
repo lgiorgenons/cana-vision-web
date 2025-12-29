@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Menu } from "lucide-react";
 
 import heroGif from "../assets/gif_campo.gif";
 import imgIpad from "../assets/img_ipad.png";
@@ -96,14 +98,14 @@ const Landing = () => {
         className={`fixed top-0 left-0 right-0 z-50 flex justify-center transition-all duration-300 ${isScrolled ? "bg-black py-4 shadow-md backdrop-blur-md" : "bg-transparent py-6"
           }`}
       >
-        <div className="w-full max-w-[1600px] flex items-center justify-between px-6 md:px-[56px]">
+        <div className="w-full max-w-[1600px] relative flex items-center justify-between px-6 md:px-[56px]">
           {/* Logo */}
           <div className="flex items-center gap-2">
             <img src="/images/ic_atmosAgro_full_white.svg" alt="AtmosAgro" className="h-8" />
           </div>
 
           {/* Center Links (Desktop) */}
-          <div className="hidden items-center gap-8 md:flex">
+          <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-8">
             <a href="#solutions" className="text-[16px] font-normal text-white transition hover:text-[#34A853]">Soluções</a>
             <a href="#technology" className="text-[16px] font-normal text-white transition hover:text-[#34A853]">Tecnologia</a>
             <a href="#about" className="text-[16px] font-normal text-white transition hover:text-[#34A853]">Sobre</a>
@@ -119,12 +121,34 @@ const Landing = () => {
                 Dashboard
               </Button>
             </Link>
+
+            {/* Mobile Menu */}
+            <div className="md:hidden">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
+                    <Menu className="h-6 w-6" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="bg-[#0b0b0b] border-l border-white/10">
+                  <div className="flex flex-col gap-6 pt-10">
+                    <a href="#solutions" className="text-lg font-medium text-white hover:text-[#34A853]">Soluções</a>
+                    <a href="#technology" className="text-lg font-medium text-white hover:text-[#34A853]">Tecnologia</a>
+                    <a href="#about" className="text-lg font-medium text-white hover:text-[#34A853]">Sobre</a>
+                    <hr className="border-white/10" />
+                    <Link to="/login" className="text-lg font-medium text-white hover:text-[#34A853]">
+                      Log in
+                    </Link>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="relative flex h-screen flex-col justify-center pb-24 pl-4 pr-4 md:pl-20">
+      <section className="relative flex h-screen flex-col justify-center pt-32 pb-24 pl-4 pr-4 md:pl-20 md:pt-0">
         {/* Background Image (Full Screen) */}
         <div className="absolute inset-0 z-0">
           <img
@@ -137,7 +161,7 @@ const Landing = () => {
         {/* Content (Left Aligned, Bottom) */}
         <div className="relative z-10 max-w-full text-center px-4">
           {/* Headline */}
-          <h1 className="flex flex-col items-center gap-4 text-5xl font-normal tracking-[-3px] text-white drop-shadow-lg md:text-6xl lg:text-[72px] leading-[1.2]">
+          <h1 className="flex flex-col items-center gap-4 text-4xl font-normal tracking-[-3px] text-white drop-shadow-lg md:text-6xl lg:text-[72px] leading-[1.2]">
             <span>
               Detecte problemas na sua <span className="text-[#34A853] drop-shadow-md">Lavoura</span>
             </span>
