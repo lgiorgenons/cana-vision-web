@@ -164,6 +164,7 @@ const Landing = () => {
           <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-8">
             <a href="#solutions" onClick={(e) => scrollToSection(e, 'solutions')} className="text-[16px] font-normal text-white transition hover:text-[#34A853] cursor-pointer">Soluções</a>
             <a href="#technology" onClick={(e) => scrollToSection(e, 'technology')} className="text-[16px] font-normal text-white transition hover:text-[#34A853] cursor-pointer">Tecnologia</a>
+            <a href="#plans" onClick={(e) => scrollToSection(e, 'plans')} className="text-[16px] font-normal text-white transition hover:text-[#34A853] cursor-pointer">Planos</a>
             <a href="#faq" onClick={(e) => scrollToSection(e, 'faq')} className="text-[16px] font-normal text-white transition hover:text-[#34A853] cursor-pointer">Dúvidas</a>
           </div>
 
@@ -190,6 +191,7 @@ const Landing = () => {
                   <div className="flex flex-col gap-6 pt-10">
                     <a href="#solutions" onClick={(e) => scrollToSection(e, 'solutions')} className="text-lg font-normal text-white hover:text-[#34A853] cursor-pointer">Soluções</a>
                     <a href="#technology" onClick={(e) => scrollToSection(e, 'technology')} className="text-lg font-normal text-white hover:text-[#34A853] cursor-pointer">Tecnologia</a>
+                    <a href="#plans" onClick={(e) => scrollToSection(e, 'plans')} className="text-lg font-normal text-white hover:text-[#34A853] cursor-pointer">Planos</a>
                     <a href="#faq" onClick={(e) => scrollToSection(e, 'faq')} className="text-lg font-normal text-white hover:text-[#34A853] cursor-pointer">Dúvidas</a>
                     <hr className="border-white/10" />
                     <Link to="/login" className="text-lg font-normal text-white hover:text-[#34A853]">
@@ -215,7 +217,7 @@ const Landing = () => {
         </div>
 
         {/* Content (Left Aligned, Bottom) */}
-        <div className="relative z-10 max-w-full text-center px-4">
+        <div className="relative pt-16 z-10 max-w-full text-center px-4">
           {/* Headline */}
           <h1 className="flex flex-col items-center gap-4 text-4xl font-normal tracking-[-3px] text-white drop-shadow-lg md:text-6xl lg:text-[72px] leading-[1.2]">
             <span>
@@ -347,7 +349,7 @@ const Landing = () => {
       </section>
 
       {/* How it Works Section */}
-      <section id="technology" className="relative overflow-hidden bg-[#0b0b0b] pt-16 pb-20 text-white scroll-mt-48">
+      <section id="technology" className="relative overflow-hidden bg-[#0b0b0b] pt-16 pb-16 text-white scroll-mt-48">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute inset-0 bg-gradient-to-b from-[#07110a] via-[#0b0b0b] to-[#070807]" />
           <div className="absolute -top-24 -left-24 h-64 w-64 rounded-full bg-[#34A853]/20 blur-[120px]" />
@@ -406,14 +408,14 @@ const Landing = () => {
       </section>
 
       {/* Pricing Section (Free Focus + Coming Soon) */}
-      <section className="bg-gradient-to-b from-[#0b0b0b] to-[#111] py-24 text-white">
+      <section id="plans" className="bg-gradient-to-b from-[#0b0b0b] to-[#111] pt-16 pb-16 text-white scroll-mt-48">
         <div className="mx-auto max-w-[1600px] px-6 md:px-[56px]">
 
-          <div className="mb-20 text-center">
+          <div className="mb-16 text-center">
             <h2 className="text-4xl font-normal tracking-[-0.03em] md:text-5xl">
               Leve tecnologia de precisão para o campo
             </h2>
-            <p className="mt-6 text-xl text-[#A7A7A7] max-w-2xl mx-auto">
+            <p className="mt-4 text-xl text-[#A7A7A7] max-w-2xl mx-auto">
               Monitoramento profissional acessível para todos os tamanhos de propriedade.
               Comece sem custos.
             </p>
@@ -464,61 +466,63 @@ const Landing = () => {
               </div>
             </div>
 
-            {/* Card 2: Enterprise (Clean Dark + Lock Reveal) */}
+            {/* Card 2: Enterprise (Clean Dark + Lock Body Reveal) */}
             <div className="group relative flex flex-col rounded-[5px] bg-[#0b0b0b] border border-white/10 p-8 sm:p-10 text-white overflow-hidden transition-all hover:border-white/20">
 
-              {/* OVERLAY: Lock Icon (Default Visible) */}
-              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#0b0b0b] transition-all duration-500 group-hover:opacity-0 group-hover:pointer-events-none">
-                <div className="mb-6 rounded-full bg-white/5 p-8 backdrop-blur-sm border border-white/10 shadow-2xl">
-                  <LockKeyIcon size={28} color="white" weight="fill" />
-                </div>
-                <h3 className="text-xl font-medium  text-white/50">Enterprise</h3>
-                <span className="mt-1 text-xs font-semibold tracking-[0.1em] uppercase text-[#34A853]">Em Breve...</span>
+              {/* HEADER: Always Visible */}
+              <div className="relative z-30 mb-8">
+                <span className="inline-block px-4 py-1.5 rounded-full border border-white/20 text-xs font-bold tracking-widest uppercase text-[#34A853] mb-6">
+                  Em Breve
+                </span>
+                <h3 className="text-4xl font-normal tracking-tight">Enterprise</h3>
               </div>
 
-              {/* CONTENT: Features (Reveals on Hover) */}
-              <div className="flex flex-col h-full opacity-30 blur-[2px] transition-all duration-500 group-hover:opacity-100 group-hover:blur-0">
-                <div className="flex items-start justify-between mb-8 relative z-10">
-                  <div>
-                    <span className="inline-block px-4 py-1.5 rounded-full border border-white/20 text-xs font-bold tracking-widest uppercase text-[#34A853] mb-6">
-                      Em Breve
-                    </span>
-                    <h3 className="text-4xl font-normal tracking-tight">Enterprise</h3>
+              {/* BODY CONTAINER: Relative for overlay positioning */}
+              <div className="relative flex-1 flex flex-col">
+
+                {/* OVERLAY: Lock Icon (Covers Body, Fades on Hover) */}
+                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#0b0b0b] transition-all duration-500 group-hover:opacity-0 group-hover:pointer-events-none">
+                  <div className="mb-2 rounded-full bg-white/5 p-6 backdrop-blur-sm border border-white/10 shadow-2xl">
+                    <LockKeyIcon size={28} color="white" weight="fill" />
                   </div>
                 </div>
 
-                <div className="flex-1 space-y-5 mb-12 relative z-10">
-                  {[
-                    "Gestão de frota e maquinário",
-                    "Integração via API e ERP",
-                    "Relatórios preditivos (IA)",
-                    "Suporte 24/7 dedicado",
-                    "Múltiplos usuários e níveis",
-                    "Consultoria agronômica"
-                  ].map((feature, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-white">
-                        <Check className="h-4 w-4 text-white" strokeWidth={3} />
+                {/* CONTENT: Features (Invisible by default, clear on hover) */}
+                <div className="flex flex-col h-full transition-all duration-500 group-hover:blur-0 blur-[3px] opacity-0 group-hover:opacity-100">
+                  <div className="flex-1 space-y-5 mb-12">
+                    {[
+                      "Gestão de frota e maquinário",
+                      "Integração via API e ERP",
+                      "Relatórios preditivos (IA)",
+                      "Suporte 24/7 dedicado",
+                      "Múltiplos usuários e níveis",
+                      "Consultoria agronômica"
+                    ].map((feature, i) => (
+                      <div key={i} className="flex items-center gap-3">
+                        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-white">
+                          <Check className="h-4 w-4 text-white" strokeWidth={3} />
+                        </div>
+                        <span className="text-[17px] font-normal text-[#A7A7A7]">{feature}</span>
                       </div>
-                      <span className="text-[17px] font-normal text-[#A7A7A7]">{feature}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-auto border-t border-white/10 pt-8 flex items-center justify-between relative z-10">
-                  <div>
-                    <span className="block text-2xl font-semibold">Sob Consulta</span>
-                    <span className="text-sm text-gray-500 font-normal">/ personalizado</span>
+                    ))}
                   </div>
-                  <button disabled className="flex h-12 items-center gap-3 rounded-full bg-[#34A853]/20 px-8 text-sm font-normal text-[#34A853] cursor-not-allowed">
-                    Aguarde
-                    <Building2 className="h-4 w-4" />
-                  </button>
+
+                  <div className="mt-auto border-t border-white/10 pt-8 flex items-center justify-between">
+                    <div>
+                      <span className="block text-2xl font-semibold">Sob Consulta</span>
+                      <span className="text-sm text-gray-500 font-normal">/ personalizado</span>
+                    </div>
+                    <button disabled className="flex h-12 items-center gap-3 rounded-full bg-[#34A853]/20 px-8 text-sm font-normal text-[#34A853] cursor-not-allowed">
+                      Aguarde
+                      <Building2 className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
 
-                {/* Background gradient for depth */}
-                <div className="absolute top-0 right-0 -mr-20 -mt-20 h-64 w-64 rounded-full bg-[#34A853]/10 blur-[80px]" />
               </div>
+
+              {/* Background gradient for depth */}
+              <div className="absolute top-0 right-0 -mr-20 -mt-20 h-64 w-64 rounded-full bg-[#34A853]/10 blur-[80px]" />
             </div>
 
           </div>
@@ -533,7 +537,7 @@ const Landing = () => {
       </section>
 
       {/* FAQ Section (NaturaX Modern Style + Sidebar) */}
-      <section id="faq" className="py-20 bg-gradient-to-b from-[#FFFFFF] to-[#F2F2F2] scroll-mt-48">
+      <section id="faq" className="py-16 bg-gradient-to-b from-[#FFFFFF] to-[#F2F2F2] scroll-mt-48">
         <div className="mx-auto max-w-[1600px] px-6 md:px-[56px]">
 
           <div className="mb-12">
@@ -590,10 +594,10 @@ const Landing = () => {
                         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
                       </svg>
                     </div>
-                    <h3 className="mb-3 text-3xl font-normal leading-tight">
+                    <h3 className="mb-3 text-[26px] font-normal leading-tight">
                       Ainda possui dúvidas?
                     </h3>
-                    <p className="mb-8 text-white/80 text-normal text-lg leading-relaxed">
+                    <p className="mb-8 text-white/80 text-normal text-[16px]  leading-relaxed">
                       Nossa equipe de especialistas está pronta para analisar a sua lavoura.
                     </p>
                   </div>
@@ -659,6 +663,7 @@ const Landing = () => {
                 <li><a href="#" className="text-base text-[#A7A7A7] hover:text-white transition-colors">Início</a></li>
                 <li><a href="#solutions" onClick={(e) => scrollToSection(e, 'solutions')} className="text-base text-[#A7A7A7] hover:text-white transition-colors cursor-pointer">Soluções</a></li>
                 <li><a href="#technology" onClick={(e) => scrollToSection(e, 'technology')} className="text-base text-[#A7A7A7] hover:text-white transition-colors cursor-pointer">Tecnologia</a></li>
+                <li><a href="#plans" onClick={(e) => scrollToSection(e, 'plans')} className="text-base text-[#A7A7A7] hover:text-white transition-colors cursor-pointer">Planos</a></li>
                 <li><a href="#faq" onClick={(e) => scrollToSection(e, 'faq')} className="text-base text-[#A7A7A7] hover:text-white transition-colors cursor-pointer">Dúvidas</a></li>
                 <li><a href="#about" onClick={(e) => scrollToSection(e, 'about')} className="text-base text-[#A7A7A7] hover:text-white transition-colors cursor-pointer">Contato</a></li>
               </ul>
@@ -740,7 +745,7 @@ const Landing = () => {
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         style={{ position: 'fixed', bottom: '32px', right: '32px', zIndex: 9999 }}
-        className={`flex h-12 w-12 items-center justify-center rounded-full bg-[#34A853] text-white shadow-lg transition-all duration-300 hover:bg-[#2E9648] hover:scale-110 hover:shadow-xl ${isScrolled ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}
+        className={`flex h-11 w-11 items-center justify-center rounded-full bg-[#34A853] text-white shadow-lg transition-all duration-300 hover:bg-[#2E9648] hover:scale-110 hover:shadow-xl ${isScrolled ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}
       >
         <ChevronsUp className="h-8 w-8" />
       </button>
