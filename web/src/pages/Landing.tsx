@@ -28,7 +28,9 @@ import {
   Sprout,
   Building2,
   Check,
+  Lock,
 } from "lucide-react";
+import { LockKey, LockKeyIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -462,48 +464,61 @@ const Landing = () => {
               </div>
             </div>
 
-            {/* Card 2: Enterprise (Clean Dark) */}
-            <div className="flex flex-col rounded-[5px] bg-[#0b0b0b] border border-white/10 p-8 sm:p-10 text-white relative overflow-hidden">
-              <div className="flex items-start justify-between mb-8 relative z-10">
-                <div>
-                  <span className="inline-block px-4 py-1.5 rounded-full border border-white/20 text-xs font-bold tracking-widest uppercase text-[#34A853] mb-6">
-                    Em Breve
-                  </span>
-                  <h3 className="text-4xl font-medium tracking-tight">Enterprise</h3>
+            {/* Card 2: Enterprise (Clean Dark + Lock Reveal) */}
+            <div className="group relative flex flex-col rounded-[5px] bg-[#0b0b0b] border border-white/10 p-8 sm:p-10 text-white overflow-hidden transition-all hover:border-white/20">
+
+              {/* OVERLAY: Lock Icon (Default Visible) */}
+              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#0b0b0b] transition-all duration-500 group-hover:opacity-0 group-hover:pointer-events-none">
+                <div className="mb-6 rounded-full bg-white/5 p-8 backdrop-blur-sm border border-white/10 shadow-2xl">
+                  <LockKeyIcon size={28} color="white" weight="fill" />
                 </div>
+                <h3 className="text-xl font-medium  text-white/50">Enterprise</h3>
+                <span className="mt-1 text-xs font-semibold tracking-[0.1em] uppercase text-[#34A853]">Em Breve...</span>
               </div>
 
-              <div className="flex-1 space-y-5 mb-12 relative z-10 opacity-100">
-                {[
-                  "Gestão de frota e maquinário",
-                  "Integração via API e ERP",
-                  "Relatórios preditivos (IA)",
-                  "Suporte 24/7 dedicado",
-                  "Múltiplos usuários e níveis",
-                  "Consultoria agronômica"
-                ].map((feature, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full  text-white">
-                      <Check className="h-4 w-4 text-white" strokeWidth={3} />
-                    </div>
-                    <span className="text-[17px] font-normal text-[#A7A7A7]">{feature}</span>
+              {/* CONTENT: Features (Reveals on Hover) */}
+              <div className="flex flex-col h-full opacity-30 blur-[2px] transition-all duration-500 group-hover:opacity-100 group-hover:blur-0">
+                <div className="flex items-start justify-between mb-8 relative z-10">
+                  <div>
+                    <span className="inline-block px-4 py-1.5 rounded-full border border-white/20 text-xs font-bold tracking-widest uppercase text-[#34A853] mb-6">
+                      Em Breve
+                    </span>
+                    <h3 className="text-4xl font-normal tracking-tight">Enterprise</h3>
                   </div>
-                ))}
-              </div>
-
-              <div className="mt-auto border-t border-white/10 pt-8 flex items-center justify-between relative z-10">
-                <div>
-                  <span className="block text-2xl font-semibold">Sob Consulta</span>
-                  <span className="text-sm text-gray-500 font-normal">/ personalizado</span>
                 </div>
-                <button disabled className="flex h-12 items-center gap-3 rounded-full bg-[#34A853]/20 px-8 text-sm font-normal text-[#34A853] cursor-not-allowed">
-                  Aguarde
-                  <Building2 className="h-4 w-4" />
-                </button>
-              </div>
 
-              {/* Background gradient for depth */}
-              <div className="absolute top-0 right-0 -mr-20 -mt-20 h-64 w-64 rounded-full bg-[#34A853]/10 blur-[80px]" />
+                <div className="flex-1 space-y-5 mb-12 relative z-10">
+                  {[
+                    "Gestão de frota e maquinário",
+                    "Integração via API e ERP",
+                    "Relatórios preditivos (IA)",
+                    "Suporte 24/7 dedicado",
+                    "Múltiplos usuários e níveis",
+                    "Consultoria agronômica"
+                  ].map((feature, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-white">
+                        <Check className="h-4 w-4 text-white" strokeWidth={3} />
+                      </div>
+                      <span className="text-[17px] font-normal text-[#A7A7A7]">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-auto border-t border-white/10 pt-8 flex items-center justify-between relative z-10">
+                  <div>
+                    <span className="block text-2xl font-semibold">Sob Consulta</span>
+                    <span className="text-sm text-gray-500 font-normal">/ personalizado</span>
+                  </div>
+                  <button disabled className="flex h-12 items-center gap-3 rounded-full bg-[#34A853]/20 px-8 text-sm font-normal text-[#34A853] cursor-not-allowed">
+                    Aguarde
+                    <Building2 className="h-4 w-4" />
+                  </button>
+                </div>
+
+                {/* Background gradient for depth */}
+                <div className="absolute top-0 right-0 -mr-20 -mt-20 h-64 w-64 rounded-full bg-[#34A853]/10 blur-[80px]" />
+              </div>
             </div>
 
           </div>
