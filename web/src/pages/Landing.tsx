@@ -228,11 +228,14 @@ const Landing = () => {
           {/* CTA Buttons */}
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <Link to="/login">
-              <Button size="lg" className="h-12 rounded-full bg-black/50 border border-[#34A853] px-8 text-[16px] font-medium text-[#34A853] hover:bg-black/70 transition-transform hover:scale-105 backdrop-blur-sm">
-                Começar Agora <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
+              <div className="group flex h-12 w-auto items-center gap-4 rounded-full bg-[#34A853] pl-8 pr-2 transition-transform hover:scale-105 cursor-pointer shadow-lg hover:shadow-green-500/30">
+                <span className="text-[16px] font-normal text-white">Começar Agora</span>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#34A853] transition-transform group-hover:rotate-45">
+                  <ArrowRight className="h-5 w-5" />
+                </div>
+              </div>
             </Link>
-            <Button variant="outline" size="lg" className="h-12 rounded-full border-white bg-transparent px-8 text-[16px] font-medium text-white hover:bg-white hover:text-slate-900 transition-all">
+            <Button variant="outline" size="lg" className="h-12 rounded-full border-white bg-transparent px-8 text-[16px] font-normal text-white hover:bg-white hover:text-slate-900 transition-all">
               Ver como funciona
             </Button>
           </div>
@@ -240,13 +243,14 @@ const Landing = () => {
         </div>
 
         {/* Mouse Scroll Indicator */}
-        <div
+        <a
+          href="#solutions"
           className="absolute bottom-8 left-1/2 hidden -translate-x-1/2 cursor-pointer flex-col items-center gap-2 text-white opacity-100 transition-opacity hover:opacity-60 md:flex"
-          onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+          onClick={(e) => scrollToSection(e as any, 'solutions')}
         >
           <Mouse className="h-8 w-8 animate-bounce" />
           <span className="text-xs font-medium tracking-widest uppercase">Explore Mais</span>
-        </div>
+        </a>
       </section>
 
       {/* Productivity Section (Grid + Tablet Showcase) */}
@@ -459,7 +463,7 @@ const Landing = () => {
                     <h3 className="mb-3 text-3xl font-normal leading-tight">
                       Ainda possui dúvidas?
                     </h3>
-                    <p className="mb-8 text-white/80 text-lg leading-relaxed">
+                    <p className="mb-8 text-white/80 text-normal text-lg leading-relaxed">
                       Nossa equipe de especialistas está pronta para analisar a sua lavoura.
                     </p>
                   </div>
