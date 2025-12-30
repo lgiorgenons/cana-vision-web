@@ -26,6 +26,8 @@ import {
   X,
   MessageCircle,
   Sprout,
+  Building2,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -246,7 +248,7 @@ const Landing = () => {
         <a
           href="#solutions"
           className="absolute bottom-8 left-1/2 hidden -translate-x-1/2 cursor-pointer flex-col items-center gap-2 text-white opacity-100 transition-opacity hover:opacity-60 md:flex"
-          onClick={(e) => scrollToSection(e as any, 'solutions')}
+          onClick={(e) => scrollToSection(e, 'solutions')}
         >
           <Mouse className="h-8 w-8 animate-bounce" />
           <span className="text-xs font-medium tracking-widest uppercase">Explore Mais</span>
@@ -272,7 +274,7 @@ const Landing = () => {
             <div className="flex-1 w-full pb-0 xl:pb-[120px]">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-[20px] w-full">
                 {/* Item 1 */}
-                <div className="flex flex-col items-start gap-4 p-6 w-full min-h-[190px] h-full border-[2px] border-[#E3E3E3] bg-white hover:shadow-lg transition-shadow">
+                <div className="rounded-[5px] flex flex-col items-start gap-4 p-6 w-full min-h-[190px] h-full border-[2px] border-[#E3E3E3] bg-white hover:shadow-lg transition-shadow">
                   <div className="flex items-center justify-center w-[45px] h-[45px] rounded-full bg-[#34A853] text-white shrink-0">
                     <img src={icGota} alt="Gota" className="w-6 h-6" style={{ filter: 'brightness(0)' }} />
                   </div>
@@ -285,7 +287,7 @@ const Landing = () => {
                 </div>
 
                 {/* Item 2 */}
-                <div className="flex flex-col items-start gap-4 p-6 w-full min-h-[190px] h-full border-[2px] border-[#E3E3E3] bg-white hover:shadow-lg transition-shadow">
+                <div className="rounded-[5px] flex flex-col items-start gap-4 p-6 w-full min-h-[190px] h-full border-[2px] border-[#E3E3E3] bg-white hover:shadow-lg transition-shadow">
                   <div className="flex items-center justify-center w-[45px] h-[45px] rounded-full bg-[#34A853] text-white shrink-0">
                     <img src={icVisualizacao} alt="Visualização" className="w-6 h-6" style={{ filter: 'brightness(0)' }} />
                   </div>
@@ -298,7 +300,7 @@ const Landing = () => {
                 </div>
 
                 {/* Item 3 */}
-                <div className="flex flex-col items-start gap-4 p-6 w-full min-h-[190px] h-full border-[2px] border-[#E3E3E3] bg-white hover:shadow-lg transition-shadow">
+                <div className="rounded-[5px] flex flex-col items-start gap-4 p-6 w-full min-h-[190px] h-full border-[2px] border-[#E3E3E3] bg-white hover:shadow-lg transition-shadow">
                   <div className="flex items-center justify-center w-[45px] h-[45px] rounded-full bg-[#34A853] text-white shrink-0">
                     <img src={icPraga} alt="Praga" className="w-6 h-6" style={{ filter: 'brightness(0)' }} />
                   </div>
@@ -311,7 +313,7 @@ const Landing = () => {
                 </div>
 
                 {/* Item 4 */}
-                <div className="flex flex-col items-start gap-4 p-6 w-full min-h-[190px] h-full border-[2px] border-[#E3E3E3] bg-white hover:shadow-lg transition-shadow">
+                <div className="rounded-[5px] flex flex-col items-start gap-4 p-6 w-full min-h-[190px] h-full border-[2px] border-[#E3E3E3] bg-white hover:shadow-lg transition-shadow">
                   <div className="flex items-center justify-center w-[45px] h-[45px] rounded-full bg-[#34A853] text-white shrink-0">
                     <img src={icControle} alt="Controle" className="w-6 h-6" style={{ filter: 'brightness(0)' }} />
                   </div>
@@ -375,7 +377,7 @@ const Landing = () => {
                     </div>
                   </div>
 
-                  <div className="mt-10 overflow-hidden rounded-sm border border-white/10 bg-black/60">
+                  <div className="mt-10 overflow-hidden rounded-[5px] border border-white/10 bg-black/60">
                     <div className="relative aspect-square">
                       <img
                         src={step.image}
@@ -401,6 +403,119 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* Pricing Section (Free Focus + Coming Soon) */}
+      <section className="bg-gradient-to-b from-[#0b0b0b] to-[#111] py-24 text-white">
+        <div className="mx-auto max-w-[1600px] px-6 md:px-[56px]">
+
+          <div className="mb-20 text-center">
+            <h2 className="text-4xl font-normal tracking-[-0.03em] md:text-5xl">
+              Leve tecnologia de precisão para o campo
+            </h2>
+            <p className="mt-6 text-xl text-[#A7A7A7] max-w-2xl mx-auto">
+              Monitoramento profissional acessível para todos os tamanhos de propriedade.
+              Comece sem custos.
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2 lg:gap-8 max-w-5xl mx-auto">
+
+            {/* Card 1: Produtor Inicial (Clean White) */}
+            <div className="flex flex-col rounded-[5px] bg-white p-8 sm:p-10 text-slate-900 transition-transform hover:scale-[1.01]">
+              <div className="flex items-start justify-between mb-8">
+                <div>
+                  <span className="inline-block px-4 py-1.5 rounded-full border border-slate-200 text-xs font-semibold tracking-widest uppercase text-slate-600 mb-6">
+                    Limitado
+                  </span>
+                  <h3 className="text-4xl font-medium tracking-tight">Produtor Inicial</h3>
+                </div>
+              </div>
+
+              <div className="flex-1 space-y-5 mb-12">
+                {[
+                  "Segmentação de propriedades",
+                  "Identificação de talhões",
+                  "Histórico de 1 ano (Satélite)",
+                  "Filtros de Estresse Hídrico",
+                  "Detecção de Pragas",
+                  "Exportação de relatórios"
+                ].map((feature, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[full] text-black">
+                      <Check className="h-4 w-4" strokeWidth={3} />
+                    </div>
+                    <span className="text-[17px] font-normal text-[#494949]">{feature}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-auto border-t border-slate-100 pt-8 flex items-center justify-between">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-semibold">R$ 0</span>
+                  <span className="text-sm text-slate-400 font-normal">/ mês</span>
+                </div>
+                <Link to="/login">
+                  <button className="flex h-12 items-center gap-3 rounded-full bg-[#0b0b0b] px-8 text-sm font-normal text-white transition-all hover:bg-black hover:scale-105">
+                    Começar
+                    <ArrowRight className="h-4 w-4" />
+                  </button>
+                </Link>
+              </div>
+            </div>
+
+            {/* Card 2: Enterprise (Clean Dark) */}
+            <div className="flex flex-col rounded-[5px] bg-[#0b0b0b] border border-white/10 p-8 sm:p-10 text-white relative overflow-hidden">
+              <div className="flex items-start justify-between mb-8 relative z-10">
+                <div>
+                  <span className="inline-block px-4 py-1.5 rounded-full border border-white/20 text-xs font-bold tracking-widest uppercase text-[#34A853] mb-6">
+                    Em Breve
+                  </span>
+                  <h3 className="text-4xl font-medium tracking-tight">Enterprise</h3>
+                </div>
+              </div>
+
+              <div className="flex-1 space-y-5 mb-12 relative z-10 opacity-100">
+                {[
+                  "Gestão de frota e maquinário",
+                  "Integração via API e ERP",
+                  "Relatórios preditivos (IA)",
+                  "Suporte 24/7 dedicado",
+                  "Múltiplos usuários e níveis",
+                  "Consultoria agronômica"
+                ].map((feature, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full  text-white">
+                      <Check className="h-4 w-4 text-white" strokeWidth={3} />
+                    </div>
+                    <span className="text-[17px] font-normal text-[#A7A7A7]">{feature}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-auto border-t border-white/10 pt-8 flex items-center justify-between relative z-10">
+                <div>
+                  <span className="block text-2xl font-semibold">Sob Consulta</span>
+                  <span className="text-sm text-gray-500 font-normal">/ personalizado</span>
+                </div>
+                <button disabled className="flex h-12 items-center gap-3 rounded-full bg-[#34A853]/20 px-8 text-sm font-normal text-[#34A853] cursor-not-allowed">
+                  Aguarde
+                  <Building2 className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* Background gradient for depth */}
+              <div className="absolute top-0 right-0 -mr-20 -mt-20 h-64 w-64 rounded-full bg-[#34A853]/10 blur-[80px]" />
+            </div>
+
+          </div>
+
+          <div className="mt-16 text-center">
+            <p className="text-sm text-gray-300">
+              * O plano gratuito é por tempo limitado para os primeiros usuários da plataforma.
+            </p>
+          </div>
+
+        </div>
+      </section>
 
       {/* FAQ Section (NaturaX Modern Style + Sidebar) */}
       <section id="faq" className="py-20 bg-gradient-to-b from-[#FFFFFF] to-[#F2F2F2] scroll-mt-48">
@@ -423,7 +538,7 @@ const Landing = () => {
                 {faqData.map((item, index) => (
                   <div
                     key={index}
-                    className="group rounded-[2rem] bg-white p-8 transition-all duration-300 border border-gray-200 shadow-[0_4px_20px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)] hover:-translate-y-1 cursor-pointer"
+                    className="group rounded-[5px] bg-white p-8 transition-all duration-300 border border-gray-200 shadow-[0_4px_20px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)] hover:-translate-y-1 cursor-pointer"
                     onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
                   >
                     <div className="flex items-center justify-between gap-6">
@@ -448,7 +563,7 @@ const Landing = () => {
 
             {/* Right Column: Contact Card (4 cols) */}
             <div className="lg:col-span-4 relative">
-              <div className="sticky top-32 rounded-[10px] bg-[#16A34A] p-8 md:p-10 text-white shadow-2xl overflow-hidden relative">
+              <div className="sticky top-32 rounded-[5px] bg-[#16A34A] p-8 md:p-10 text-white shadow-2xl overflow-hidden relative">
                 {/* Decorative Elements (Agro Theme) */}
                 <div className="absolute -right-10 -top-10 h-64 w-64 rounded-full bg-white/10 blur-3xl"></div>
                 <div className="absolute -left-10 bottom-0 h-40 w-40 rounded-full bg-black/5 blur-2xl"></div>
