@@ -74,6 +74,7 @@ const Landing = () => {
 
   const [isScrolled, setIsScrolled] = React.useState(false);
   const [activeAccordion, setActiveAccordion] = React.useState(0);
+  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -98,6 +99,11 @@ const Landing = () => {
         behavior: 'smooth'
       });
     }
+  };
+
+  const handleMobileLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
+    scrollToSection(e, sectionId);
+    setIsMenuOpen(false);
   };
 
   const accordionItems = [
@@ -161,7 +167,7 @@ const Landing = () => {
           </div>
 
           {/* Center Links (Desktop) */}
-          <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-8">
+          <div className="hidden lg:flex absolute left-1/2 -translate-x-1/2 items-center gap-8">
             <a href="#solutions" onClick={(e) => scrollToSection(e, 'solutions')} className="text-[16px] font-normal text-white transition hover:text-[#34A853] cursor-pointer">Soluções</a>
             <a href="#technology" onClick={(e) => scrollToSection(e, 'technology')} className="text-[16px] font-normal text-white transition hover:text-[#34A853] cursor-pointer">Tecnologia</a>
             <a href="#plans" onClick={(e) => scrollToSection(e, 'plans')} className="text-[16px] font-normal text-white transition hover:text-[#34A853] cursor-pointer">Planos</a>
@@ -170,7 +176,7 @@ const Landing = () => {
 
           {/* Right Actions */}
           <div className="flex items-center gap-6">
-            <Link to="/login" className="hidden text-sm font-medium text-white transition hover:text-[#34A853] md:block">
+            <Link to="/login" className="hidden text-sm font-medium text-white transition hover:text-[#34A853] lg:block">
               Entrar
             </Link>
             <Link to="/login">
@@ -180,21 +186,21 @@ const Landing = () => {
             </Link>
 
             {/* Mobile Menu */}
-            <div className="md:hidden">
-              <Sheet>
+            <div className="lg:hidden">
+              <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
-                    <Menu className="h-6 w-6" />
+                  <Button variant="ghost" size="icon" className="h-9 w-9 text-white hover:bg-white/10 [&_svg]:size-6 [&_svg]:w-6 [&_svg]:h-6">
+                    <Menu />
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="right" className="bg-[#0b0b0b] border-l border-white/10">
                   <div className="flex flex-col gap-6 pt-10">
-                    <a href="#solutions" onClick={(e) => scrollToSection(e, 'solutions')} className="text-lg font-normal text-white hover:text-[#34A853] cursor-pointer">Soluções</a>
-                    <a href="#technology" onClick={(e) => scrollToSection(e, 'technology')} className="text-lg font-normal text-white hover:text-[#34A853] cursor-pointer">Tecnologia</a>
-                    <a href="#plans" onClick={(e) => scrollToSection(e, 'plans')} className="text-lg font-normal text-white hover:text-[#34A853] cursor-pointer">Planos</a>
-                    <a href="#faq" onClick={(e) => scrollToSection(e, 'faq')} className="text-lg font-normal text-white hover:text-[#34A853] cursor-pointer">Dúvidas</a>
+                    <a href="#solutions" onClick={(e) => handleMobileLinkClick(e, 'solutions')} className="text-lg font-normal text-white hover:text-[#34A853] cursor-pointer">Soluções</a>
+                    <a href="#technology" onClick={(e) => handleMobileLinkClick(e, 'technology')} className="text-lg font-normal text-white hover:text-[#34A853] cursor-pointer">Tecnologia</a>
+                    <a href="#plans" onClick={(e) => handleMobileLinkClick(e, 'plans')} className="text-lg font-normal text-white hover:text-[#34A853] cursor-pointer">Planos</a>
+                    <a href="#faq" onClick={(e) => handleMobileLinkClick(e, 'faq')} className="text-lg font-normal text-white hover:text-[#34A853] cursor-pointer">Dúvidas</a>
                     <hr className="border-white/10" />
-                    <Link to="/login" className="text-lg font-normal text-white hover:text-[#34A853]">
+                    <Link to="/login" onClick={() => setIsMenuOpen(false)} className="text-lg font-normal text-white hover:text-[#34A853]">
                       Entrar
                     </Link>
                   </div>
@@ -219,7 +225,7 @@ const Landing = () => {
         {/* Content (Left Aligned, Bottom) */}
         <div className="relative pt-16 z-10 max-w-full text-center px-4">
           {/* Headline */}
-          <h1 className="flex flex-col items-center gap-4 text-4xl font-normal tracking-[-3px] text-white drop-shadow-lg md:text-6xl lg:text-[72px] leading-[1.2]">
+          <h1 className="flex flex-col items-center gap-0 md:gap-2 lg:gap-0 text-4xl font-normal tracking-[-3px] text-white drop-shadow-lg md:text-[60px] lg:text-[72px] leading-[1.1] md:leading-[1.2]">
             <span>
               Detecte problemas na sua <span className="text-[#34A853] drop-shadow-md">Lavoura</span>
             </span>
@@ -227,7 +233,7 @@ const Landing = () => {
           </h1>
 
           {/* Subheadline */}
-          <p className="mx-auto mt-8 max-w-3xl text-[20px] tracking-[0px] text-slate-100 drop-shadow-md leading-[1.5] font-normal">
+          <p className="mx-auto mt-8 max-w-3xl text-[16px] md:text-[20px] tracking-[0px] text-slate-100 drop-shadow-md leading-[1.4] md:leading-[1.5] font-normal">
             Monitoramento via satélite com NDVI, NDRE e NDMI, gerando alertas automáticos baseados nos cálculos desses índices.
           </p>
 
@@ -744,7 +750,7 @@ const Landing = () => {
       {/* Back to Top Button (Fixed) */}
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        style={{ position: 'fixed', bottom: '32px', right: '32px', zIndex: 9999 }}
+        style={{ position: 'fixed', bottom: '32px', right: '32px', zIndex: 9999, display: isMenuOpen ? 'none' : 'flex' }}
         className={`flex h-11 w-11 items-center justify-center rounded-full bg-[#34A853] text-white shadow-lg transition-all duration-300 hover:bg-[#2E9648] hover:scale-110 hover:shadow-xl ${isScrolled ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}
       >
         <ChevronsUp className="h-8 w-8" />
