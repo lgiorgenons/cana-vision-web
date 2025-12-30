@@ -56,6 +56,28 @@ All colors MUST be HSL.
     /* Custom tokens */
     --card-dark: 150 15% 15%;
     --card-dark-hover: 150 15% 18%;
+
+    /* Landing palette */
+    --landing-brand: 136 52.7% 43.1%; /* #34A853 */
+    --landing-brand-dark: 135 53.1% 38.4%; /* #2E9648 */
+    --landing-accent: 142.1 76.2% 36.3%; /* #16A34A */
+    --landing-ink: 0 0% 4.3%; /* #0B0B0B */
+    --landing-ink-strong: 0 0% 6.7%; /* #111111 */
+    --landing-ink-deep: 120 6.7% 2.9%; /* #070807 */
+    --landing-ink-forest: 138 41.7% 4.7%; /* #07110A */
+    --landing-text-muted: 0 0% 65.5%; /* #A7A7A7 */
+    --landing-text-subtle: 0 0% 28.6%; /* #494949 */
+    --landing-border: 0 0% 89%; /* #E3E3E3 */
+    --landing-surface: 0 0% 94.9%; /* #F2F2F2 */
+    --landing-surface-soft: 220 14.3% 95.9%; /* #F3F4F6 */
+    --landing-surface-strong: 220 13% 91%; /* #E5E7EB */
+
+    /* Auth palette */
+    --auth-brand: 136 52.7% 43.1%; /* #34A853 */
+    --auth-brand-hover: 139.2 62.3% 37.5%; /* #249B4A */
+    --auth-ink: 76.4 57.9% 7.5%; /* #181E08 */
+    --auth-muted: 240 2.3% 56.7%; /* #8E8E93 */
+    --auth-separator: 244.6 14% 81.8%; /* #CBCAD7 */
   }
 
   .dark {

@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 export default {
   darkMode: ["class"],
@@ -55,6 +56,28 @@ export default {
           low: "hsl(var(--alert-low))",
           resolved: "hsl(var(--alert-resolved))",
         },
+        landing: {
+          brand: "#34A853",
+          "brand-dark": "#2E9648",
+          accent: "#16A34A",
+          ink: "#0B0B0B",
+          "ink-strong": "#111111",
+          "ink-deep": "#070807",
+          "ink-forest": "#07110A",
+          "text-muted": "#A7A7A7",
+          "text-subtle": "#494949",
+          border: "#E3E3E3",
+          surface: "#F2F2F2",
+          "surface-soft": "#F3F4F6",
+          "surface-strong": "#E5E7EB",
+        },
+        auth: {
+          brand: "#34A853",
+          "brand-hover": "#249B4A",
+          ink: "#181E08",
+          muted: "#8E8E93",
+          separator: "#CBCAD7",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -85,5 +108,5 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindcssAnimate],
 } satisfies Config;

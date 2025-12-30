@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { API_BASE_URL } from "@/lib/api-client";
 import { AlertCircle, Bug, Droplet, Wind, CheckCircle, Search, Calendar, Play } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -52,6 +53,8 @@ type AlertItem = {
   date: string;
   status: AlertStatus;
 };
+
+const withApiBase = (path: string) => `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 
 const alerts: AlertItem[] = [
   { id: 1, type: "Praga", icon: Bug, talhao: "Talhão A-03", severity: "ALTA", severityColor: "bg-alert-high", date: "15/07/2024", status: "active" },
@@ -109,7 +112,7 @@ const Analises = () => {
     setIsLoadingMap(true);
     const query = product ? `?product=${encodeURIComponent(product)}` : "";
     try {
-      const res = await fetch(`/api/map/compare${query}`);
+      const res = await fetch(withApiBase(`/map/compare${query}`));
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = (await res.json()) as CompareMapResponse;
       setMapUrl(data.url);
@@ -125,7 +128,7 @@ const Analises = () => {
     setIsLoadingIndices(true);
     const query = product ? `?product=${encodeURIComponent(product)}` : "";
     try {
-      const res = await fetch(`/api/indices${query}`);
+      const res = await fetch(withApiBase(`/indices${query}`));
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = (await res.json()) as IndicesResponse;
       const names = Object.keys(data.indices || {}).sort();
@@ -142,7 +145,7 @@ const Analises = () => {
     setProductsError("");
     setIsLoadingProducts(true);
     try {
-      const res = await fetch("/api/products");
+      const res = await fetch(withApiBase("/products"));
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = (await res.json()) as ProductsResponse;
       const nextProducts = Array.isArray(data.products) ? data.products : [];
@@ -172,7 +175,7 @@ const Analises = () => {
 
   const fetchJobStatus = useCallback(async (id: string) => {
     try {
-      const res = await fetch(`/api/jobs/${id}`);
+      const res = await fetch(withApiBase(`/jobs/${id}`));
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = (await res.json()) as JobResponse;
       setJobStatus(data.status);
@@ -187,7 +190,7 @@ const Analises = () => {
     setHistoryError("");
     setIsLoadingHistory(true);
     try {
-      const res = await fetch("/api/jobs/history?limit=15");
+      const res = await fetch(withApiBase("/jobs/history?limit=15"));
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = (await res.json()) as { jobs?: JobHistoryItem[] };
       setHistory(data.jobs ?? []);
@@ -293,7 +296,7 @@ const Analises = () => {
     availabilityParams.set("geojson", "dados/map.geojson");
 
     try {
-      const availabilityRes = await fetch(`/api/products/availability?${availabilityParams.toString()}`);
+      const availabilityRes = await fetch(withApiBase(`/products/availability?${availabilityParams.toString()}`));
       if (!availabilityRes.ok) {
         let detail = `HTTP ${availabilityRes.status}`;
         try {
@@ -316,7 +319,7 @@ const Analises = () => {
     }
 
     try {
-      const res = await fetch("/api/jobs/run-workflow", {
+      const res = await fetch(withApiBase("/jobs/run-workflow"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

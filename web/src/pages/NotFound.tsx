@@ -2,7 +2,8 @@ import { useLocation, Link } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Home } from "lucide-react";
-import landscape404 from "@/assets/404-agro-real.jpg";
+
+const landscape404 = "/images/404-agro-real.jpg";
 
 const NotFound = () => {
   const location = useLocation();
