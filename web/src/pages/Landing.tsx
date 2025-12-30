@@ -79,6 +79,23 @@ const Landing = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    const element = document.getElementById(id);
+    if (element) {
+      const offset = 50;
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = element.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   const accordionItems = [
     {
       title: "Mapeamento de Talhões",
@@ -141,19 +158,19 @@ const Landing = () => {
 
           {/* Center Links (Desktop) */}
           <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-8">
-            <a href="#solutions" className="text-[16px] font-normal text-white transition hover:text-[#34A853]">Soluções</a>
-            <a href="#technology" className="text-[16px] font-normal text-white transition hover:text-[#34A853]">Tecnologia</a>
-            <a href="#about" className="text-[16px] font-normal text-white transition hover:text-[#34A853]">Sobre</a>
+            <a href="#solutions" onClick={(e) => scrollToSection(e, 'solutions')} className="text-[16px] font-normal text-white transition hover:text-[#34A853] cursor-pointer">Soluções</a>
+            <a href="#technology" onClick={(e) => scrollToSection(e, 'technology')} className="text-[16px] font-normal text-white transition hover:text-[#34A853] cursor-pointer">Tecnologia</a>
+            <a href="#faq" onClick={(e) => scrollToSection(e, 'faq')} className="text-[16px] font-normal text-white transition hover:text-[#34A853] cursor-pointer">Dúvidas</a>
           </div>
 
           {/* Right Actions */}
           <div className="flex items-center gap-6">
             <Link to="/login" className="hidden text-sm font-medium text-white transition hover:text-[#34A853] md:block">
-              Log in
+              Entrar
             </Link>
-            <Link to="/app">
+            <Link to="/login">
               <Button className="h-10 rounded-full bg-[#34A853] px-6 text-sm font-medium text-white hover:bg-[#2E9648]">
-                Dashboard
+                Começar Agora
               </Button>
             </Link>
 
@@ -167,12 +184,12 @@ const Landing = () => {
                 </SheetTrigger>
                 <SheetContent side="right" className="bg-[#0b0b0b] border-l border-white/10">
                   <div className="flex flex-col gap-6 pt-10">
-                    <a href="#solutions" className="text-lg font-normal text-white hover:text-[#34A853]">Soluções</a>
-                    <a href="#technology" className="text-lg font-normal text-white hover:text-[#34A853]">Tecnologia</a>
-                    <a href="#about" className="text-lg font-normal text-white hover:text-[#34A853]">Sobre</a>
+                    <a href="#solutions" onClick={(e) => scrollToSection(e, 'solutions')} className="text-lg font-normal text-white hover:text-[#34A853] cursor-pointer">Soluções</a>
+                    <a href="#technology" onClick={(e) => scrollToSection(e, 'technology')} className="text-lg font-normal text-white hover:text-[#34A853] cursor-pointer">Tecnologia</a>
+                    <a href="#faq" onClick={(e) => scrollToSection(e, 'faq')} className="text-lg font-normal text-white hover:text-[#34A853] cursor-pointer">Dúvidas</a>
                     <hr className="border-white/10" />
                     <Link to="/login" className="text-lg font-normal text-white hover:text-[#34A853]">
-                      Log in
+                      Entrar
                     </Link>
                   </div>
                 </SheetContent>
@@ -210,7 +227,7 @@ const Landing = () => {
 
           {/* CTA Buttons */}
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-            <Link to="/app">
+            <Link to="/login">
               <Button size="lg" className="h-12 rounded-full bg-black/50 border border-[#34A853] px-8 text-[16px] font-medium text-[#34A853] hover:bg-black/70 transition-transform hover:scale-105 backdrop-blur-sm">
                 Começar Agora <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
@@ -233,7 +250,7 @@ const Landing = () => {
       </section>
 
       {/* Productivity Section (Grid + Tablet Showcase) */}
-      <section className="bg-white pt-16 pb-0 relative overflow-hidden">
+      <section id="solutions" className="bg-white pt-16 pb-0 relative overflow-hidden scroll-mt-48">
         <div className="w-full max-w-[1600px] mx-auto px-6 md:px-[56px] z-10 relative">
           <div className="mb-[70px] text-center">
             <h2 className="text-4xl font-medium text-slate-900 md:text-5xl tracking-[-0.03em]">
@@ -322,7 +339,7 @@ const Landing = () => {
       </section>
 
       {/* How it Works Section */}
-      <section id="technology" className="relative overflow-hidden bg-[#0b0b0b] pt-16 pb-20 text-white">
+      <section id="technology" className="relative overflow-hidden bg-[#0b0b0b] pt-16 pb-20 text-white scroll-mt-48">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute inset-0 bg-gradient-to-b from-[#07110a] via-[#0b0b0b] to-[#070807]" />
           <div className="absolute -top-24 -left-24 h-64 w-64 rounded-full bg-[#34A853]/20 blur-[120px]" />
@@ -382,7 +399,7 @@ const Landing = () => {
 
 
       {/* FAQ Section (NaturaX Modern Style + Sidebar) */}
-      <section className="py-20 bg-gradient-to-b from-[#FFFFFF] to-[#F2F2F2]">
+      <section id="faq" className="py-20 bg-gradient-to-b from-[#FFFFFF] to-[#F2F2F2] scroll-mt-48">
         <div className="mx-auto max-w-[1600px] px-6 md:px-[56px]">
 
           <div className="mb-12">
@@ -492,7 +509,7 @@ const Landing = () => {
       </section>
 
       {/* Footer (NaturaX Style) */}
-      <footer className="relative bg-black pt-20 overflow-hidden">
+      <footer id="about" className="relative bg-black pt-20 overflow-hidden scroll-mt-48">
         {/* Watermark (Behind everything) */}
         <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-64 md:bottom-[115px] select-none opacity-[0.05] w-full text-center z-0">
           <span className="text-[140px] md:text-[280px] lg:text-[min(23vw,400px)] font-bold text-white leading-none tracking-tighter whitespace-nowrap">AtmosAgro</span>
@@ -505,11 +522,11 @@ const Landing = () => {
             <div>
               <h4 className="mb-8 text-sm font-semibold text-white/40 uppercase tracking-widest">Links Rápidos</h4>
               <ul className="space-y-4">
-                <li><a href="#" className="text-base text-[#A7A7A7] hover:text-white transition-colors">Home</a></li>
-                <li><a href="#" className="text-base text-[#A7A7A7] hover:text-white transition-colors">Blog</a></li>
-                <li><a href="#" className="text-base text-[#A7A7A7] hover:text-white transition-colors">Notícias</a></li>
-                <li><a href="#" className="text-base text-[#A7A7A7] hover:text-white transition-colors">Serviços</a></li>
-                <li><a href="#" className="text-base text-[#A7A7A7] hover:text-white transition-colors">Contato</a></li>
+                <li><a href="#" className="text-base text-[#A7A7A7] hover:text-white transition-colors">Início</a></li>
+                <li><a href="#solutions" onClick={(e) => scrollToSection(e, 'solutions')} className="text-base text-[#A7A7A7] hover:text-white transition-colors cursor-pointer">Soluções</a></li>
+                <li><a href="#technology" onClick={(e) => scrollToSection(e, 'technology')} className="text-base text-[#A7A7A7] hover:text-white transition-colors cursor-pointer">Tecnologia</a></li>
+                <li><a href="#faq" onClick={(e) => scrollToSection(e, 'faq')} className="text-base text-[#A7A7A7] hover:text-white transition-colors cursor-pointer">Dúvidas</a></li>
+                <li><a href="#about" onClick={(e) => scrollToSection(e, 'about')} className="text-base text-[#A7A7A7] hover:text-white transition-colors cursor-pointer">Contato</a></li>
               </ul>
             </div>
             <div>
@@ -537,11 +554,11 @@ const Landing = () => {
                 <div className="relative w-full max-w-sm">
                   <input
                     type="email"
-                    placeholder="Enter your email"
+                    placeholder="Seu melhor e-mail"
                     className="w-full h-14 bg-[#111] border border-white/20 rounded-full px-6 pr-32 text-white placeholder-white/40 focus:outline-none focus:border-white transition-colors"
                   />
                   <button className="absolute right-2 top-2 bottom-2 bg-white text-black font-medium px-6 rounded-full hover:bg-gray-200 transition-colors">
-                    Subscribe
+                    Inscrever
                   </button>
                 </div>
 
@@ -589,7 +606,7 @@ const Landing = () => {
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         style={{ position: 'fixed', bottom: '32px', right: '32px', zIndex: 9999 }}
-        className={`flex h-14 w-14 items-center justify-center rounded-full bg-[#34A853] text-white shadow-lg transition-all duration-300 hover:bg-[#2E9648] hover:scale-110 hover:shadow-xl ${isScrolled ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}
+        className={`flex h-12 w-12 items-center justify-center rounded-full bg-[#34A853] text-white shadow-lg transition-all duration-300 hover:bg-[#2E9648] hover:scale-110 hover:shadow-xl ${isScrolled ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}
       >
         <ChevronsUp className="h-8 w-8" />
       </button>
