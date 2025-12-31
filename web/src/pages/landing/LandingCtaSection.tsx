@@ -16,7 +16,7 @@ const LandingCtaSection = () => {
         </h2>
 
         <div className="flex flex-col md:flex-row items-end justify-between gap-10">
-          <Link to="/login">
+          <Link to="/registrar">
             <div className="group flex h-14 w-auto items-center gap-4 rounded-full bg-white pl-8 pr-2 transition-transform hover:scale-105 cursor-pointer">
               <span className="text-lg font-medium text-black">Começar Agora</span>
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-black text-white transition-transform group-hover:rotate-45">

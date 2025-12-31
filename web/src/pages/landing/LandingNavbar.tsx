@@ -48,7 +48,7 @@ const LandingNavbar = ({ isScrolled, isMenuOpen, setIsMenuOpen, onNavigate }: La
           <Link to="/login" className="hidden text-sm font-medium text-white transition hover:text-landing-brand lg:block">
             Entrar
           </Link>
-          <Link to="/login">
+          <Link to="/registrar">
             <Button className="h-10 rounded-full bg-landing-brand px-6 text-sm font-medium text-white hover:bg-landing-brand-dark">
               Começar Agora
             </Button>

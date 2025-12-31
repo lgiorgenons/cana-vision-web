@@ -37,7 +37,7 @@ const LandingHeroSection = ({ onNavigate }: LandingHeroSectionProps) => {
 
         {/* CTA Buttons */}
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-          <Link to="/login">
+          <Link to="/registrar">
             <div className="group flex h-12 w-auto items-center gap-4 rounded-full bg-landing-brand pl-8 pr-2 transition-transform hover:scale-105 cursor-pointer shadow-lg hover:shadow-green-500/30">
               <span className="text-[16px] font-normal text-white">Começar Agora</span>
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-landing-brand transition-transform group-hover:rotate-45">
