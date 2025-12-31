@@ -1,6 +1,10 @@
+"use client";
+
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import Link from "next/link";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 
 type LayoutProps = {
@@ -11,12 +15,12 @@ type LayoutProps = {
   hideChrome?: boolean;
 };
 
-type NavItem = { icon: string; label: string; to: string };
-type NavSection = { key: string; icon: string; label: string; items: { label: string; to: string }[] };
+type NavItem = { icon: string; label: string; href: string };
+type NavSection = { key: string; icon: string; label: string; items: { label: string; href: string }[] };
 
 const mainNavItems: NavItem[] = [
-  { icon: "/images/ic_dashboard.svg", label: "Dashboard", to: "/dashboard" },
-  { icon: "/images/ic_mapa_interativo.svg", label: "Mapa Interativo", to: "/mapa-interativo" },
+  { icon: "/images/ic_dashboard.svg", label: "Dashboard", href: "/dashboard" },
+  { icon: "/images/ic_mapa_interativo.svg", label: "Mapa Interativo", href: "/mapa-interativo" },
 ];
 
 const navSections: NavSection[] = [
@@ -25,26 +29,26 @@ const navSections: NavSection[] = [
     icon: "/images/ic_monitoramento.svg",
     label: "Monitoramento",
     items: [
-      { label: "Analises", to: "/analises" },
-      { label: "Relatorios", to: "/relatorios" },
+      { label: "Analises", href: "/analises" },
+      { label: "Relatorios", href: "/relatorios" },
     ],
   },
   {
     key: "propriedades",
     icon: "/images/ic_propriedades.svg",
     label: "Propriedades",
-    items: [{ label: "Talhoes", to: "/talhoes" }],
+    items: [{ label: "Talhoes", href: "/talhoes" }],
   },
 ];
 
-const trailingNavItems: NavItem[] = [{ icon: "/images/ic_dados_satelitais.svg", label: "Dados Satelitais", to: "/analises" }];
+const trailingNavItems: NavItem[] = [{ icon: "/images/ic_dados_satelitais.svg", label: "Dados Satelitais", href: "/analises" }];
 
 const collapsedNavItems: NavItem[] = [
   ...mainNavItems,
   ...navSections.map((section) => ({
     icon: section.icon,
     label: section.label,
-    to: section.items[0]?.to ?? "/dashboard",
+    href: section.items[0]?.href ?? "/dashboard",
   })),
   ...trailingNavItems,
 ];
@@ -56,7 +60,7 @@ const utilityItems = [
 ];
 
 export const Layout = ({ title, description, headerActions, children, hideChrome }: LayoutProps) => {
-  const location = useLocation();
+  const pathname = usePathname();
   const [themeMode, setThemeMode] = useState<"light" | "dark">("light");
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>(() =>
@@ -82,14 +86,14 @@ export const Layout = ({ title, description, headerActions, children, hideChrome
     [],
   );
 
-  const isActive = (to: string) => {
-    if (location.pathname === to || location.pathname.startsWith(`${to}/`)) return true;
-    if (to === "/mapa-interativo" && (location.pathname === "/hotspots" || location.pathname.startsWith("/hotspots/"))) {
+  const isActive = (href: string) => {
+    if (pathname === href || pathname.startsWith(`${href}/`)) return true;
+    if (href === "/mapa-interativo" && (pathname === "/hotspots" || pathname.startsWith("/hotspots/"))) {
       return true;
     }
     return false;
   };
-  const activeNavItem = useMemo(() => flatNavItems.find((item) => isActive(item.to)), [flatNavItems, location.pathname]);
+  const activeNavItem = useMemo(() => flatNavItems.find((item) => isActive(item.href)), [flatNavItems, pathname]);
   const pageTitle = title ?? activeNavItem?.label ?? "Dashboard";
 
   const renderToggleButton = (
@@ -103,9 +107,11 @@ export const Layout = ({ title, description, headerActions, children, hideChrome
       className={`absolute ${rightOffsetClass} flex h-8 w-8 items-center justify-center text-slate-500 transition hover:text-slate-900 focus-visible:outline-none ${positionClass}`}
       aria-label={expanded ? "Recolher menu" : "Expandir menu"}
     >
-      <img
+      <Image
         src="/images/ic_arrow_hide_menu.svg"
         alt=""
+        width={24}
+        height={24}
         className={`h-6 w-6 transition-transform ${expanded ? "rotate-180" : ""}`}
       />
     </button>
@@ -126,7 +132,7 @@ export const Layout = ({ title, description, headerActions, children, hideChrome
       {isSidebarExpanded ? (
         <aside className="relative flex w-72 flex-col border-r border-[#EAEEF4] bg-white px-5 py-6">
           <div className="flex items-center">
-            <img src="/images/ic_atmosAgro_full.svg" alt="AtmosAgro" className="h-10 w-auto" />
+            <Image src="/images/ic_atmosAgro_full.svg" alt="AtmosAgro" width={140} height={40} className="h-10 w-auto" priority />
           </div>
           <div className="relative mt-5 flex w-full items-center justify-center py-3">
             <div className="h-[1px] w-full bg-[#CBCAD7]" />
@@ -138,12 +144,12 @@ export const Layout = ({ title, description, headerActions, children, hideChrome
               {mainNavItems.map((item) => (
                 <Link
                   key={item.label}
-                  to={item.to}
+                  href={item.href}
                   className={`flex items-center gap-3 rounded-[10px] px-3 py-2 font-semibold transition ${
-                    isActive(item.to) ? "bg-[#121826] text-white" : "text-slate-500 hover:bg-[#F0F0F0] hover:text-slate-900"
+                    isActive(item.href) ? "bg-[#121826] text-white" : "text-slate-500 hover:bg-[#F0F0F0] hover:text-slate-900"
                   }`}
                 >
-                  <img src={item.icon} alt="" className={`h-6 w-6 transition ${isActive(item.to) ? "brightness-0 invert" : ""}`} />
+                  <Image src={item.icon} alt="" width={24} height={24} className={`h-6 w-6 transition ${isActive(item.href) ? "brightness-0 invert" : ""}`} />
                   {item.label}
                 </Link>
               ))}
@@ -151,7 +157,7 @@ export const Layout = ({ title, description, headerActions, children, hideChrome
 
             {navSections.map((section) => {
               const open = expandedSections[section.key];
-              const hasActiveChild = section.items.some((item) => isActive(item.to));
+              const hasActiveChild = section.items.some((item) => isActive(item.href));
               return (
                 <div key={section.key}>
                   <button
@@ -163,7 +169,7 @@ export const Layout = ({ title, description, headerActions, children, hideChrome
                     aria-expanded={open}
                   >
                     <span className="flex items-center gap-3">
-                      <img src={section.icon} alt="" className="h-6 w-6" />
+                      <Image src={section.icon} alt="" width={24} height={24} className="h-6 w-6" />
                       {section.label}
                     </span>
                     <ChevronDown className={`h-4 w-4 transition ${open ? "" : "-rotate-90"}`} />
@@ -173,9 +179,9 @@ export const Layout = ({ title, description, headerActions, children, hideChrome
                       {section.items.map((item) => (
                         <Link
                           key={item.label}
-                          to={item.to}
+                          href={item.href}
                           className={`rounded-md px-2 py-1 text-sm transition hover:bg-[#F0F0F0] hover:text-slate-900 ${
-                            isActive(item.to) ? "bg-[#F0F0F0] text-slate-900" : ""
+                            isActive(item.href) ? "bg-[#F0F0F0] text-slate-900" : ""
                           }`}
                         >
                           {item.label}
@@ -190,12 +196,12 @@ export const Layout = ({ title, description, headerActions, children, hideChrome
             {trailingNavItems.map((item) => (
               <Link
                 key={item.label}
-                to={item.to}
+                href={item.href}
                 className={`flex items-center gap-3 rounded-2xl px-3 py-2 font-semibold transition ${
-                  isActive(item.to) ? "bg-[#121826] text-white" : "text-slate-600 hover:bg-[#F0F0F0] hover:text-slate-900"
+                  isActive(item.href) ? "bg-[#121826] text-white" : "text-slate-600 hover:bg-[#F0F0F0] hover:text-slate-900"
                 }`}
               >
-                <img src={item.icon} alt="" className="h-6 w-6" />
+                <Image src={item.icon} alt="" width={24} height={24} className="h-6 w-6" />
                 {item.label}
               </Link>
             ))}
@@ -208,7 +214,7 @@ export const Layout = ({ title, description, headerActions, children, hideChrome
                 type="button"
                 className="flex items-center gap-3 rounded-xl px-3 py-2 text-slate-500 transition hover:bg-[#F0F0F0] hover:text-slate-900"
               >
-                <img src={item.icon} alt="" className="h-6 w-6" />
+                <Image src={item.icon} alt="" width={24} height={24} className="h-6 w-6" />
                 {item.label}
               </button>
             ))}
@@ -221,7 +227,7 @@ export const Layout = ({ title, description, headerActions, children, hideChrome
                   themeMode === "light" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"
                 }`}
               >
-                <img src="/images/ic_light.svg" alt="Tema claro" className="h-6 w-6" />
+                <Image src="/images/ic_light.svg" alt="Tema claro" width={24} height={24} className="h-6 w-6" />
                 Claro
               </button>
               <button
@@ -231,7 +237,7 @@ export const Layout = ({ title, description, headerActions, children, hideChrome
                   themeMode === "dark" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"
                 }`}
               >
-                <img src="/images/ic_dark.svg" alt="Tema escuro" className="h-6 w-6" />
+                <Image src="/images/ic_dark.svg" alt="Tema escuro" width={24} height={24} className="h-6 w-6" />
                 Escuro
               </button>
             </div>
@@ -240,7 +246,7 @@ export const Layout = ({ title, description, headerActions, children, hideChrome
       ) : (
         <aside className="relative flex w-[88px] flex-col items-center border-r border-[#EAEEF4] bg-white py-6">
           <div className="flex items-center justify-center">
-            <img src="/images/ic_atmos_agro_svg.svg" alt="AtmosAgro" className="h-10 w-10" />
+            <Image src="/images/ic_atmos_agro_svg.svg" alt="AtmosAgro" width={40} height={40} className="h-10 w-10" />
           </div>
           <div className="relative mt-4 flex w-full items-center justify-center py-3">
             <div className="h-[1px] w-10 bg-[#CBCAD7]" />
@@ -251,13 +257,13 @@ export const Layout = ({ title, description, headerActions, children, hideChrome
             {collapsedNavItems.map((item) => (
               <Link
                 key={item.label}
-                to={item.to}
+                href={item.href}
                 className={`flex h-10 w-10 items-center justify-center rounded-[10px] transition-colors ${
-                  isActive(item.to) ? "bg-[#242B36] text-white" : "text-slate-400 hover:bg-[#F0F0F0] hover:text-slate-900"
+                  isActive(item.href) ? "bg-[#242B36] text-white" : "text-slate-400 hover:bg-[#F0F0F0] hover:text-slate-900"
                 }`}
                 aria-label={item.label}
               >
-                <img src={item.icon} alt="" className={`h-6 w-6 transition ${isActive(item.to) ? "invert" : ""}`} />
+                <Image src={item.icon} alt="" width={24} height={24} className={`h-6 w-6 transition ${isActive(item.href) ? "invert" : ""}`} />
               </Link>
             ))}
           </nav>
@@ -270,7 +276,7 @@ export const Layout = ({ title, description, headerActions, children, hideChrome
                 className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-400 transition hover:bg-[#F0F0F0] hover:text-slate-900"
                 aria-label={item.label}
               >
-                <img src={item.icon} alt="" className="h-6 w-6" />
+                <Image src={item.icon} alt="" width={24} height={24} className="h-6 w-6" />
               </button>
             ))}
             <div className="flex w-12 flex-col items-center gap-2 rounded-[10px] bg-[#F0F0F0] p-2 text-slate-500">
@@ -282,7 +288,7 @@ export const Layout = ({ title, description, headerActions, children, hideChrome
                 }`}
                 aria-label="Tema claro"
               >
-                <img src="/images/ic_light.svg" alt="Tema claro" className="h-6 w-6" />
+                <Image src="/images/ic_light.svg" alt="Tema claro" width={24} height={24} className="h-6 w-6" />
               </button>
               <button
                 type="button"
@@ -292,7 +298,7 @@ export const Layout = ({ title, description, headerActions, children, hideChrome
                 }`}
                 aria-label="Tema escuro"
               >
-                <img src="/images/ic_dark.svg" alt="Tema escuro" className="h-6 w-6" />
+                 <Image src="/images/ic_dark.svg" alt="Tema escuro" width={24} height={24} className="h-6 w-6" />
               </button>
             </div>
           </div>
@@ -309,11 +315,11 @@ export const Layout = ({ title, description, headerActions, children, hideChrome
             {headerActions ? <div className="flex flex-wrap items-center justify-end gap-2">{headerActions}</div> : null}
             <div className="flex items-center">
               <button type="button" className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F0F0F0]" aria-label="Notificacoes">
-                <img src="/images/ic_notificacao.svg" alt="" className="h-6 w-6" />
+                <Image src="/images/ic_notificacao.svg" alt="" width={24} height={24} className="h-6 w-6" />
               </button>
               <div className="mx-[15px] h-5 w-[1px] bg-[#CBCAD7]" />
               <div className="flex items-center gap-3 rounded-full border border-slate-200 px-3 py-1.5">
-                <img src="/images/ic_perfil.svg" alt="Usuario" className="h-8 w-8 rounded-full" />
+                <Image src="/images/ic_perfil.svg" alt="Usuario" width={32} height={32} className="h-8 w-8 rounded-full" />
                 <div className="text-left">
                   <p className="text-sm font-semibold">Andrew Smith</p>
                   <p className="text-xs text-slate-500">Administrador</p>

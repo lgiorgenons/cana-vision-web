@@ -1,7 +1,7 @@
 ﻿import { useMemo } from "react";
 
-import { dashboardData } from "@/pages/dashboard/data";
-import type { DashboardData, DashboardStatus } from "@/pages/dashboard/types";
+import { dashboardData } from "@/components/dashboard/data";
+import type { DashboardData, DashboardStatus } from "@/components/dashboard/types";
 
 type UseDashboardDataOptions = {
   mode?: DashboardStatus;

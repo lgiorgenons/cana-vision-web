@@ -1,4 +1,4 @@
-const rawBase = import.meta.env.VITE_API_URL?.trim() ?? "/api";
+const rawBase = process.env.NEXT_PUBLIC_API_URL?.trim() ?? "/api";
 const API_BASE_URL = rawBase.endsWith("/") ? rawBase.slice(0, -1) : rawBase;
 
 export class ApiError extends Error {
