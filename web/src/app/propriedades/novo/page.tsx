@@ -1,8 +1,9 @@
 "use client";
 
-import { type ChangeEvent, type DragEvent, useState } from "react";
+import { useState } from "react";
+import dynamic from "next/dynamic";
 import NextLink from "next/link";
-import { AlertCircle, Save, Upload } from "lucide-react";
+import { AlertCircle, Save } from "lucide-react";
 
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -13,6 +14,19 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+
+// Dynamically import Map component to avoid window undefined errors in Next.js
+const PropertyMapSelector = dynamic(
+    () => import("@/components/properties/PropertyMapSelector").then((mod) => mod.PropertyMapSelector),
+    {
+        ssr: false,
+        loading: () => (
+            <div className="flex h-[400px] w-full items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-400">
+                Carregando mapa...
+            </div>
+        ),
+    }
+);
 
 // --- Schema Definition ---
 const propertySchema = z.object({
@@ -29,14 +43,13 @@ const propertySchema = z.object({
     }),
     internalCode: z.string().optional(),
     sicarCode: z.string().optional(),
+    geoJson: z.any().optional(), // Using any for now to store the GeoJSON object
 });
 
 type PropertyFormValues = z.infer<typeof propertySchema>;
 
 export default function NewPropertyPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isDragging, setIsDragging] = useState(false);
-    const [geoFileName, setGeoFileName] = useState<string | null>(null);
 
     // Initialize Form
     const form = useForm<PropertyFormValues>({
@@ -48,6 +61,7 @@ export default function NewPropertyPage() {
             crop: "Cana-de-Açúcar",
             internalCode: "",
             sicarCode: "",
+            geoJson: null,
         },
     });
 
@@ -56,28 +70,6 @@ export default function NewPropertyPage() {
         console.log("Form Values:", values);
         // TODO: Connect to Backend API
         setTimeout(() => setIsSubmitting(false), 2000);
-    };
-
-    const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        setGeoFileName(file ? file.name : null);
-    };
-
-    const handleDragEnter = (event: DragEvent<HTMLDivElement>) => {
-        event.preventDefault();
-        setIsDragging(true);
-    };
-
-    const handleDragLeave = (event: DragEvent<HTMLDivElement>) => {
-        event.preventDefault();
-        setIsDragging(false);
-    };
-
-    const handleDrop = (event: DragEvent<HTMLDivElement>) => {
-        event.preventDefault();
-        const file = event.dataTransfer?.files?.[0];
-        setGeoFileName(file ? file.name : null);
-        setIsDragging(false);
     };
 
     return (
@@ -109,13 +101,13 @@ export default function NewPropertyPage() {
                                     )}
                                 />
 
-                                {/* Area */}
+                                {/* Total Area */}
                                 <FormField
                                     control={form.control}
                                     name="area"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-sm font-medium text-gray-700">Área Total (Hectares) *</FormLabel>
+                                            <FormLabel className="text-sm font-medium text-gray-700">Área Total (ha) *</FormLabel>
                                             <FormControl>
                                                 <div className="relative">
                                                     <Input
@@ -133,13 +125,13 @@ export default function NewPropertyPage() {
                                     )}
                                 />
 
-                                {/* Harvest */}
+                                {/* Harvest Year */}
                                 <FormField
                                     control={form.control}
                                     name="harvest"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-sm font-medium text-gray-700">Safra Atual</FormLabel>
+                                            <FormLabel className="text-sm font-medium text-gray-700">Safra Vigente</FormLabel>
                                             <FormControl>
                                                 <Input placeholder="Ex: 2024/2025" {...field} />
                                             </FormControl>
@@ -226,39 +218,31 @@ export default function NewPropertyPage() {
                             </div>
                         </div>
 
-                        {/* Card 3: GeoJSON Upload */}
+                        {/* Card 3: Location / Map */}
                         <div className="rounded-[10px] bg-white p-6 shadow-sm border border-gray-200">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-1">Geolocalização</h2>
-                            <p className="text-sm text-gray-500 mb-6">Importe o arquivo com o perímetro da propriedade.</p>
+                            <h2 className="text-lg font-semibold text-gray-900 mb-1">Delimitação de Área</h2>
+                            <p className="text-sm text-gray-500 mb-6">Desenhe o perímetro ou identifique a localização no mapa.</p>
 
-                            <div
-                                onDragEnter={handleDragEnter}
-                                onDragLeave={handleDragLeave}
-                                onDragOver={(event) => event.preventDefault()}
-                                onDrop={handleDrop}
-                                className={`relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed py-10 transition-colors
-                        ${isDragging ? "border-emerald-500 bg-emerald-50" : "border-gray-200 bg-gray-50 hover:bg-gray-100"}
-                    `}
-                            >
-                                <div className="rounded-full bg-white p-3 shadow-sm ring-1 ring-gray-200 mb-3">
-                                    <Upload className="h-6 w-6 text-emerald-600" />
-                                </div>
-                                <p className="text-sm font-medium text-gray-900">Clique para selecionar ou arraste o arquivo</p>
-                                <p className="text-xs text-gray-500 mt-1">Suporta: .GeoJSON, .JSON, .KML (Máx 5MB)</p>
-
-                                {geoFileName && (
-                                    <p className="mt-3 rounded-full bg-white px-3 py-1 text-xs font-semibold text-emerald-700 shadow-sm ring-1 ring-emerald-100">
-                                        Arquivo selecionado: {geoFileName}
-                                    </p>
+                            <FormField
+                                control={form.control}
+                                name="geoJson"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormControl>
+                                            <PropertyMapSelector
+                                                onBoundaryChange={(geojson) => field.onChange(geojson)}
+                                                className="w-full"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
                                 )}
-
-                                <input type="file" onChange={handleFileChange} className="absolute inset-0 cursor-pointer opacity-0" accept=".json,.geojson,.kml" />
-                            </div>
+                            />
 
                             <div className="mt-4 flex items-start gap-2 rounded-lg bg-blue-50 p-3 text-blue-700">
                                 <AlertCircle className="h-5 w-5 shrink-0" />
                                 <p className="text-xs leading-relaxed">
-                                    <strong>Dica:</strong> O arquivo deve conter apenas o polígono externo da propriedade.
+                                    <strong>Instrução:</strong> Clique nos vértices do terreno para marcar os pontos. O sistema conectará automaticamente para formar a área.
                                 </p>
                             </div>
                         </div>

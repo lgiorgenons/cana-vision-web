@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useRef, useEffect } from "react";
 import { Layout } from "@/components/Layout";
+import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -461,8 +462,8 @@ export default function Hotspots() {
                     <button
                       key={field.id}
                       className={`group relative w-full overflow-hidden rounded-2xl border p-4 text-left transition-all ${field.id === selectedFieldId
-                          ? "border-emerald-500 bg-white shadow-[0_8px_24px_rgba(0,0,0,0.04)]"
-                          : "border-transparent bg-white hover:bg-slate-50"
+                        ? "border-emerald-500 bg-white shadow-[0_8px_24px_rgba(0,0,0,0.04)]"
+                        : "border-transparent bg-white hover:bg-slate-50"
                         }`}
                       onClick={() => {
                         setSelectedFieldId(field.id);
@@ -503,10 +504,10 @@ export default function Hotspots() {
                                 )}
                                 <div
                                   className={`flex items-center gap-1.5 text-sm font-medium ${field.healthLabel === "Good"
-                                      ? "text-emerald-500"
-                                      : field.healthLabel === "Low"
-                                        ? "text-amber-500"
-                                        : "text-red-500"
+                                    ? "text-emerald-500"
+                                    : field.healthLabel === "Low"
+                                      ? "text-amber-500"
+                                      : "text-red-500"
                                     }`}
                                 >
                                   <Activity className="h-4 w-4" />
@@ -529,10 +530,12 @@ export default function Hotspots() {
         {/* Main Content */}
         <div ref={containerRef} className="relative flex-1 overflow-hidden rounded-[15px] bg-slate-900">
           {/* Background Image / Map Placeholder */}
-          <img
+          <Image
             src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=3200&auto=format&fit=crop"
             alt="Satellite View"
+            fill
             className="absolute inset-0 h-full w-full object-cover opacity-60 mix-blend-overlay"
+            priority
           />
           <div className="absolute inset-0 bg-gradient-to-b from-slate-900/40 via-transparent to-slate-900/80" />
 
@@ -584,8 +587,8 @@ export default function Hotspots() {
                     setDetailPanelOpen(true);
                   }}
                   className={`h-full w-full cursor-pointer rounded-[32px] border-2 backdrop-blur-sm transition-all ${field.id === selectedFieldId
-                      ? "border-white bg-white/10 shadow-[0_0_40px_rgba(255,255,255,0.2)]"
-                      : getPolygonColor(field.healthLabel)
+                    ? "border-white bg-white/10 shadow-[0_0_40px_rgba(255,255,255,0.2)]"
+                    : getPolygonColor(field.healthLabel)
                     }`}
                 >
                   {field.id === selectedFieldId && (
@@ -821,8 +824,8 @@ export default function Hotspots() {
                           <Minus className="h-5 w-5 text-slate-400" />
                         )}
                         <p className={`text-sm font-semibold ${selectedField.trend.startsWith("+") ? "text-emerald-600" :
-                            selectedField.trend.startsWith("-") ? "text-red-600" :
-                              "text-slate-600"
+                          selectedField.trend.startsWith("-") ? "text-red-600" :
+                            "text-slate-600"
                           }`}>
                           {selectedField.trend}
                         </p>
@@ -862,20 +865,20 @@ export default function Hotspots() {
                     <div className="flex items-center gap-2">
                       <div
                         className={`h-2 w-2 rounded-full ${selectedField.pestRisk === "High"
-                            ? "bg-red-500 animate-pulse"
-                            : selectedField.pestRisk === "Medium"
-                              ? "bg-amber-500"
-                              : "bg-emerald-500"
+                          ? "bg-red-500 animate-pulse"
+                          : selectedField.pestRisk === "Medium"
+                            ? "bg-amber-500"
+                            : "bg-emerald-500"
                           }`}
                       />
                       <p className="text-xs font-medium text-slate-600">Risco de Vetores (Bicudo/Broca)</p>
                     </div>
                     <span
                       className={`text-xs font-bold ${selectedField.pestRisk === "High"
-                          ? "text-red-600"
-                          : selectedField.pestRisk === "Medium"
-                            ? "text-amber-600"
-                            : "text-emerald-600"
+                        ? "text-red-600"
+                        : selectedField.pestRisk === "Medium"
+                          ? "text-amber-600"
+                          : "text-emerald-600"
                         }`}
                     >
                       {selectedField.pestRisk === "High"

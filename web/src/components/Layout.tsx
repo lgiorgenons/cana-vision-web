@@ -304,7 +304,7 @@ export const Layout = ({ title, description, headerActions, children, hideChrome
         </aside>
       )}
 
-      <main className="flex flex-1 flex-col h-full overflow-hidden bg-white px-4 py-4 lg:px-6">
+      <main className="flex flex-1 flex-col h-full overflow-hidden bg-slate-50 px-4 py-4 lg:px-6">
         <header className="flex flex-wrap items-center justify-between gap-4 shrink-0">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">{pageTitle}</h1>
