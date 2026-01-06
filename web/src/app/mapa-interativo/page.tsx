@@ -415,490 +415,481 @@ export default function Hotspots() {
     : "min-h-[calc(100vh-100px)] h-[calc(100vh-100px)]";
 
   return (
-    <Layout title="Mapa Interativo - Hotspots">
+    <Layout title="Mapa Interativo - Hotspots" description="Analise a saúde do canavial com índices de satélite e alertas em tempo real.">
       <div className={`flex w-full overflow-hidden p-1 ${mapShellClasses}`}>
-          {/* Sidebar */}
-          {showPanels && (
-            <Card className="flex w-[380px] flex-col overflow-hidden rounded-[15px] border-0 bg-[#F0F0F0] shadow-none mr-4">
+        {/* Sidebar */}
+        {showPanels && (
+          <Card className="flex w-[380px] flex-col overflow-hidden rounded-[15px] border-0 bg-[#F0F0F0] shadow-none mr-4">
             {/* Sidebar Header / Tabs */}
             {/* Sidebar Header */}
             <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
               <h2 className="text-lg font-semibold text-slate-900">Monitoramento</h2>
               <div className="flex gap-2">
-                 <Badge variant="outline" className="border-slate-200 bg-white text-slate-600">8 Talhões</Badge>
+                <Badge variant="outline" className="border-slate-200 bg-white text-slate-600">8 Talhões</Badge>
               </div>
             </div>
 
             {/* Sidebar Content */}
             <div className="flex-1 overflow-y-auto p-6">
               <div className="space-y-6">
-                  {/* Overall Health */}
-                  <div>
-                    <p className="text-sm font-medium text-slate-500">Saude geral (indices)</p>
-                    <div className="mt-1 flex items-end gap-4">
-                      <span className="text-6xl font-light text-slate-800">
-                        {overallHealth}
-                        <span className="text-4xl text-slate-400">%</span>
-                      </span>
-                      <div className="mb-2">
-                        <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-full px-3 py-0.5 text-xs font-normal">
-                          NDVI alto
-                        </Badge>
-                        <p className="mt-1 w-40 text-[10px] leading-tight text-slate-400">
-                          Dados Sentinel-2 (canasat) com {currentScene.cloudCover} de nuvem.
-                        </p>
-                      </div>
-                    </div>
-                    <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
-                      <Scan className="h-3.5 w-3.5" />
-                      Produto {currentScene.productId} • {currentScene.captureDate} • {currentScene.resolution}
+                {/* Overall Health */}
+                <div>
+                  <p className="text-sm font-medium text-slate-500">Saude geral (indices)</p>
+                  <div className="mt-1 flex items-end gap-4">
+                    <span className="text-6xl font-light text-slate-800">
+                      {overallHealth}
+                      <span className="text-4xl text-slate-400">%</span>
+                    </span>
+                    <div className="mb-2">
+                      <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-full px-3 py-0.5 text-xs font-normal">
+                        NDVI alto
+                      </Badge>
+                      <p className="mt-1 w-40 text-[10px] leading-tight text-slate-400">
+                        Dados Sentinel-2 (canasat) com {currentScene.cloudCover} de nuvem.
+                      </p>
                     </div>
                   </div>
-
-                  {/* Fields List */}
-                  <div className="space-y-3">
-                    {fields.map((field) => (
-                      <button
-                        key={field.id}
-                        className={`group relative w-full overflow-hidden rounded-2xl border p-4 text-left transition-all ${
-                          field.id === selectedFieldId
-                            ? "border-emerald-500 bg-white shadow-[0_8px_24px_rgba(0,0,0,0.04)]"
-                            : "border-transparent bg-white hover:bg-slate-50"
-                        }`}
-                        onClick={() => {
-                          setSelectedFieldId(field.id);
-                          setDetailPanelOpen(true);
-                        }}
-                      >
-                        {(() => {
-                          const risk = getSmcRisk(field);
-                          return (
-                            <>
-                        {field.id === selectedFieldId && (
-                          <div className="absolute left-0 top-0 h-full w-1.5 bg-emerald-500" />
-                        )}
-                        <div className="flex items-center justify-between">
-                          <div className="pl-2">
-                            <p className="font-semibold text-slate-900">{field.name}</p>
-                            <p className="text-xs text-slate-400">{field.crop}</p>
-                            <div className="mt-1 flex items-center gap-1 text-[11px] text-slate-500">
-                              <span>{field.layer}</span>
-                              <span className="text-slate-300">•</span>
-                              <span>{field.lastImage}</span>
-                            </div>
-                            <div className="mt-1 flex items-center gap-2">
-                              <span className={`rounded-full border px-2 py-[2px] text-[10px] font-semibold ${riskBadgeClass(risk)}`}>
-                                Risco SMC: {risk}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            {field.healthLabel !== "Good" && (
-                              <Badge
-                                variant="outline"
-                                className="gap-1 border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-normal text-amber-600"
-                              >
-                                <AlertTriangle className="h-3 w-3" />
-                                {field.healthLabel === "Low" ? "Atencao" : "Alerta"}
-                              </Badge>
-                            )}
-                            <div
-                              className={`flex items-center gap-1.5 text-sm font-medium ${
-                                field.healthLabel === "Good"
-                                  ? "text-emerald-500"
-                                  : field.healthLabel === "Low"
-                                  ? "text-amber-500"
-                                  : "text-red-500"
-                              }`}
-                            >
-                              <Activity className="h-4 w-4" />
-                              {Math.round(field.health * 100)}%
-                            </div>
-                          </div>
-                        </div>
-                            </>
-                          );
-                        })()}
-                      </button>
-                    ))}
+                  <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
+                    <Scan className="h-3.5 w-3.5" />
+                    Produto {currentScene.productId} • {currentScene.captureDate} • {currentScene.resolution}
                   </div>
                 </div>
+
+                {/* Fields List */}
+                <div className="space-y-3">
+                  {fields.map((field) => (
+                    <button
+                      key={field.id}
+                      className={`group relative w-full overflow-hidden rounded-2xl border p-4 text-left transition-all ${field.id === selectedFieldId
+                          ? "border-emerald-500 bg-white shadow-[0_8px_24px_rgba(0,0,0,0.04)]"
+                          : "border-transparent bg-white hover:bg-slate-50"
+                        }`}
+                      onClick={() => {
+                        setSelectedFieldId(field.id);
+                        setDetailPanelOpen(true);
+                      }}
+                    >
+                      {(() => {
+                        const risk = getSmcRisk(field);
+                        return (
+                          <>
+                            {field.id === selectedFieldId && (
+                              <div className="absolute left-0 top-0 h-full w-1.5 bg-emerald-500" />
+                            )}
+                            <div className="flex items-center justify-between">
+                              <div className="pl-2">
+                                <p className="font-semibold text-slate-900">{field.name}</p>
+                                <p className="text-xs text-slate-400">{field.crop}</p>
+                                <div className="mt-1 flex items-center gap-1 text-[11px] text-slate-500">
+                                  <span>{field.layer}</span>
+                                  <span className="text-slate-300">•</span>
+                                  <span>{field.lastImage}</span>
+                                </div>
+                                <div className="mt-1 flex items-center gap-2">
+                                  <span className={`rounded-full border px-2 py-[2px] text-[10px] font-semibold ${riskBadgeClass(risk)}`}>
+                                    Risco SMC: {risk}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                {field.healthLabel !== "Good" && (
+                                  <Badge
+                                    variant="outline"
+                                    className="gap-1 border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-normal text-amber-600"
+                                  >
+                                    <AlertTriangle className="h-3 w-3" />
+                                    {field.healthLabel === "Low" ? "Atencao" : "Alerta"}
+                                  </Badge>
+                                )}
+                                <div
+                                  className={`flex items-center gap-1.5 text-sm font-medium ${field.healthLabel === "Good"
+                                      ? "text-emerald-500"
+                                      : field.healthLabel === "Low"
+                                        ? "text-amber-500"
+                                        : "text-red-500"
+                                    }`}
+                                >
+                                  <Activity className="h-4 w-4" />
+                                  {Math.round(field.health * 100)}%
+                                </div>
+                              </div>
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
             </div>
           </Card>
+        )}
+
+        {/* Main Content */}
+        <div ref={containerRef} className="relative flex-1 overflow-hidden rounded-[15px] bg-slate-900">
+          {/* Background Image / Map Placeholder */}
+          <img
+            src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=3200&auto=format&fit=crop"
+            alt="Satellite View"
+            className="absolute inset-0 h-full w-full object-cover opacity-60 mix-blend-overlay"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-900/40 via-transparent to-slate-900/80" />
+
+          {/* Grid Overlay */}
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:100px_100px]" />
+
+          {/* Top Controls */}
+          <div className="absolute left-6 top-6 z-20 flex flex-col gap-2">
+            <div className="flex rounded-xl bg-slate-900/80 p-1 backdrop-blur-md">
+              <button
+                onClick={() => setViewMode("analytic")}
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${viewMode === "analytic" ? "bg-slate-700 text-white shadow-sm" : "text-slate-400 hover:text-white"
+                  }`}
+              >
+                Analytic
+              </button>
+              <button
+                onClick={() => setViewMode("cctv")}
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${viewMode === "cctv" ? "bg-slate-700 text-white shadow-sm" : "text-slate-400 hover:text-white"
+                  }`}
+              >
+                CCTV
+              </button>
+            </div>
+            <div className="flex items-center gap-2 rounded-lg bg-slate-900/70 px-3 py-2 text-xs text-white/80 backdrop-blur">
+              <Wind className="h-3.5 w-3.5" />
+              Cena Sentinel-2 {currentScene.productId} • {currentScene.captureDate} • Nuvem {currentScene.cloudCover}
+            </div>
+          </div>
+
+          {/* Field Overlays */}
+          <div className="absolute inset-0">
+            {fields.map((field) => (
+              <div
+                key={field.id}
+                className="absolute transition-all duration-500 ease-in-out"
+                style={{
+                  left: field.position.left,
+                  top: field.position.top,
+                  width: field.position.width,
+                  height: field.position.height,
+                  transform: field.position.rotate ? `rotate(${field.position.rotate})` : undefined,
+                }}
+              >
+                {/* Polygon Shape */}
+                <div
+                  onClick={() => {
+                    setSelectedFieldId(field.id);
+                    setDetailPanelOpen(true);
+                  }}
+                  className={`h-full w-full cursor-pointer rounded-[32px] border-2 backdrop-blur-sm transition-all ${field.id === selectedFieldId
+                      ? "border-white bg-white/10 shadow-[0_0_40px_rgba(255,255,255,0.2)]"
+                      : getPolygonColor(field.healthLabel)
+                    }`}
+                >
+                  {field.id === selectedFieldId && (
+                    <div className="absolute inset-0 rounded-[30px] bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(255,255,255,0.1)_10px,rgba(255,255,255,0.1)_20px)]" />
+                  )}
+                </div>
+
+                {/* Label */}
+                <div className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-slate-900 shadow-lg backdrop-blur-md">
+                  <div className="flex items-center gap-2">
+                    <div className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+                    <div className="leading-tight">
+                      <p className="text-[11px] font-semibold">{field.name}</p>
+                      <p className="text-[10px] text-slate-500">{field.productivity}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Connector Line Layer */}
+          {detailPanelOpen && selectedField && containerSize.width > 0 && (
+            <svg className="pointer-events-none absolute inset-0 z-20 h-full w-full overflow-visible">
+              <defs>
+                <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="2" result="blur" />
+                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                </filter>
+              </defs>
+              {(() => {
+                const startX = getPixelPosition(selectedField.position.left, containerSize.width) + getPixelPosition(selectedField.position.width, containerSize.width);
+                const startY = getPixelPosition(selectedField.position.top, containerSize.height) + getPixelPosition(selectedField.position.height, containerSize.height) / 2;
+
+                const endX = containerSize.width - 24 - 360; // Right-6 (24px) - Panel Width (360px)
+                const endY = 24 + 100; // Top-6 (24px) + Offset
+
+                const controlPoint1X = startX + 50;
+                const controlPoint1Y = startY;
+                const controlPoint2X = endX - 50;
+                const controlPoint2Y = endY;
+
+                return (
+                  <>
+                    <path
+                      d={`M ${startX} ${startY} C ${controlPoint1X} ${controlPoint1Y}, ${controlPoint2X} ${controlPoint2Y}, ${endX} ${endY}`}
+                      fill="none"
+                      stroke="white"
+                      strokeWidth="2"
+                      className="drop-shadow-md opacity-80"
+                      filter="url(#glow)"
+                    />
+                    <circle cx={startX} cy={startY} r="3" fill="white" className="animate-pulse" />
+                    <circle cx={endX} cy={endY} r="3" fill="white" />
+                  </>
+                );
+              })()}
+            </svg>
           )}
 
-          {/* Main Content */}
-          <div ref={containerRef} className="relative flex-1 overflow-hidden rounded-[15px] bg-slate-900">
-            {/* Background Image / Map Placeholder */}
-            <img
-              src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=3200&auto=format&fit=crop"
-              alt="Satellite View"
-              className="absolute inset-0 h-full w-full object-cover opacity-60 mix-blend-overlay"
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-slate-900/40 via-transparent to-slate-900/80" />
-
-            {/* Grid Overlay */}
-            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:100px_100px]" />
-
-            {/* Top Controls */}
-            <div className="absolute left-6 top-6 z-20 flex flex-col gap-2">
-              <div className="flex rounded-xl bg-slate-900/80 p-1 backdrop-blur-md">
-                <button
-                  onClick={() => setViewMode("analytic")}
-                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
-                    viewMode === "analytic" ? "bg-slate-700 text-white shadow-sm" : "text-slate-400 hover:text-white"
-                  }`}
-                >
-                  Analytic
-                </button>
-                <button
-                  onClick={() => setViewMode("cctv")}
-                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
-                    viewMode === "cctv" ? "bg-slate-700 text-white shadow-sm" : "text-slate-400 hover:text-white"
-                  }`}
-                >
-                  CCTV
-                </button>
-              </div>
-              <div className="flex items-center gap-2 rounded-lg bg-slate-900/70 px-3 py-2 text-xs text-white/80 backdrop-blur">
-                <Wind className="h-3.5 w-3.5" />
-                Cena Sentinel-2 {currentScene.productId} • {currentScene.captureDate} • Nuvem {currentScene.cloudCover}
-              </div>
+          {/* Bottom Left Controls */}
+          <div className="absolute bottom-6 left-6 z-30 flex gap-3">
+            <button
+              className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900/60 text-white backdrop-blur-md ring-1 ring-white/10 transition hover:bg-slate-900/80"
+              onClick={() => setIsFullscreen((prev) => !prev)}
+              aria-label={isFullscreen ? "Sair do modo tela cheia" : "Ativar modo tela cheia"}
+            >
+              <Maximize2 className="h-5 w-5" />
+            </button>
+            <div className="relative">
+              <button
+                className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900/60 text-white backdrop-blur-md ring-1 ring-white/10 transition hover:bg-slate-900/80"
+                onClick={() => setLayerMenuOpen((prev) => !prev)}
+                aria-label="Selecionar camada do mapa"
+              >
+                <Layers className="h-5 w-5" />
+              </button>
+              {layerMenuOpen && (
+                <div className="absolute bottom-14 left-0 w-40 rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_16px_30px_rgba(0,0,0,0.18)]">
+                  {layerOptions.map((layer) => (
+                    <button
+                      key={layer}
+                      className={`w-full rounded-xl px-3 py-2 text-left text-sm font-semibold transition ${activeLayer === layer ? "bg-slate-900 text-white" : "bg-white text-slate-800 hover:bg-slate-50"
+                        }`}
+                      onClick={() => {
+                        setActiveLayer(layer);
+                        setLayerMenuOpen(false);
+                      }}
+                    >
+                      {layer}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
+          </div>
 
-            {/* Field Overlays */}
-            <div className="absolute inset-0">
-              {fields.map((field) => (
-                <div
-                  key={field.id}
-                  className="absolute transition-all duration-500 ease-in-out"
-                  style={{
-                    left: field.position.left,
-                    top: field.position.top,
-                    width: field.position.width,
-                    height: field.position.height,
-                    transform: field.position.rotate ? `rotate(${field.position.rotate})` : undefined,
-                  }}
-                >
-                  {/* Polygon Shape */}
-                  <div
-                    onClick={() => {
-                      setSelectedFieldId(field.id);
-                      setDetailPanelOpen(true);
-                    }}
-                    className={`h-full w-full cursor-pointer rounded-[32px] border-2 backdrop-blur-sm transition-all ${
-                      field.id === selectedFieldId
-                        ? "border-white bg-white/10 shadow-[0_0_40px_rgba(255,255,255,0.2)]"
-                        : getPolygonColor(field.healthLabel)
-                    }`}
-                  >
-                    {field.id === selectedFieldId && (
-                      <div className="absolute inset-0 rounded-[30px] bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(255,255,255,0.1)_10px,rgba(255,255,255,0.1)_20px)]" />
+          {/* Detail Panel (Floating) */}
+          {detailPanelOpen && selectedField && (
+            <div className="absolute right-6 top-6 z-30 w-[360px] overflow-hidden rounded-[24px] bg-white/95 shadow-[0_24px_48px_rgba(0,0,0,0.2)] backdrop-blur-xl transition-all animate-in fade-in slide-in-from-right-4">
+              <div className="p-5">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Talhao</p>
+                    <h3 className="mt-1 text-lg font-semibold text-slate-900">{selectedField.name}</h3>
+                    <div className="flex items-center gap-1 text-sm text-slate-500">
+                      {selectedField.crop} <ArrowUpRight className="h-3 w-3" />
+                    </div>
+                  </div>
+                  <button onClick={() => setDetailPanelOpen(false)} className="rounded-full p-1 hover:bg-slate-100">
+                    <X className="h-5 w-5 text-slate-400" />
+                  </button>
+                </div>
+
+                <div className="mt-6 space-y-5">
+                  <div className="grid grid-cols-2 gap-3 rounded-xl bg-slate-50 p-3">
+                    <div>
+                      <p className="text-xs text-slate-400">Saude (NDVI)</p>
+                      <div className="flex items-center gap-2 text-emerald-500">
+                        <span className="text-lg font-semibold">{Math.round(selectedField.health * 100)}%</span>
+                        <span className="h-1 w-1 rounded-full bg-emerald-500" />
+                        <span className="text-sm font-medium">{selectedField.healthLabel}</span>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-400">Area</p>
+                      <p className="text-base font-medium text-slate-900">{selectedField.area}</p>
+                      <p className="text-[11px] text-slate-500">Camada ativa: {activeLayer}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div className="rounded-xl border border-slate-200 p-3 space-y-1">
+                      <p className="text-xs text-slate-400">Risco SMC</p>
+                      {(() => {
+                        const risk = getSmcRisk(selectedField);
+                        return (
+                          <span className={`inline-flex w-fit rounded-full border px-3 py-1 text-xs font-semibold ${riskBadgeClass(risk)}`}>
+                            {risk}
+                          </span>
+                        );
+                      })()}
+                      <p className="text-[11px] text-slate-500">
+                        Baseado em NDWI/NDMI e NDRE (Sentinel-2).
+                      </p>
+                    </div>
+                    <div className="rounded-xl border border-slate-200 p-3 space-y-1">
+                      <p className="text-xs text-slate-400">Confianca</p>
+                      <p className="text-sm font-semibold text-slate-900">{getDiagnostic(selectedField).probability}</p>
+                      <p className="text-[11px] text-slate-500">Cruza indice + clima</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 text-xs">
+                    <div className="rounded-xl border border-slate-200 p-3">
+                      <p className="text-slate-500">Ultima imagem</p>
+                      <p className="text-sm font-semibold text-slate-900">{selectedField.lastImage}</p>
+                      <p className="text-slate-500 mt-1">Produto {selectedField.productId}</p>
+                      <p className="text-slate-500 mt-1">Nuvem {selectedField.cloudCover}</p>
+                    </div>
+                    <div className="rounded-xl border border-slate-200 p-3 space-y-2">
+                      <div className="flex items-center justify-between text-slate-600">
+                        <span>NDVI</span>
+                        <span className="font-semibold text-slate-900">{selectedField.ndvi}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-slate-600">
+                        <span>NDWI</span>
+                        <span className="font-semibold text-slate-900">{selectedField.ndwi}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-slate-600">
+                        <span>NDRE</span>
+                        <span className="font-semibold text-slate-900">{selectedField.ndre}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-slate-600">
+                        <span>EVI</span>
+                        <span className="font-semibold text-slate-900">{selectedField.evi}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Diagnostic Assistant */}
+                  <div className={`rounded-xl border p-3 ${getDiagnostic(selectedField).color}`}>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Activity className="h-4 w-4" />
+                      <p className="text-xs font-bold uppercase tracking-wider">Assistente de Diagnóstico</p>
+                    </div>
+                    <p className="text-sm font-bold">{getDiagnostic(selectedField).diagnosis}</p>
+                    <p className="text-xs mt-1 opacity-80">Ação sugerida: {getDiagnostic(selectedField).action}</p>
+                  </div>
+
+                  <div className="grid grid-cols-4 gap-2 text-sm">
+                    <div className="rounded-xl bg-slate-50 p-2 space-y-1">
+                      <div className="flex items-center gap-1">
+                        <Thermometer className="h-3 w-3 text-orange-500" />
+                        <p className="text-slate-500 text-[10px]">LST</p>
+                      </div>
+                      <p className="text-sm font-semibold text-slate-900">{selectedField.lst}</p>
+                    </div>
+                    <div className="rounded-xl bg-slate-50 p-2 space-y-1">
+                      <div className="flex items-center gap-1">
+                        <Droplets className="h-3 w-3 text-sky-500" />
+                        <p className="text-slate-500 text-[10px]">Chuva</p>
+                      </div>
+                      <p className="text-sm font-semibold text-slate-900">{selectedField.rainfall}</p>
+                    </div>
+                    <div className="rounded-xl bg-slate-50 p-2 space-y-1">
+                      <div className="flex items-center gap-1">
+                        <Activity className="h-3 w-3 text-emerald-500" />
+                        <p className="text-slate-500 text-[10px]">Produt.</p>
+                      </div>
+                      <p className="text-sm font-semibold text-slate-900">{selectedField.productivity}</p>
+                    </div>
+                    <div className="rounded-xl bg-slate-50 p-2 space-y-1">
+                      <div className="flex items-center gap-1">
+                        <Droplets className="h-3 w-3 text-blue-500" />
+                        <p className="text-slate-500 text-[10px]">Umidade</p>
+                      </div>
+                      <p className="text-sm font-semibold text-slate-900">{selectedField.soilMoisture}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div className="rounded-xl bg-slate-50 p-3 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <p className="text-slate-500 text-xs">Tendencia</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {selectedField.trend.startsWith("+") ? (
+                          <ArrowUpRight className="h-5 w-5 text-emerald-500" />
+                        ) : selectedField.trend.startsWith("-") ? (
+                          <ArrowDownRight className="h-5 w-5 text-red-500" />
+                        ) : (
+                          <Minus className="h-5 w-5 text-slate-400" />
+                        )}
+                        <p className={`text-sm font-semibold ${selectedField.trend.startsWith("+") ? "text-emerald-600" :
+                            selectedField.trend.startsWith("-") ? "text-red-600" :
+                              "text-slate-600"
+                          }`}>
+                          {selectedField.trend}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="rounded-xl bg-slate-50 p-3 space-y-1">
+                      <div className="flex items-center gap-1 text-xs text-slate-500">
+                        <Sprout className="h-4 w-4 text-emerald-500" />
+                        <span>Proxima colheita</span>
+                      </div>
+                      <p className="text-sm font-semibold text-slate-900">
+                        {selectedField.nextHarvest}{" "}
+                        <span className="text-slate-500">• {selectedField.daysToHarvest} dias</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-xs uppercase tracking-wide text-slate-500">Alertas agronomicos</p>
+                    {selectedField.alerts.length === 0 ? (
+                      <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
+                        Nenhum alerta para este talhao.
+                      </div>
+                    ) : (
+                      selectedField.alerts.map((alert) => (
+                        <div
+                          key={alert}
+                          className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700"
+                        >
+                          {alert}
+                        </div>
+                      ))
                     )}
                   </div>
 
-                  {/* Label */}
-                  <div className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-slate-900 shadow-lg backdrop-blur-md">
+                  <div className="flex items-center justify-between rounded-xl bg-slate-50 p-3">
                     <div className="flex items-center gap-2">
-                      <div className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
-                      <div className="leading-tight">
-                        <p className="text-[11px] font-semibold">{field.name}</p>
-                        <p className="text-[10px] text-slate-500">{field.productivity}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Connector Line Layer */}
-            {detailPanelOpen && selectedField && containerSize.width > 0 && (
-               <svg className="pointer-events-none absolute inset-0 z-20 h-full w-full overflow-visible">
-                 <defs>
-                   <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                     <feGaussianBlur stdDeviation="2" result="blur" />
-                     <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                   </filter>
-                 </defs>
-                 {(() => {
-                    const startX = getPixelPosition(selectedField.position.left, containerSize.width) + getPixelPosition(selectedField.position.width, containerSize.width);
-                    const startY = getPixelPosition(selectedField.position.top, containerSize.height) + getPixelPosition(selectedField.position.height, containerSize.height) / 2;
-                    
-                    const endX = containerSize.width - 24 - 360; // Right-6 (24px) - Panel Width (360px)
-                    const endY = 24 + 100; // Top-6 (24px) + Offset
-
-                    const controlPoint1X = startX + 50;
-                    const controlPoint1Y = startY;
-                    const controlPoint2X = endX - 50;
-                    const controlPoint2Y = endY;
-
-                    return (
-                      <>
-                        <path
-                          d={`M ${startX} ${startY} C ${controlPoint1X} ${controlPoint1Y}, ${controlPoint2X} ${controlPoint2Y}, ${endX} ${endY}`}
-                          fill="none"
-                          stroke="white"
-                          strokeWidth="2"
-                          className="drop-shadow-md opacity-80"
-                          filter="url(#glow)"
-                        />
-                        <circle cx={startX} cy={startY} r="3" fill="white" className="animate-pulse" />
-                        <circle cx={endX} cy={endY} r="3" fill="white" />
-                      </>
-                    );
-                 })()}
-               </svg>
-            )}
-
-            {/* Bottom Left Controls */}
-            <div className="absolute bottom-6 left-6 z-30 flex gap-3">
-              <button
-                className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900/60 text-white backdrop-blur-md ring-1 ring-white/10 transition hover:bg-slate-900/80"
-                onClick={() => setIsFullscreen((prev) => !prev)}
-                aria-label={isFullscreen ? "Sair do modo tela cheia" : "Ativar modo tela cheia"}
-              >
-                <Maximize2 className="h-5 w-5" />
-              </button>
-              <div className="relative">
-                <button
-                  className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900/60 text-white backdrop-blur-md ring-1 ring-white/10 transition hover:bg-slate-900/80"
-                  onClick={() => setLayerMenuOpen((prev) => !prev)}
-                  aria-label="Selecionar camada do mapa"
-                >
-                  <Layers className="h-5 w-5" />
-                </button>
-                {layerMenuOpen && (
-                  <div className="absolute bottom-14 left-0 w-40 rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_16px_30px_rgba(0,0,0,0.18)]">
-                    {layerOptions.map((layer) => (
-                      <button
-                        key={layer}
-                        className={`w-full rounded-xl px-3 py-2 text-left text-sm font-semibold transition ${
-                          activeLayer === layer ? "bg-slate-900 text-white" : "bg-white text-slate-800 hover:bg-slate-50"
-                        }`}
-                        onClick={() => {
-                          setActiveLayer(layer);
-                          setLayerMenuOpen(false);
-                        }}
-                      >
-                        {layer}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Detail Panel (Floating) */}
-            {detailPanelOpen && selectedField && (
-              <div className="absolute right-6 top-6 z-30 w-[360px] overflow-hidden rounded-[24px] bg-white/95 shadow-[0_24px_48px_rgba(0,0,0,0.2)] backdrop-blur-xl transition-all animate-in fade-in slide-in-from-right-4">
-                <div className="p-5">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Talhao</p>
-                      <h3 className="mt-1 text-lg font-semibold text-slate-900">{selectedField.name}</h3>
-                      <div className="flex items-center gap-1 text-sm text-slate-500">
-                        {selectedField.crop} <ArrowUpRight className="h-3 w-3" />
-                      </div>
-                    </div>
-                    <button onClick={() => setDetailPanelOpen(false)} className="rounded-full p-1 hover:bg-slate-100">
-                      <X className="h-5 w-5 text-slate-400" />
-                    </button>
-                  </div>
-
-                  <div className="mt-6 space-y-5">
-                    <div className="grid grid-cols-2 gap-3 rounded-xl bg-slate-50 p-3">
-                      <div>
-                        <p className="text-xs text-slate-400">Saude (NDVI)</p>
-                        <div className="flex items-center gap-2 text-emerald-500">
-                          <span className="text-lg font-semibold">{Math.round(selectedField.health * 100)}%</span>
-                          <span className="h-1 w-1 rounded-full bg-emerald-500" />
-                          <span className="text-sm font-medium">{selectedField.healthLabel}</span>
-                        </div>
-                      </div>
-                      <div>
-                        <p className="text-xs text-slate-400">Area</p>
-                        <p className="text-base font-medium text-slate-900">{selectedField.area}</p>
-                        <p className="text-[11px] text-slate-500">Camada ativa: {activeLayer}</p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div className="rounded-xl border border-slate-200 p-3 space-y-1">
-                        <p className="text-xs text-slate-400">Risco SMC</p>
-                        {(() => {
-                          const risk = getSmcRisk(selectedField);
-                          return (
-                            <span className={`inline-flex w-fit rounded-full border px-3 py-1 text-xs font-semibold ${riskBadgeClass(risk)}`}>
-                              {risk}
-                            </span>
-                          );
-                        })()}
-                        <p className="text-[11px] text-slate-500">
-                          Baseado em NDWI/NDMI e NDRE (Sentinel-2).
-                        </p>
-                      </div>
-                      <div className="rounded-xl border border-slate-200 p-3 space-y-1">
-                        <p className="text-xs text-slate-400">Confianca</p>
-                        <p className="text-sm font-semibold text-slate-900">{getDiagnostic(selectedField).probability}</p>
-                        <p className="text-[11px] text-slate-500">Cruza indice + clima</p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 text-xs">
-                      <div className="rounded-xl border border-slate-200 p-3">
-                        <p className="text-slate-500">Ultima imagem</p>
-                        <p className="text-sm font-semibold text-slate-900">{selectedField.lastImage}</p>
-                        <p className="text-slate-500 mt-1">Produto {selectedField.productId}</p>
-                        <p className="text-slate-500 mt-1">Nuvem {selectedField.cloudCover}</p>
-                      </div>
-                      <div className="rounded-xl border border-slate-200 p-3 space-y-2">
-                        <div className="flex items-center justify-between text-slate-600">
-                          <span>NDVI</span>
-                          <span className="font-semibold text-slate-900">{selectedField.ndvi}</span>
-                        </div>
-                        <div className="flex items-center justify-between text-slate-600">
-                          <span>NDWI</span>
-                          <span className="font-semibold text-slate-900">{selectedField.ndwi}</span>
-                        </div>
-                        <div className="flex items-center justify-between text-slate-600">
-                          <span>NDRE</span>
-                          <span className="font-semibold text-slate-900">{selectedField.ndre}</span>
-                        </div>
-                        <div className="flex items-center justify-between text-slate-600">
-                          <span>EVI</span>
-                          <span className="font-semibold text-slate-900">{selectedField.evi}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Diagnostic Assistant */}
-                    <div className={`rounded-xl border p-3 ${getDiagnostic(selectedField).color}`}>
-                      <div className="flex items-center gap-2 mb-1">
-                        <Activity className="h-4 w-4" />
-                        <p className="text-xs font-bold uppercase tracking-wider">Assistente de Diagnóstico</p>
-                      </div>
-                      <p className="text-sm font-bold">{getDiagnostic(selectedField).diagnosis}</p>
-                      <p className="text-xs mt-1 opacity-80">Ação sugerida: {getDiagnostic(selectedField).action}</p>
-                    </div>
-
-                    <div className="grid grid-cols-4 gap-2 text-sm">
-                      <div className="rounded-xl bg-slate-50 p-2 space-y-1">
-                        <div className="flex items-center gap-1">
-                          <Thermometer className="h-3 w-3 text-orange-500" />
-                          <p className="text-slate-500 text-[10px]">LST</p>
-                        </div>
-                        <p className="text-sm font-semibold text-slate-900">{selectedField.lst}</p>
-                      </div>
-                      <div className="rounded-xl bg-slate-50 p-2 space-y-1">
-                        <div className="flex items-center gap-1">
-                          <Droplets className="h-3 w-3 text-sky-500" />
-                          <p className="text-slate-500 text-[10px]">Chuva</p>
-                        </div>
-                        <p className="text-sm font-semibold text-slate-900">{selectedField.rainfall}</p>
-                      </div>
-                      <div className="rounded-xl bg-slate-50 p-2 space-y-1">
-                        <div className="flex items-center gap-1">
-                          <Activity className="h-3 w-3 text-emerald-500" />
-                          <p className="text-slate-500 text-[10px]">Produt.</p>
-                        </div>
-                        <p className="text-sm font-semibold text-slate-900">{selectedField.productivity}</p>
-                      </div>
-                      <div className="rounded-xl bg-slate-50 p-2 space-y-1">
-                        <div className="flex items-center gap-1">
-                          <Droplets className="h-3 w-3 text-blue-500" />
-                          <p className="text-slate-500 text-[10px]">Umidade</p>
-                        </div>
-                        <p className="text-sm font-semibold text-slate-900">{selectedField.soilMoisture}</p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div className="rounded-xl bg-slate-50 p-3 space-y-1">
-                        <div className="flex items-center gap-2">
-                          <p className="text-slate-500 text-xs">Tendencia</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                           {selectedField.trend.startsWith("+") ? (
-                             <ArrowUpRight className="h-5 w-5 text-emerald-500" />
-                           ) : selectedField.trend.startsWith("-") ? (
-                             <ArrowDownRight className="h-5 w-5 text-red-500" />
-                           ) : (
-                             <Minus className="h-5 w-5 text-slate-400" />
-                           )}
-                           <p className={`text-sm font-semibold ${
-                             selectedField.trend.startsWith("+") ? "text-emerald-600" :
-                             selectedField.trend.startsWith("-") ? "text-red-600" :
-                             "text-slate-600"
-                           }`}>
-                             {selectedField.trend}
-                           </p>
-                        </div>
-                      </div>
-                      <div className="rounded-xl bg-slate-50 p-3 space-y-1">
-                        <div className="flex items-center gap-1 text-xs text-slate-500">
-                          <Sprout className="h-4 w-4 text-emerald-500" />
-                          <span>Proxima colheita</span>
-                        </div>
-                        <p className="text-sm font-semibold text-slate-900">
-                          {selectedField.nextHarvest}{" "}
-                          <span className="text-slate-500">• {selectedField.daysToHarvest} dias</span>
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <p className="text-xs uppercase tracking-wide text-slate-500">Alertas agronomicos</p>
-                      {selectedField.alerts.length === 0 ? (
-                        <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
-                          Nenhum alerta para este talhao.
-                        </div>
-                      ) : (
-                        selectedField.alerts.map((alert) => (
-                          <div
-                            key={alert}
-                            className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700"
-                          >
-                            {alert}
-                          </div>
-                        ))
-                      )}
-                    </div>
-
-                    <div className="flex items-center justify-between rounded-xl bg-slate-50 p-3">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={`h-2 w-2 rounded-full ${
-                            selectedField.pestRisk === "High"
-                              ? "bg-red-500 animate-pulse"
-                              : selectedField.pestRisk === "Medium"
-                                ? "bg-amber-500"
-                                : "bg-emerald-500"
-                          }`}
-                        />
-                        <p className="text-xs font-medium text-slate-600">Risco de Vetores (Bicudo/Broca)</p>
-                      </div>
-                      <span
-                        className={`text-xs font-bold ${
-                          selectedField.pestRisk === "High"
-                            ? "text-red-600"
+                      <div
+                        className={`h-2 w-2 rounded-full ${selectedField.pestRisk === "High"
+                            ? "bg-red-500 animate-pulse"
                             : selectedField.pestRisk === "Medium"
-                              ? "text-amber-600"
-                              : "text-emerald-600"
-                        }`}
-                      >
-                        {selectedField.pestRisk === "High"
-                          ? "ALTO RISCO"
-                          : selectedField.pestRisk === "Medium"
-                            ? "MEDIO"
-                            : "BAIXO"}
-                      </span>
+                              ? "bg-amber-500"
+                              : "bg-emerald-500"
+                          }`}
+                      />
+                      <p className="text-xs font-medium text-slate-600">Risco de Vetores (Bicudo/Broca)</p>
                     </div>
+                    <span
+                      className={`text-xs font-bold ${selectedField.pestRisk === "High"
+                          ? "text-red-600"
+                          : selectedField.pestRisk === "Medium"
+                            ? "text-amber-600"
+                            : "text-emerald-600"
+                        }`}
+                    >
+                      {selectedField.pestRisk === "High"
+                        ? "ALTO RISCO"
+                        : selectedField.pestRisk === "Medium"
+                          ? "MEDIO"
+                          : "BAIXO"}
+                    </span>
                   </div>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
+        </div>
       </div>
     </Layout>
   );
