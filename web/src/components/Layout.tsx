@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -37,7 +37,10 @@ const navSections: NavSection[] = [
     key: "propriedades",
     icon: "/images/ic_propriedades.svg",
     label: "Propriedades",
-    items: [{ label: "Talhoes", href: "/talhoes" }],
+    items: [
+      { label: "Nova Propriedade", href: "/propriedades/novo" },
+      { label: "Talhoes", href: "/talhoes" },
+    ],
   },
 ];
 
@@ -86,14 +89,15 @@ export const Layout = ({ title, description, headerActions, children, hideChrome
     [],
   );
 
-  const isActive = (href: string) => {
+  const isActive = useCallback((href: string) => {
     if (pathname === href || pathname.startsWith(`${href}/`)) return true;
     if (href === "/mapa-interativo" && (pathname === "/hotspots" || pathname.startsWith("/hotspots/"))) {
       return true;
     }
     return false;
-  };
-  const activeNavItem = useMemo(() => flatNavItems.find((item) => isActive(item.href)), [flatNavItems, pathname]);
+  }, [pathname]);
+
+  const activeNavItem = useMemo(() => flatNavItems.find((item) => isActive(item.href)), [flatNavItems, isActive]);
   const pageTitle = title ?? activeNavItem?.label ?? "Dashboard";
 
   const renderToggleButton = (
@@ -145,9 +149,8 @@ export const Layout = ({ title, description, headerActions, children, hideChrome
                 <Link
                   key={item.label}
                   href={item.href}
-                  className={`flex items-center gap-3 rounded-[10px] px-3 py-2 font-semibold transition ${
-                    isActive(item.href) ? "bg-[#121826] text-white" : "text-slate-500 hover:bg-[#F0F0F0] hover:text-slate-900"
-                  }`}
+                  className={`flex items-center gap-3 rounded-[10px] px-3 py-2 font-semibold transition ${isActive(item.href) ? "bg-[#121826] text-white" : "text-slate-500 hover:bg-[#F0F0F0] hover:text-slate-900"
+                    }`}
                 >
                   <Image src={item.icon} alt="" width={24} height={24} className={`h-6 w-6 transition ${isActive(item.href) ? "brightness-0 invert" : ""}`} />
                   {item.label}
@@ -163,9 +166,8 @@ export const Layout = ({ title, description, headerActions, children, hideChrome
                   <button
                     type="button"
                     onClick={() => toggleSection(section.key)}
-                    className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left font-semibold transition ${
-                      hasActiveChild ? "text-slate-900" : "text-slate-600"
-                    } hover:bg-[#F0F0F0] hover:text-slate-900`}
+                    className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left font-semibold transition ${hasActiveChild ? "text-slate-900" : "text-slate-600"
+                      } hover:bg-[#F0F0F0] hover:text-slate-900`}
                     aria-expanded={open}
                   >
                     <span className="flex items-center gap-3">
@@ -180,9 +182,8 @@ export const Layout = ({ title, description, headerActions, children, hideChrome
                         <Link
                           key={item.label}
                           href={item.href}
-                          className={`rounded-md px-2 py-1 text-sm transition hover:bg-[#F0F0F0] hover:text-slate-900 ${
-                            isActive(item.href) ? "bg-[#F0F0F0] text-slate-900" : ""
-                          }`}
+                          className={`rounded-md px-2 py-1 text-sm transition hover:bg-[#F0F0F0] hover:text-slate-900 ${isActive(item.href) ? "bg-[#F0F0F0] text-slate-900" : ""
+                            }`}
                         >
                           {item.label}
                         </Link>
@@ -197,9 +198,8 @@ export const Layout = ({ title, description, headerActions, children, hideChrome
               <Link
                 key={item.label}
                 href={item.href}
-                className={`flex items-center gap-3 rounded-2xl px-3 py-2 font-semibold transition ${
-                  isActive(item.href) ? "bg-[#121826] text-white" : "text-slate-600 hover:bg-[#F0F0F0] hover:text-slate-900"
-                }`}
+                className={`flex items-center gap-3 rounded-2xl px-3 py-2 font-semibold transition ${isActive(item.href) ? "bg-[#121826] text-white" : "text-slate-600 hover:bg-[#F0F0F0] hover:text-slate-900"
+                  }`}
               >
                 <Image src={item.icon} alt="" width={24} height={24} className="h-6 w-6" />
                 {item.label}
@@ -223,9 +223,8 @@ export const Layout = ({ title, description, headerActions, children, hideChrome
               <button
                 type="button"
                 onClick={() => setThemeMode("light")}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-[10px] px-3 py-2 text-sm font-semibold transition ${
-                  themeMode === "light" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"
-                }`}
+                className={`flex flex-1 items-center justify-center gap-2 rounded-[10px] px-3 py-2 text-sm font-semibold transition ${themeMode === "light" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"
+                  }`}
               >
                 <Image src="/images/ic_light.svg" alt="Tema claro" width={24} height={24} className="h-6 w-6" />
                 Claro
@@ -233,9 +232,8 @@ export const Layout = ({ title, description, headerActions, children, hideChrome
               <button
                 type="button"
                 onClick={() => setThemeMode("dark")}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-[10px] px-3 py-2 text-sm font-semibold transition ${
-                  themeMode === "dark" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"
-                }`}
+                className={`flex flex-1 items-center justify-center gap-2 rounded-[10px] px-3 py-2 text-sm font-semibold transition ${themeMode === "dark" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"
+                  }`}
               >
                 <Image src="/images/ic_dark.svg" alt="Tema escuro" width={24} height={24} className="h-6 w-6" />
                 Escuro
@@ -258,9 +256,8 @@ export const Layout = ({ title, description, headerActions, children, hideChrome
               <Link
                 key={item.label}
                 href={item.href}
-                className={`flex h-10 w-10 items-center justify-center rounded-[10px] transition-colors ${
-                  isActive(item.href) ? "bg-[#242B36] text-white" : "text-slate-400 hover:bg-[#F0F0F0] hover:text-slate-900"
-                }`}
+                className={`flex h-10 w-10 items-center justify-center rounded-[10px] transition-colors ${isActive(item.href) ? "bg-[#242B36] text-white" : "text-slate-400 hover:bg-[#F0F0F0] hover:text-slate-900"
+                  }`}
                 aria-label={item.label}
               >
                 <Image src={item.icon} alt="" width={24} height={24} className={`h-6 w-6 transition ${isActive(item.href) ? "invert" : ""}`} />
@@ -283,9 +280,8 @@ export const Layout = ({ title, description, headerActions, children, hideChrome
               <button
                 type="button"
                 onClick={() => setThemeMode("light")}
-                className={`flex h-10 w-10 items-center justify-center rounded-[10px] transition ${
-                  themeMode === "light" ? "bg-white shadow-sm" : ""
-                }`}
+                className={`flex h-10 w-10 items-center justify-center rounded-[10px] transition ${themeMode === "light" ? "bg-white shadow-sm" : ""
+                  }`}
                 aria-label="Tema claro"
               >
                 <Image src="/images/ic_light.svg" alt="Tema claro" width={24} height={24} className="h-6 w-6" />
@@ -293,12 +289,11 @@ export const Layout = ({ title, description, headerActions, children, hideChrome
               <button
                 type="button"
                 onClick={() => setThemeMode("dark")}
-                className={`flex h-10 w-10 items-center justify-center rounded-[10px] transition ${
-                  themeMode === "dark" ? "bg-white shadow-sm" : ""
-                }`}
+                className={`flex h-10 w-10 items-center justify-center rounded-[10px] transition ${themeMode === "dark" ? "bg-white shadow-sm" : ""
+                  }`}
                 aria-label="Tema escuro"
               >
-                 <Image src="/images/ic_dark.svg" alt="Tema escuro" width={24} height={24} className="h-6 w-6" />
+                <Image src="/images/ic_dark.svg" alt="Tema escuro" width={24} height={24} className="h-6 w-6" />
               </button>
             </div>
           </div>
