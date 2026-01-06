@@ -148,7 +148,7 @@ export function PropertyMapSelector({ onBoundaryChange, className }: PropertyMap
         <div className={`flex flex-col gap-4 ${className}`}>
 
             {/* Search Bar - External */}
-            <div className="relative z-10">
+            <div className="relative z-[3000]">
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                     <Input
