@@ -61,7 +61,7 @@ export default function PropertiesListPage() {
         </Button>
       }
     >
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-[1600px] px-4">
         {/* Filters & Search */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative w-full max-w-sm">
@@ -75,7 +75,7 @@ export default function PropertiesListPage() {
         </div>
 
         {/* Properties Grid */}
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {MOCK_PROPERTIES.map((property) => (
             <div
               key={property.id}
