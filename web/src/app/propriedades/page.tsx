@@ -24,36 +24,36 @@ const MOCK_PROPERTIES: Array<{
   status: string;
   imageUrl?: string;
 }> = [
-    /* {
-       id: 1,
-       name: "Fazenda Santa Mônica",
-       area: 1250.5,
-       crop: "Cana-de-Açúcar",
-       harvest: "2024/2025",
-       location: "Ribeirão Preto - SP",
-       status: "Ativo",
-       imageUrl: "/images/properties/farm_sugarcane.png",
-     },
-     {
-       id: 2,
-       name: "Sítio Vista Alegre",
-       area: 340.0,
-       crop: "Soja",
-       harvest: "2023/2024",
-       location: "Uberaba - MG",
-       status: "Ativo",
-       imageUrl: "/images/properties/farm_soy.png",
-     },
-     {
-       id: 3,
-       name: "Fazenda Boa Esperança",
-       area: 890.2,
-       crop: "Milho",
-       harvest: "2024",
-       location: "Londrina - PR",
-       status: "Manutenção",
-       imageUrl: "/images/properties/farm_corn.png",
-     },*/
+    {
+      id: 1,
+      name: "Fazenda Santa Mônica",
+      area: 1250.5,
+      crop: "Cana-de-Açúcar",
+      harvest: "2024/2025",
+      location: "Ribeirão Preto - SP",
+      status: "Ativo",
+      imageUrl: "/images/properties/farm_sugarcane.png",
+    },
+    {
+      id: 2,
+      name: "Sítio Vista Alegre",
+      area: 340.0,
+      crop: "Soja",
+      harvest: "2023/2024",
+      location: "Uberaba - MG",
+      status: "Ativo",
+      imageUrl: "/images/properties/farm_soy.png",
+    },
+    {
+      id: 3,
+      name: "Fazenda Boa Esperança",
+      area: 890.2,
+      crop: "Milho",
+      harvest: "2024",
+      location: "Londrina - PR",
+      status: "Manutenção",
+      imageUrl: "/images/properties/farm_corn.png",
+    },
   ];
 
 export default function PropertiesListPage() {
@@ -168,22 +168,36 @@ export default function PropertiesListPage() {
             </div>
           </>
         ) : (
-          <div className="flex flex-col items-center justify-center py-32 text-center animate-in fade-in duration-500">
-            <div className="mb-6 rounded-full bg-[#16A34A] p-8 ring-1 ring-green-200">
-              <Image src="/images/ic_propriedades.svg" alt="Propriedades" width={64} height={64} className="h-16 w-16" />
+          <div className="flex min-h-[60vh] flex-col items-center justify-center py-12 animate-in fade-in zoom-in-95 duration-700">
+
+            {/* Background Decoration */}
+            <div className="absolute inset-0 -z-10 h-full w-full bg-white bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)]"></div>
+
+            <div className="relative flex max-w-lg flex-col items-center text-center p-8 rounded-2xl bg-white/40 backdrop-blur-sm border border-white/50 shadow-xl shadow-slate-200/50 ring-1 ring-slate-100">
+
+              {/* Icon Container with Glow */}
+              <div className="mb-6 relative group">
+                <div className="absolute -inset-4 rounded-full bg-green-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                <div className="relative rounded-full bg-gradient-to-br from-green-500 to-emerald-600 p-6 shadow-lg shadow-green-500/30 ring-4 ring-green-50 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3">
+                  <Image src="/images/ic_propriedades.svg" alt="Propriedades" width={64} height={64} className="h-10 w-10 text-white invert brightness-0" />
+                </div>
+              </div>
+
+              <h3 className="mb-3 text-2xl font-bold tracking-tight text-slate-900">
+                Nenhuma propriedade encontrada
+              </h3>
+
+              <p className="mb-8 text-slate-500 leading-relaxed max-w-[360px]">
+                Você ainda não cadastrou nenhuma fazenda. Comece agora para ter acesso ao <span className="font-medium text-slate-700">monitoramento inteligente</span> de sua lavoura.
+              </p>
+
+              <Button asChild size="lg" className="h-12 px-8 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-medium shadow-lg shadow-green-500/25 transition-all hover:shadow-green-500/40 hover:-translate-y-0.5 rounded-full">
+                <Link href="/propriedades/novo">
+                  <Plus className="mr-2 h-5 w-5" />
+                  Cadastrar Primeira Propriedade
+                </Link>
+              </Button>
             </div>
-            <h3 className="mb-3 text-xl font-semibold text-slate-900">
-              Nenhuma propriedade encontrada
-            </h3>
-            <p className="mb-8 max-w-md text-slate-500 text-base">
-              Você ainda não cadastrou nenhuma fazenda. Comece adicionando sua primeira propriedade para iniciar o monitoramento inteligente.
-            </p>
-            <Button asChild size="lg" className="bg-[#16A34A] hover:bg-[#15803d] text-white shadow-sm shadow-green-100">
-              <Link href="/propriedades/novo">
-                <Plus className="h-5 w-5" />
-                Cadastrar Primeira Propriedade
-              </Link>
-            </Button>
           </div>
         )}
 
