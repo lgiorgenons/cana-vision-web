@@ -28,6 +28,16 @@ const PropertyMapSelector = dynamic(
     }
 );
 
+// --- Interfaces ---
+interface GeoJSONPolygonFeature {
+    type: "Feature";
+    geometry: {
+        type: "Polygon";
+        coordinates: number[][][];
+    };
+    properties: Record<string, unknown>;
+}
+
 // --- Schema Definition ---
 const propertySchema = z.object({
     name: z.string().min(3, "O nome deve ter pelo menos 3 caracteres."),
@@ -43,7 +53,10 @@ const propertySchema = z.object({
     }),
     internalCode: z.string().optional(),
     sicarCode: z.string().optional(),
-    geoJson: z.any().optional(), // Using any for now to store the GeoJSON object
+    geoJson: z.custom<GeoJSONPolygonFeature | null>((val) => {
+        const v = val as GeoJSONPolygonFeature | null | undefined;
+        return v && v.type === "Feature" && v.geometry && v.geometry.coordinates && v.geometry.coordinates.length > 0;
+    }, "É necessário delimitar a área da propriedade no mapa."),
 });
 
 type PropertyFormValues = z.infer<typeof propertySchema>;
@@ -73,8 +86,8 @@ export default function NewPropertyPage() {
     };
 
     return (
-        <Layout 
-            title="Nova Propriedade" 
+        <Layout
+            title="Nova Propriedade"
             description="Cadastre uma nova fazenda para iniciar o monitoramento."
             headerBackLink="/propriedades"
         >

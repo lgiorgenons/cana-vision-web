@@ -15,46 +15,46 @@ import {
 
 // Mock Data
 const MOCK_PROPERTIES: Array<{
-    id: number;
-    name: string;
-    area: number;
-    crop: string;
-    harvest: string;
-    location: string;
-    status: string;
-    imageUrl?: string;
+  id: number;
+  name: string;
+  area: number;
+  crop: string;
+  harvest: string;
+  location: string;
+  status: string;
+  imageUrl?: string;
 }> = [
-  {
-    id: 1,
-    name: "Fazenda Santa Mônica",
-    area: 1250.5,
-    crop: "Cana-de-Açúcar",
-    harvest: "2024/2025",
-    location: "Ribeirão Preto - SP",
-    status: "Ativo",
-    imageUrl: "/images/properties/farm_sugarcane.png",
-  },
-  {
-    id: 2,
-    name: "Sítio Vista Alegre",
-    area: 340.0,
-    crop: "Soja",
-    harvest: "2023/2024",
-    location: "Uberaba - MG",
-    status: "Ativo",
-    imageUrl: "/images/properties/farm_soy.png",
-  },
-  {
-    id: 3,
-    name: "Fazenda Boa Esperança",
-    area: 890.2,
-    crop: "Milho",
-    harvest: "2024",
-    location: "Londrina - PR",
-    status: "Manutenção",
-    imageUrl: "/images/properties/farm_corn.png",
-  },
-];
+    /* {
+       id: 1,
+       name: "Fazenda Santa Mônica",
+       area: 1250.5,
+       crop: "Cana-de-Açúcar",
+       harvest: "2024/2025",
+       location: "Ribeirão Preto - SP",
+       status: "Ativo",
+       imageUrl: "/images/properties/farm_sugarcane.png",
+     },
+     {
+       id: 2,
+       name: "Sítio Vista Alegre",
+       area: 340.0,
+       crop: "Soja",
+       harvest: "2023/2024",
+       location: "Uberaba - MG",
+       status: "Ativo",
+       imageUrl: "/images/properties/farm_soy.png",
+     },
+     {
+       id: 3,
+       name: "Fazenda Boa Esperança",
+       area: 890.2,
+       crop: "Milho",
+       harvest: "2024",
+       location: "Londrina - PR",
+       status: "Manutenção",
+       imageUrl: "/images/properties/farm_corn.png",
+     },*/
+  ];
 
 export default function PropertiesListPage() {
   const hasProperties = MOCK_PROPERTIES.length > 0;
@@ -65,7 +65,7 @@ export default function PropertiesListPage() {
       description="Gerencie suas fazendas e áreas de monitoramento."
     >
       <div className="mx-auto max-w-[1600px] px-4">
-        
+
         {hasProperties ? (
           <>
             {/* Filters & Search */}
@@ -77,11 +77,11 @@ export default function PropertiesListPage() {
                   className="pl-9 bg-white"
                 />
               </div>
-              
+
               <Button asChild className="bg-[#16A34A] hover:bg-[#15803d] text-white">
                 <Link href="/propriedades/novo">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Nova Propriedade
+                  <Plus className="mr-2 h-4 w-4" />
+                  Nova Propriedade
                 </Link>
               </Button>
             </div>
@@ -95,24 +95,24 @@ export default function PropertiesListPage() {
                 >
                   {/* Card Header / Image Placeholder */}
                   <div className="relative h-48 w-full bg-slate-100 group-hover:bg-slate-200 transition-colors flex items-center justify-center overflow-hidden">
-                     {property.imageUrl ? (
-                        <Image
-                            src={property.imageUrl}
-                            alt={property.name}
-                            fill
-                            className="object-cover transition-transform duration-500 group-hover:scale-105"
-                        />
-                     ) : (
-                        <Tractor className="h-12 w-12 text-slate-300" />
-                     )}
-                     
-                     <div className="absolute top-3 right-3 z-10">
-                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium backdrop-blur-md shadow-sm
+                    {property.imageUrl ? (
+                      <Image
+                        src={property.imageUrl}
+                        alt={property.name}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <Tractor className="h-12 w-12 text-slate-300" />
+                    )}
+
+                    <div className="absolute top-3 right-3 z-10">
+                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium backdrop-blur-md shadow-sm
                             ${property.status === 'Ativo' ? 'bg-green-100/90 text-green-800' : 'bg-amber-100/90 text-amber-800'}
                         `}>
-                            {property.status}
-                        </span>
-                     </div>
+                        {property.status}
+                      </span>
+                    </div>
                   </div>
 
                   {/* Card Body */}
@@ -127,7 +127,7 @@ export default function PropertiesListPage() {
                           {property.location}
                         </div>
                       </div>
-                      
+
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="-mr-2 h-8 w-8 text-slate-400 hover:text-slate-600">
@@ -143,24 +143,24 @@ export default function PropertiesListPage() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-4 py-4 border-t border-slate-100">
-                        <div>
-                            <p className="text-xs text-slate-500 mb-1">Área Total</p>
-                            <p className="font-medium text-slate-700">{property.area} ha</p>
+                      <div>
+                        <p className="text-xs text-slate-500 mb-1">Área Total</p>
+                        <p className="font-medium text-slate-700">{property.area} ha</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-500 mb-1">Cultura</p>
+                        <div className="flex items-center gap-1.5 font-medium text-slate-700">
+                          <Sprout className="h-3.5 w-3.5 text-green-600" />
+                          {property.crop}
                         </div>
-                        <div>
-                            <p className="text-xs text-slate-500 mb-1">Cultura</p>
-                            <div className="flex items-center gap-1.5 font-medium text-slate-700">
-                                <Sprout className="h-3.5 w-3.5 text-green-600" />
-                                {property.crop}
-                            </div>
-                        </div>
+                      </div>
                     </div>
 
                     <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-4 text-sm">
-                       <span className="text-slate-500">Safra: {property.harvest}</span>
-                       <Button variant="ghost" size="sm" className="text-green-700 hover:text-green-800 hover:bg-green-50 px-2 -mr-2">
-                         Acessar
-                       </Button>
+                      <span className="text-slate-500">Safra: {property.harvest}</span>
+                      <Button variant="ghost" size="sm" className="text-green-700 hover:text-green-800 hover:bg-green-50 px-2 -mr-2">
+                        Acessar
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -169,21 +169,21 @@ export default function PropertiesListPage() {
           </>
         ) : (
           <div className="flex flex-col items-center justify-center py-32 text-center animate-in fade-in duration-500">
-             <div className="mb-6 rounded-full bg-[#16A34A] p-8 ring-1 ring-green-200">
-                <Image src="/images/ic_propriedades.svg" alt="Propriedades" width={64} height={64} className="h-16 w-16" />
-             </div>
-             <h3 className="mb-3 text-xl font-semibold text-slate-900">
-                Nenhuma propriedade encontrada
-             </h3>
-             <p className="mb-8 max-w-md text-slate-500 text-base">
-                Você ainda não cadastrou nenhuma fazenda. Comece adicionando sua primeira propriedade para iniciar o monitoramento inteligente.
-             </p>
-             <Button asChild size="lg" className="bg-[#16A34A] hover:bg-[#15803d] text-white shadow-sm shadow-green-100">
-                <Link href="/propriedades/novo">
-                    <Plus className="h-5 w-5" />
-                    Cadastrar Primeira Propriedade
-                </Link>
-             </Button>
+            <div className="mb-6 rounded-full bg-[#16A34A] p-8 ring-1 ring-green-200">
+              <Image src="/images/ic_propriedades.svg" alt="Propriedades" width={64} height={64} className="h-16 w-16" />
+            </div>
+            <h3 className="mb-3 text-xl font-semibold text-slate-900">
+              Nenhuma propriedade encontrada
+            </h3>
+            <p className="mb-8 max-w-md text-slate-500 text-base">
+              Você ainda não cadastrou nenhuma fazenda. Comece adicionando sua primeira propriedade para iniciar o monitoramento inteligente.
+            </p>
+            <Button asChild size="lg" className="bg-[#16A34A] hover:bg-[#15803d] text-white shadow-sm shadow-green-100">
+              <Link href="/propriedades/novo">
+                <Plus className="h-5 w-5" />
+                Cadastrar Primeira Propriedade
+              </Link>
+            </Button>
           </div>
         )}
 
