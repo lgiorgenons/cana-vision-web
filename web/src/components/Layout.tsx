@@ -5,7 +5,13 @@ import { useMemo, useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { ChevronDown, ChevronLeft } from "lucide-react";
+import { LogOut, ChevronDown, ChevronLeft } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type LayoutProps = {
   title?: string;
@@ -325,16 +331,26 @@ export const Layout = ({ title, description, headerActions, headerBackLink, chil
                 <Image src="/images/ic_notificacao.svg" alt="" width={24} height={24} className="h-6 w-6" />
               </button>
               <div className="mx-[15px] h-5 w-[1px] bg-[#CBCAD7]" />
-              <div className="flex items-center gap-3 rounded-full border border-slate-200 px-3 py-1.5">
-                <Image src="/images/ic_perfil.svg" alt="Usuario" width={32} height={32} className="h-8 w-8 rounded-full" />
-                <div className="text-left">
-                  <p className="text-sm font-semibold">Andrew Smith</p>
-                  <p className="text-xs text-slate-500">Administrador</p>
-                </div>
-                <svg viewBox="0 0 24 24" className="h-4 w-4 text-slate-500" aria-hidden="true">
-                  <path d="M7 10l5 5 5-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-3 rounded-full border border-slate-200 px-3 py-1.5 transition hover:bg-slate-50 outline-none">
+                    <Image src="/images/ic_perfil.svg" alt="Usuario" width={32} height={32} className="h-8 w-8 rounded-full" />
+                    <div className="text-left">
+                      <p className="text-sm font-semibold">Andrew Smith</p>
+                      <p className="text-xs text-slate-500">Administrador</p>
+                    </div>
+                    <ChevronDown className="h-4 w-4 text-slate-500" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuItem asChild className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer">
+                        <Link href="/login" className="flex w-full items-center">
+                            <LogOut className="mr-2 h-4 w-4" />
+                            <span>Sair da conta</span>
+                        </Link>
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </header>
