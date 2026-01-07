@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { MapContainer, TileLayer, Polygon, CircleMarker, useMapEvents, AttributionControl } from "react-leaflet";
 import { LeafletMouseEvent, Map as LeafletMap } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Trash2, Search, Loader2 } from "lucide-react";
+import { useOnClickOutside } from "@/hooks/use-click-outside";
 
 interface GeoJSONPolygonFeature {
     type: "Feature";
@@ -50,6 +51,12 @@ export function PropertyMapSelector({ onBoundaryChange, className }: PropertyMap
     const [isLoading, setIsLoading] = useState(false);
     const [results, setResults] = useState<{ lat: string; lon: string; display_name: string }[]>([]);
     const [noResults, setNoResults] = useState(false);
+    const searchRef = useRef<HTMLDivElement>(null);
+
+    useOnClickOutside(searchRef, () => {
+        setResults([]);
+        setNoResults(false);
+    });
 
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -57,6 +64,23 @@ export function PropertyMapSelector({ onBoundaryChange, className }: PropertyMap
 
         setIsLoading(true);
         setNoResults(false);
+
+        // Check for coordinates (Lat, Lon)
+        // Supports: "lat, lon" or "lat lon"
+        const coordRegex = /^(-?\d+(\.\d+)?)[,\s]+(-?\d+(\.\d+)?)$/;
+        const match = query.trim().match(coordRegex);
+
+        if (match) {
+            const lat = parseFloat(match[1]);
+            const lon = parseFloat(match[3]);
+
+            if (lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
+                handleSelectLocation(lat.toString(), lon.toString());
+                setIsLoading(false);
+                return;
+            }
+        }
+
         try {
             const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
             const data: { lat: string; lon: string; display_name: string }[] = await response.json();
@@ -148,12 +172,12 @@ export function PropertyMapSelector({ onBoundaryChange, className }: PropertyMap
         <div className={`flex flex-col gap-4 ${className}`}>
 
             {/* Search Bar - External */}
-            <div className="relative z-[3000]">
+            <div className="relative z-[3000]" ref={searchRef}>
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                     <Input
                         type="text"
-                        placeholder="Buscar cidade, endereço..."
+                        placeholder="Buscar cidade, endereço ou coordenadas..."
                         className="pl-9 bg-white shadow-sm"
                         value={query}
                         onChange={(e) => {
@@ -164,6 +188,9 @@ export function PropertyMapSelector({ onBoundaryChange, className }: PropertyMap
                     />
                     {isLoading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-slate-400" />}
                 </div>
+                <p className="mt-1 text-xs text-slate-500 ml-1">
+                    Dica: Você pode buscar por coordenadas (ex: -23.5, -46.6)
+                </p>
                 {results.length > 0 && (
                     <div className="absolute top-full mt-1 w-full bg-white rounded-md shadow-lg border border-slate-100 overflow-hidden max-h-60 overflow-y-auto z-[2000]">
                         {results.map((item, idx) => (

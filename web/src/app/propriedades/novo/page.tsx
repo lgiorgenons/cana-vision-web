@@ -253,7 +253,7 @@ export default function NewPropertyPage() {
                                 type="button"
                                 variant="outline"
                                 asChild
-                                className="border-gray-200 text-gray-700 hover:bg-gray-50"
+                                className="border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900 w-56"
                             >
                                 <NextLink href="/dashboard">Cancelar</NextLink>
                             </Button>
@@ -261,7 +261,7 @@ export default function NewPropertyPage() {
                             <Button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="bg-[#16A34A] hover:bg-[#15803d] text-white shadow-sm shadow-green-200 w-fit"
+                                className="bg-[#16A34A] hover:bg-[#15803d] text-white shadow-sm shadow-green-200 w-56"
                             >
                                 {isSubmitting ? (
                                     <>Salvando...</>
