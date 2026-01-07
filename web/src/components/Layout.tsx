@@ -38,7 +38,7 @@ const navSections: NavSection[] = [
     icon: "/images/ic_propriedades.svg",
     label: "Propriedades",
     items: [
-      { label: "Nova Propriedade", href: "/propriedades/novo" },
+      { label: "Gerenciar Propriedades", href: "/propriedades" },
       { label: "Talhoes", href: "/talhoes" },
     ],
   },
