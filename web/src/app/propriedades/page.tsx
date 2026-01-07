@@ -52,14 +52,6 @@ export default function PropertiesListPage() {
     <Layout
       title="Minhas Propriedades"
       description="Gerencie suas fazendas e áreas de monitoramento."
-      headerActions={
-        <Button asChild className="bg-[#16A34A] hover:bg-[#15803d] text-white">
-          <Link href="/propriedades/novo">
-            <Plus className="mr-2 h-4 w-4" />
-            Nova Propriedade
-          </Link>
-        </Button>
-      }
     >
       <div className="mx-auto max-w-[1600px] px-4">
         {/* Filters & Search */}
@@ -71,7 +63,13 @@ export default function PropertiesListPage() {
               className="pl-9 bg-white"
             />
           </div>
-          {/* Add more filters here if needed */}
+          
+          <Button asChild className="bg-[#16A34A] hover:bg-[#15803d] text-white">
+            <Link href="/propriedades/novo">
+                <Plus className="mr-2 h-4 w-4" />
+                Nova Propriedade
+            </Link>
+          </Button>
         </div>
 
         {/* Properties Grid */}
