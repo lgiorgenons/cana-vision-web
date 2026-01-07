@@ -5,12 +5,13 @@ import { useMemo, useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ChevronLeft } from "lucide-react";
 
 type LayoutProps = {
   title?: string;
   description?: string;
   headerActions?: ReactNode;
+  headerBackLink?: string;
   children: ReactNode;
   hideChrome?: boolean;
 };
@@ -62,7 +63,7 @@ const utilityItems = [
   { icon: "/images/ic_configuracoes.svg", label: "Configuracoes" },
 ];
 
-export const Layout = ({ title, description, headerActions, children, hideChrome }: LayoutProps) => {
+export const Layout = ({ title, description, headerActions, headerBackLink, children, hideChrome }: LayoutProps) => {
   const pathname = usePathname();
   const [themeMode, setThemeMode] = useState<"light" | "dark">("light");
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
@@ -306,9 +307,16 @@ export const Layout = ({ title, description, headerActions, children, hideChrome
 
       <main className="flex flex-1 flex-col h-full overflow-hidden bg-slate-50 px-4 py-4 lg:px-6">
         <header className="flex flex-wrap items-center justify-between gap-4 shrink-0">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">{pageTitle}</h1>
-            {description ? <p className="mt-1 text-sm text-slate-500">{description}</p> : null}
+          <div className="flex items-start gap-4">
+            {headerBackLink && (
+               <Link href={headerBackLink} className="mt-1 flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-900 transition-colors">
+                  <ChevronLeft className="h-5 w-5" />
+               </Link>
+            )}
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900">{pageTitle}</h1>
+              {description ? <p className="mt-1 text-sm text-slate-500">{description}</p> : null}
+            </div>
           </div>
           <div className="flex flex-1 flex-wrap items-center justify-end gap-3">
             {headerActions ? <div className="flex flex-wrap items-center justify-end gap-2">{headerActions}</div> : null}

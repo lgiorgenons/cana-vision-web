@@ -73,7 +73,11 @@ export default function NewPropertyPage() {
     };
 
     return (
-        <Layout title="Nova Propriedade" description="Cadastre uma nova fazenda para iniciar o monitoramento.">
+        <Layout 
+            title="Nova Propriedade" 
+            description="Cadastre uma nova fazenda para iniciar o monitoramento."
+            headerBackLink="/propriedades"
+        >
             <div className="mx-auto max-w-4xl p-1 pb-20">
 
                 <Form {...form}>
@@ -255,7 +259,7 @@ export default function NewPropertyPage() {
                                 asChild
                                 className="border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900 w-56"
                             >
-                                <NextLink href="/dashboard">Cancelar</NextLink>
+                                <NextLink href="/propriedades">Cancelar</NextLink>
                             </Button>
 
                             <Button

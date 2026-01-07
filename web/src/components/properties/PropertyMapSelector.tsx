@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef } from "react";
-import { MapContainer, TileLayer, Polygon, CircleMarker, useMapEvents, AttributionControl } from "react-leaflet";
+import { MapContainer, TileLayer, Polygon, CircleMarker, useMapEvents } from "react-leaflet";
 import { LeafletMouseEvent, Map as LeafletMap } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Button } from "@/components/ui/button";
@@ -220,9 +220,7 @@ export function PropertyMapSelector({ onBoundaryChange, className }: PropertyMap
                     zoom={4}
                     className="h-full w-full z-0"
                     ref={setMap}
-                    attributionControl={false}
                 >
-                    <AttributionControl position="bottomright" prefix={false} />
                     <TileLayer
                         attribution='Tiles &copy; Esri, USGS, USDA'
                         url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
