@@ -312,45 +312,47 @@ export const Layout = ({ title, description, headerActions, headerBackLink, chil
       )}
 
       <main className="flex flex-1 flex-col h-full overflow-hidden bg-slate-50 px-4 py-4 lg:px-6">
-        <header className="flex flex-wrap items-center justify-between gap-4 shrink-0">
-          <div className="flex items-start gap-4">
-            {headerBackLink && (
-               <Link href={headerBackLink} className="mt-1 flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-900 transition-colors">
-                  <ChevronLeft className="h-5 w-5" />
-               </Link>
-            )}
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900">{pageTitle}</h1>
-              {description ? <p className="mt-1 text-sm text-slate-500">{description}</p> : null}
+        <header className="shrink-0 transition-all duration-300 ease-in-out">
+          <div className="mx-auto flex w-full max-w-[1600px] flex-wrap items-center justify-between gap-4 px-4">
+            <div className="flex items-start gap-4">
+              {headerBackLink && (
+                <Link href={headerBackLink} className="mt-1 flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-900 transition-colors">
+                    <ChevronLeft className="h-5 w-5" />
+                </Link>
+              )}
+              <div>
+                <h1 className="text-2xl font-bold text-slate-900">{pageTitle}</h1>
+                {description ? <p className="mt-1 text-sm text-slate-500">{description}</p> : null}
+              </div>
             </div>
-          </div>
-          <div className="flex flex-1 flex-wrap items-center justify-end gap-3">
-            {headerActions ? <div className="flex flex-wrap items-center justify-end gap-2">{headerActions}</div> : null}
-            <div className="flex items-center">
-              <button type="button" className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F0F0F0]" aria-label="Notificacoes">
-                <Image src="/images/ic_notificacao.svg" alt="" width={24} height={24} className="h-6 w-6" />
-              </button>
-              <div className="mx-[15px] h-5 w-[1px] bg-[#CBCAD7]" />
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-3 rounded-full border border-slate-200 px-3 py-1.5 transition hover:bg-slate-50 outline-none">
-                    <Image src="/images/ic_perfil.svg" alt="Usuario" width={32} height={32} className="h-8 w-8 rounded-full" />
-                    <div className="text-left">
-                      <p className="text-sm font-semibold">Andrew Smith</p>
-                      <p className="text-xs text-slate-500">Administrador</p>
-                    </div>
-                    <ChevronDown className="h-4 w-4 text-slate-500" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuItem asChild className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer">
-                        <Link href="/login" className="flex w-full items-center">
-                            <LogOut className="mr-2 h-4 w-4" />
-                            <span>Sair da conta</span>
-                        </Link>
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+            <div className="flex flex-1 flex-wrap items-center justify-end gap-3">
+              {headerActions ? <div className="flex flex-wrap items-center justify-end gap-2">{headerActions}</div> : null}
+              <div className="flex items-center">
+                <button type="button" className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F0F0F0]" aria-label="Notificacoes">
+                  <Image src="/images/ic_notificacao.svg" alt="" width={24} height={24} className="h-6 w-6" />
+                </button>
+                <div className="mx-[15px] h-5 w-[1px] bg-[#CBCAD7]" />
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="flex items-center gap-3 rounded-full border border-slate-200 px-3 py-1.5 transition hover:bg-slate-50 outline-none">
+                      <Image src="/images/ic_perfil.svg" alt="Usuario" width={32} height={32} className="h-8 w-8 rounded-full" />
+                      <div className="text-left">
+                        <p className="text-sm font-semibold">Andrew Smith</p>
+                        <p className="text-xs text-slate-500">Administrador</p>
+                      </div>
+                      <ChevronDown className="h-4 w-4 text-slate-500" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuItem asChild className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer">
+                          <Link href="/login" className="flex w-full items-center">
+                              <LogOut className="mr-2 h-4 w-4" />
+                              <span>Sair da conta</span>
+                          </Link>
+                      </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
           </div>
         </header>
