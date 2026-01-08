@@ -19,7 +19,20 @@ import {
   Wind,
   X,
   Minus,
+  Plus,
+  Search,
 } from "lucide-react";
+import dynamic from "next/dynamic";
+import "leaflet/dist/leaflet.css";
+import type { Map as LeafletMap } from "leaflet";
+import * as L from "leaflet";
+
+// Dynamic import for Leaflet components to avoid SSR issues
+const MapContainer = dynamic(() => import("react-leaflet").then((mod) => mod.MapContainer), { ssr: false });
+const TileLayer = dynamic(() => import("react-leaflet").then((mod) => mod.TileLayer), { ssr: false });
+const Polygon = dynamic(() => import("react-leaflet").then((mod) => mod.Polygon), { ssr: false });
+const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), { ssr: false });
+const ZoomControl = dynamic(() => import("react-leaflet").then((mod) => mod.ZoomControl), { ssr: false });
 
 type Field = {
   id: string;
@@ -38,7 +51,8 @@ type Field = {
   soilMoisture: string;
   productivity: string;
   alerts: string[];
-  position: { left: string; top: string; width: string; height: string; rotate?: string };
+  coordinates: [number, number][]; // Array of [lat, lng] for Leaflet Polygon
+  center: [number, number]; // Center point for camera flyTo
   nextHarvest: string;
   daysToHarvest: number;
   cloudCover: string;
@@ -75,7 +89,8 @@ const fields: Field[] = [
     soilMoisture: "71%",
     productivity: "78 t/ha",
     alerts: ["Vigor consistente"],
-    position: { left: "14%", top: "16%", width: "33%", height: "28%", rotate: "-1deg" },
+    coordinates: [[-21.248384, -48.490782], [-21.248384, -48.485975], [-21.252608, -48.485975], [-21.252608, -48.490782]],
+    center: [-21.250496, -48.488378],
     nextHarvest: "29/09/2024",
     daysToHarvest: 45,
     cloudCover: "8%",
@@ -102,7 +117,8 @@ const fields: Field[] = [
     soilMoisture: "63%",
     productivity: "65 t/ha",
     alerts: ["Queda leve de vigor", "Verificar bordadura leste"],
-    position: { left: "52%", top: "18%", width: "26%", height: "24%", rotate: "1deg" },
+    coordinates: [[-21.248384, -48.485500], [-21.248384, -48.481000], [-21.252000, -48.481000], [-21.252000, -48.485500]],
+    center: [-21.250192, -48.483250],
     nextHarvest: "15/10/2024",
     daysToHarvest: 61,
     cloudCover: "8%",
@@ -129,7 +145,8 @@ const fields: Field[] = [
     soilMoisture: "76%",
     productivity: "74 t/ha",
     alerts: [],
-    position: { left: "18%", top: "50%", width: "30%", height: "26%", rotate: "-2deg" },
+    coordinates: [[-21.253000, -48.490782], [-21.253000, -48.486000], [-21.256000, -48.486000], [-21.256000, -48.490782]],
+    center: [-21.254500, -48.488391],
     nextHarvest: "05/09/2024",
     daysToHarvest: 21,
     cloudCover: "8%",
@@ -156,7 +173,8 @@ const fields: Field[] = [
     soilMoisture: "68%",
     productivity: "70 t/ha",
     alerts: [],
-    position: { left: "56%", top: "52%", width: "26%", height: "30%", rotate: "2deg" },
+    coordinates: [[-21.252500, -48.485500], [-21.252500, -48.482000], [-21.255500, -48.482000], [-21.255500, -48.485500]],
+    center: [-21.254000, -48.483750],
     nextHarvest: "20/11/2024",
     daysToHarvest: 96,
     cloudCover: "8%",
@@ -183,7 +201,8 @@ const fields: Field[] = [
     soilMoisture: "74%",
     productivity: "76 t/ha",
     alerts: [],
-    position: { left: "85%", top: "60%", width: "15%", height: "20%", rotate: "0deg" },
+    coordinates: [[-21.256500, -48.490782], [-21.256500, -48.485000], [-21.260000, -48.485000], [-21.260000, -48.490782]],
+    center: [-21.258250, -48.487891],
     nextHarvest: "10/10/2024",
     daysToHarvest: 56,
     cloudCover: "8%",
@@ -210,7 +229,8 @@ const fields: Field[] = [
     soilMoisture: "70%",
     productivity: "72 t/ha",
     alerts: [],
-    position: { left: "85%", top: "35%", width: "15%", height: "20%", rotate: "0deg" },
+    coordinates: [[-21.256000, -48.484500], [-21.256000, -48.481000], [-21.259000, -48.481000], [-21.259000, -48.484500]],
+    center: [-21.257500, -48.482750],
     nextHarvest: "12/09/2024",
     daysToHarvest: 28,
     cloudCover: "8%",
@@ -220,60 +240,7 @@ const fields: Field[] = [
     ndwi: "0.34",
     pestRisk: "Low",
   },
-  {
-    id: "talhao-7",
-    name: "Talhao 7",
-    crop: "Cana-de-acucar",
-    health: 0.52,
-    healthLabel: "Alert",
-    layer: "NDVI",
-    area: "8 ha",
-    lastImage: "15/08/2024",
-    trend: "-5%",
-    ndvi: "0.45",
-    ndre: "0.30",
-    ndmi: "0.25",
-    evi: "0.38",
-    soilMoisture: "52%",
-    productivity: "45 t/ha",
-    alerts: ["Alerta: estresse hidrico", "Inspecionar pragas"],
-    position: { left: "85%", top: "10%", width: "15%", height: "20%", rotate: "0deg" },
-    nextHarvest: "30/11/2024",
-    daysToHarvest: 106,
-    cloudCover: "8%",
-    productId: "S2B_MSIL2A_20240815",
-    lst: "38°C",
-    rainfall: "5mm",
-    ndwi: "-0.10",
-    pestRisk: "High",
-  },
-  {
-    id: "talhao-8",
-    name: "Talhao 8",
-    crop: "Cana-de-acucar",
-    health: 0.81,
-    healthLabel: "Good",
-    layer: "NDVI",
-    area: "12 ha",
-    lastImage: "15/08/2024",
-    trend: "Estavel",
-    ndvi: "0.70",
-    ndre: "0.52",
-    ndmi: "0.46",
-    evi: "0.58",
-    soilMoisture: "65%",
-    productivity: "68 t/ha",
-    alerts: [],
-    position: { left: "5%", top: "80%", width: "20%", height: "15%", rotate: "0deg" },
-    nextHarvest: "15/12/2024",
-    daysToHarvest: 121,
-    cloudCover: "8%",
-    productId: "S2B_MSIL2A_20240815",
-    lst: "29°C",
-    rainfall: "41mm",
-    ndwi: "0.30",
-    pestRisk: "Low",
-  },
+  // Removed mock items 7 and 8 to simplify
 ];
 
 type RiskLevel = "Baixo" | "Medio" | "Alto";
@@ -382,24 +349,19 @@ export default function Hotspots() {
   const [activeLayer, setActiveLayer] = useState(layerOptions[0]);
   const [layerMenuOpen, setLayerMenuOpen] = useState(false);
   const showPanels = !isFullscreen;
+  // const [containerSize, setContainerSize] = useState({ width: 0, height: 0 }); // Unused for now
 
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+  // Fix for 'any' type on map ref - using generic Map type or simpler solution
+  const [mapRef, setMapRef] = useState<L.Map | null>(null);
 
   useEffect(() => {
-    const updateSize = () => {
-      if (containerRef.current) {
-        setContainerSize({
-          width: containerRef.current.offsetWidth,
-          height: containerRef.current.offsetHeight,
-        });
-      }
-    };
-
-    updateSize();
-    window.addEventListener("resize", updateSize);
-    return () => window.removeEventListener("resize", updateSize);
-  }, [isFullscreen]);
+    // Invalidate map size when fullscreen toggles to ensure it fills the container
+    if (mapRef) {
+      setTimeout(() => {
+        mapRef.invalidateSize();
+      }, 100);
+    }
+  }, [isFullscreen, mapRef]);
 
   const getPixelPosition = (percent: string, total: number) => {
     return (parseFloat(percent) / 100) * total;
@@ -528,137 +490,96 @@ export default function Hotspots() {
         )}
 
         {/* Main Content */}
-        <div ref={containerRef} className="relative flex-1 overflow-hidden rounded-[15px] bg-slate-900">
-          {/* Background Image / Map Placeholder */}
-          <Image
-            src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=3200&auto=format&fit=crop"
-            alt="Satellite View"
-            fill
-            className="absolute inset-0 h-full w-full object-cover opacity-60 mix-blend-overlay"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-900/40 via-transparent to-slate-900/80" />
+        <div className="relative flex-1 overflow-hidden rounded-[15px] bg-slate-900">
+          <MapContainer
+            ref={setMapRef}
+            center={[-21.250496, -48.488378]}
+            zoom={14}
+            className="h-full w-full"
+            style={{ background: "#0f172a" }}
+            zoomControl={false}
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+            />
 
-          {/* Grid Overlay */}
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:100px_100px]" />
+            {fields.map((field) => (
+              <Polygon
+                key={field.id}
+                positions={field.coordinates}
+                pathOptions={{
+                  color: field.id === selectedFieldId ? "#ffffff" :
+                    field.healthLabel === "Good" ? "#10b981" :
+                      field.healthLabel === "Low" ? "#f59e0b" : "#ef4444",
+                  fillColor: field.id === selectedFieldId ? "#ffffff" :
+                    field.healthLabel === "Good" ? "#10b981" :
+                      field.healthLabel === "Low" ? "#f59e0b" : "#ef4444",
+                  fillOpacity: field.id === selectedFieldId ? 0.2 : 0.4,
+                  weight: field.id === selectedFieldId ? 3 : 2,
+                }}
+                eventHandlers={{
+                  click: (e) => {
+                    const map = e.target._map;
+                    map.flyTo(field.center, 16);
+                    setSelectedFieldId(field.id);
+                    setDetailPanelOpen(true);
+                  },
+                }}
+              >
+                <Popup>
+                  <div className="p-2 min-w-[150px]">
+                    <p className="font-bold text-slate-900">{field.name}</p>
+                    <p className="text-xs text-slate-500 mb-2">{field.crop}</p>
+                    <div className={`flex items-center gap-1.5 text-sm font-medium ${field.healthLabel === "Good" ? "text-emerald-600" :
+                      field.healthLabel === "Low" ? "text-amber-600" : "text-red-600"
+                      }`}>
+                      <Activity className="h-4 w-4" />
+                      Saúde: {Math.round(field.health * 100)}%
+                    </div>
+                  </div>
+                </Popup>
+              </Polygon>
+            ))}
+          </MapContainer>
 
-          {/* Top Controls */}
-          <div className="absolute left-6 top-6 z-20 flex flex-col gap-2">
-            <div className="flex rounded-xl bg-slate-900/80 p-1 backdrop-blur-md">
-              <button
-                onClick={() => setViewMode("analytic")}
-                className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${viewMode === "analytic" ? "bg-slate-700 text-white shadow-sm" : "text-slate-400 hover:text-white"
-                  }`}
-              >
-                Analytic
-              </button>
-              <button
-                onClick={() => setViewMode("cctv")}
-                className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${viewMode === "cctv" ? "bg-slate-700 text-white shadow-sm" : "text-slate-400 hover:text-white"
-                  }`}
-              >
-                CCTV
-              </button>
-            </div>
-            <div className="flex items-center gap-2 rounded-lg bg-slate-900/70 px-3 py-2 text-xs text-white/80 backdrop-blur">
+          {/* Top Controls Group */}
+          <div className="absolute left-6 top-6 z-[5000] flex flex-col gap-3 pointer-events-none">
+            {/* Scene Info Badge */}
+            <div className="flex items-center gap-2 rounded-lg bg-slate-900/70 px-3 py-2 text-xs text-white/80 backdrop-blur pointer-events-auto shadow-lg">
               <Wind className="h-3.5 w-3.5" />
               Cena Sentinel-2 {currentScene.productId} • {currentScene.captureDate} • Nuvem {currentScene.cloudCover}
             </div>
-          </div>
 
-          {/* Field Overlays */}
-          <div className="absolute inset-0">
-            {fields.map((field) => (
-              <div
-                key={field.id}
-                className="absolute transition-all duration-500 ease-in-out"
-                style={{
-                  left: field.position.left,
-                  top: field.position.top,
-                  width: field.position.width,
-                  height: field.position.height,
-                  transform: field.position.rotate ? `rotate(${field.position.rotate})` : undefined,
-                }}
+            {/* Custom Zoom Controls */}
+            <div className="flex flex-col gap-1 pointer-events-auto">
+              <button
+                onClick={() => mapRef?.zoomIn()}
+                className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900/70 text-white hover:bg-slate-900/90 backdrop-blur shadow-lg transition"
+                aria-label="Zoom In"
               >
-                {/* Polygon Shape */}
-                <div
-                  onClick={() => {
-                    setSelectedFieldId(field.id);
-                    setDetailPanelOpen(true);
-                  }}
-                  className={`h-full w-full cursor-pointer rounded-[32px] border-2 backdrop-blur-sm transition-all ${field.id === selectedFieldId
-                    ? "border-white bg-white/10 shadow-[0_0_40px_rgba(255,255,255,0.2)]"
-                    : getPolygonColor(field.healthLabel)
-                    }`}
-                >
-                  {field.id === selectedFieldId && (
-                    <div className="absolute inset-0 rounded-[30px] bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(255,255,255,0.1)_10px,rgba(255,255,255,0.1)_20px)]" />
-                  )}
-                </div>
-
-                {/* Label */}
-                <div className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-slate-900 shadow-lg backdrop-blur-md">
-                  <div className="flex items-center gap-2">
-                    <div className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
-                    <div className="leading-tight">
-                      <p className="text-[11px] font-semibold">{field.name}</p>
-                      <p className="text-[10px] text-slate-500">{field.productivity}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+                <Plus className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => mapRef?.zoomOut()}
+                className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900/70 text-white hover:bg-slate-900/90 backdrop-blur shadow-lg transition"
+                aria-label="Zoom Out"
+              >
+                <Minus className="h-4 w-4" />
+              </button>
+            </div>
           </div>
-
-          {/* Connector Line Layer */}
-          {detailPanelOpen && selectedField && containerSize.width > 0 && (
-            <svg className="pointer-events-none absolute inset-0 z-20 h-full w-full overflow-visible">
-              <defs>
-                <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                  <feGaussianBlur stdDeviation="2" result="blur" />
-                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                </filter>
-              </defs>
-              {(() => {
-                const startX = getPixelPosition(selectedField.position.left, containerSize.width) + getPixelPosition(selectedField.position.width, containerSize.width);
-                const startY = getPixelPosition(selectedField.position.top, containerSize.height) + getPixelPosition(selectedField.position.height, containerSize.height) / 2;
-
-                const endX = containerSize.width - 24 - 360; // Right-6 (24px) - Panel Width (360px)
-                const endY = 24 + 100; // Top-6 (24px) + Offset
-
-                const controlPoint1X = startX + 50;
-                const controlPoint1Y = startY;
-                const controlPoint2X = endX - 50;
-                const controlPoint2Y = endY;
-
-                return (
-                  <>
-                    <path
-                      d={`M ${startX} ${startY} C ${controlPoint1X} ${controlPoint1Y}, ${controlPoint2X} ${controlPoint2Y}, ${endX} ${endY}`}
-                      fill="none"
-                      stroke="white"
-                      strokeWidth="2"
-                      className="drop-shadow-md opacity-80"
-                      filter="url(#glow)"
-                    />
-                    <circle cx={startX} cy={startY} r="3" fill="white" className="animate-pulse" />
-                    <circle cx={endX} cy={endY} r="3" fill="white" />
-                  </>
-                );
-              })()}
-            </svg>
-          )}
 
           {/* Bottom Left Controls */}
-          <div className="absolute bottom-6 left-6 z-30 flex gap-3">
+          <div className="absolute bottom-6 left-6 z-[5000] flex gap-3 pointer-events-none">
             <button
-              className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900/60 text-white backdrop-blur-md ring-1 ring-white/10 transition hover:bg-slate-900/80"
+              className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900/60 text-white backdrop-blur-md ring-1 ring-white/10 transition hover:bg-slate-900/80 pointer-events-auto"
               onClick={() => setIsFullscreen((prev) => !prev)}
               aria-label={isFullscreen ? "Sair do modo tela cheia" : "Ativar modo tela cheia"}
             >
               <Maximize2 className="h-5 w-5" />
             </button>
-            <div className="relative">
+            <div className="relative pointer-events-auto">
               <button
                 className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900/60 text-white backdrop-blur-md ring-1 ring-white/10 transition hover:bg-slate-900/80"
                 onClick={() => setLayerMenuOpen((prev) => !prev)}
@@ -688,7 +609,7 @@ export default function Hotspots() {
 
           {/* Detail Panel (Floating) */}
           {detailPanelOpen && selectedField && (
-            <div className="absolute right-6 top-6 z-30 w-[360px] overflow-hidden rounded-[24px] bg-white/95 shadow-[0_24px_48px_rgba(0,0,0,0.2)] backdrop-blur-xl transition-all animate-in fade-in slide-in-from-right-4">
+            <div className="absolute right-6 top-6 z-[5000] w-[360px] max-h-[calc(100%-48px)] overflow-y-auto rounded-[24px] bg-white/95 shadow-[0_24px_48px_rgba(0,0,0,0.2)] backdrop-blur-xl transition-all animate-in fade-in slide-in-from-right-4">
               <div className="p-5">
                 <div className="flex items-start justify-between">
                   <div>
