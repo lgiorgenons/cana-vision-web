@@ -354,6 +354,12 @@ export default function Hotspots() {
   // Fix for 'any' type on map ref - using generic Map type or simpler solution
   const [mapRef, setMapRef] = useState<L.Map | null>(null);
 
+  const selectedField = useMemo(() => fields.find((f) => f.id === selectedFieldId) ?? fields[0], [selectedFieldId]);
+  const overallHealth = useMemo(
+    () => Math.round((fields.reduce((acc, f) => acc + f.health, 0) / fields.length) * 100),
+    [],
+  );
+
   useEffect(() => {
     // Invalidate map size when fullscreen toggles to ensure it fills the container
     if (mapRef) {
@@ -363,15 +369,7 @@ export default function Hotspots() {
     }
   }, [isFullscreen, mapRef]);
 
-  const getPixelPosition = (percent: string, total: number) => {
-    return (parseFloat(percent) / 100) * total;
-  };
 
-  const selectedField = useMemo(() => fields.find((f) => f.id === selectedFieldId) ?? fields[0], [selectedFieldId]);
-  const overallHealth = useMemo(
-    () => Math.round((fields.reduce((acc, f) => acc + f.health, 0) / fields.length) * 100),
-    [],
-  );
 
   const mapShellClasses = isFullscreen
     ? "fixed inset-0 z-50 h-full bg-slate-900/80 backdrop-blur-sm p-2"
@@ -491,6 +489,7 @@ export default function Hotspots() {
 
         {/* Main Content */}
         <div className="relative flex-1 overflow-hidden rounded-[15px] bg-slate-900">
+          {/* Connector Line Removed */}
           <MapContainer
             ref={setMapRef}
             center={[-21.250496, -48.488378]}
