@@ -18,18 +18,15 @@ import { PropertyMapSelector } from "@/components/properties/PropertyMapSelector
 import { getPropriedade, Propriedade } from "@/services/propriedades";
 import { createTalhao, CreateTalhaoDto, GeoJSONFeature } from "@/services/talhoes";
 
-// --- Schema Definition ---
-const geoJsonFeatureSchema = z.object({
-    type: z.literal("Feature"),
-    geometry: z.object({
-        type: z.literal("Polygon"),
-        coordinates: z.array(z.array(z.array(z.number()))),
-    }),
-    properties: z.record(z.unknown()),
-});
-
-// Using custom type/validation for GeoJSON
-type GeoJSONPolygonFeature = z.infer<typeof geoJsonFeatureSchema>;
+// --- Type Definition ---
+type GeoJSONPolygonFeature = {
+    type: "Feature";
+    geometry: {
+        type: "Polygon";
+        coordinates: number[][][];
+    };
+    properties: Record<string, unknown>;
+};
 
 const talhaoSchema = z.object({
     name: z.string().min(3, "Nome deve ter pelo menos 3 caracteres."),
@@ -55,6 +52,10 @@ export default function NewTalhaoPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoadingProperty, setIsLoadingProperty] = useState(true);
     const [property, setProperty] = useState<Propriedade | null>(null);
+    const [shouldCreateAnother, setShouldCreateAnother] = useState(false);
+
+    // Key to force re-mounting/resetting the map component
+    const [mapKey, setMapKey] = useState(0);
 
     // Initialize Form
     const form = useForm<TalhaoFormValues>({
@@ -127,16 +128,36 @@ export default function NewTalhaoPage() {
 
             toast({
                 title: "Talhão criado!",
-                description: "O registro foi salvo com sucesso.",
+                description: `O registro "${values.name}" foi salvo com sucesso.`,
             });
 
-            router.push(`/propriedades/${propertyId}`);
+            if (shouldCreateAnother) {
+                // Reset form to defaults, keeping some context like crop/harvest
+                form.reset({
+                    name: "",
+                    code: "",
+                    area: "",
+                    crop: values.crop,     // Keep previous choice
+                    harvest: values.harvest, // Keep previous choice
+                    variety: values.variety, // Keep previous choice
+                    geoJson: null,
+                });
+
+                // Force map reset
+                setMapKey(prev => prev + 1);
+
+                // Scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            } else {
+                router.push(`/propriedades/${propertyId}`);
+            }
 
         } catch (error) {
+            // ... existing error handler
             console.error("Erro ao criar talhão:", error);
             let msg = "Erro desconhecido.";
             if (error instanceof Error) msg = error.message;
-            // Handle backend errors specifically if needed
 
             toast({
                 title: "Erro ao salvar",
@@ -145,8 +166,10 @@ export default function NewTalhaoPage() {
             });
         } finally {
             setIsSubmitting(false);
+            setShouldCreateAnother(false); // Reset trigger
         }
     };
+
 
     if (isLoadingProperty) {
         return (
@@ -186,9 +209,10 @@ export default function NewTalhaoPage() {
                                 Use o mapa abaixo para delimitar a área do talhão. O contorno da propriedade está visível em cinza para referência.
                             </p>
                             <PropertyMapSelector
+                                key={mapKey}
                                 className="w-full"
                                 onBoundaryChange={handleMapChange}
-                                contextGeoJson={property.geojson as any} // Cast if types slightly mismatch
+                                contextGeoJson={property.geojson as unknown as GeoJSONPolygonFeature} // Cast to compatible polygon type
                             />
                             {form.formState.errors.geoJson && (
                                 <p className="text-sm font-medium text-red-500 mt-2">
@@ -306,18 +330,35 @@ export default function NewTalhaoPage() {
                                         />
                                     </div>
 
-                                    <div className="pt-4">
+                                    <div className="pt-4 flex flex-col gap-3">
                                         <Button
                                             type="submit"
-                                            className="w-full bg-emerald-600 hover:bg-emerald-700"
+                                            className="w-full bg-[#16A34A] hover:bg-[#15803d] text-white shadow-sm shadow-green-200"
                                             disabled={isSubmitting}
+                                            onClick={() => setShouldCreateAnother(false)}
                                         >
-                                            {isSubmitting ? (
+                                            {isSubmitting && !shouldCreateAnother ? (
                                                 <>
                                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Salvando...
                                                 </>
                                             ) : (
-                                                "Cadastrar Talhão"
+                                                "Salvar e Voltar"
+                                            )}
+                                        </Button>
+
+                                        <Button
+                                            type="submit"
+                                            variant="outline"
+                                            className="w-full border-[#16A34A] text-[#16A34A] hover:bg-green-50"
+                                            disabled={isSubmitting}
+                                            onClick={() => setShouldCreateAnother(true)}
+                                        >
+                                            {isSubmitting && shouldCreateAnother ? (
+                                                <>
+                                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Salvando...
+                                                </>
+                                            ) : (
+                                                "Salvar e Criar Outro"
                                             )}
                                         </Button>
                                     </div>

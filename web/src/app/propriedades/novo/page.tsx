@@ -93,8 +93,8 @@ export default function NewPropertyPage() {
             // console.log("Session User:", session?.user); // Debug log
 
             // Try to find clienteId with different casing, or use fallback
-            const user = session?.user as any;
-            const clienteId = user?.clienteId || user?.cliente_id || user?.clientId || user?.client_id || "07d351f6-336e-4aeb-94a4-7ce3228e8e14";
+            const user = session?.user;
+            const clienteId = user?.clienteId || "07d351f6-336e-4aeb-94a4-7ce3228e8e14";
 
             if (!clienteId) {
                 toast({

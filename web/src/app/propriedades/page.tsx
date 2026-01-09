@@ -32,8 +32,8 @@ export default function PropertiesListPage() {
     try {
       const session = getAuthSession();
       // Use explicit fallback if missing
-      const user = session?.user as any;
-      const clienteId = user?.clienteId || user?.cliente_id || "07d351f6-336e-4aeb-94a4-7ce3228e8e14";
+      const user = session?.user;
+      const clienteId = user?.clienteId || "07d351f6-336e-4aeb-94a4-7ce3228e8e14";
       const data = await listPropriedades(clienteId);
       setProperties(data);
     } catch (error) {
@@ -115,7 +115,7 @@ export default function PropertiesListPage() {
                   className="group overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md"
                 >
                   {/* Card Header / Image Placeholder - Clickable */}
-                  <Link href={`/propriedades/${property.id}`} className="block relative h-48 w-full bg-slate-100 group-hover:bg-slate-200 transition-colors flex items-center justify-center overflow-hidden cursor-pointer">
+                  <Link href={`/propriedades/${property.id}`} className="relative h-48 w-full bg-slate-100 group-hover:bg-slate-200 transition-colors flex items-center justify-center overflow-hidden cursor-pointer">
                     {imageUrl ? (
                       <Image
                         src={imageUrl}
