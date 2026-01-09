@@ -21,6 +21,7 @@ interface GeoJSONPolygonFeature {
 interface PropertyMapSelectorProps {
     onBoundaryChange: (geojson: GeoJSONPolygonFeature | null) => void;
     className?: string;
+    contextGeoJson?: GeoJSONPolygonFeature | null;
 }
 
 const MapController = ({
@@ -40,11 +41,10 @@ const MapController = ({
     return null;
 };
 
-
-export function PropertyMapSelector({ onBoundaryChange, className }: PropertyMapSelectorProps) {
+export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJson }: PropertyMapSelectorProps) {
     const [points, setPoints] = useState<[number, number][]>([]);
     const [isDrawing, setIsDrawing] = useState(true);
-    const [map, setMap] = useState<LeafletMap | null>(null); // Leaflet Map instance
+    const [map, setMap] = useState<LeafletMap | null>(null);
 
     // Search State
     const [query, setQuery] = useState("");
@@ -121,6 +121,19 @@ export function PropertyMapSelector({ onBoundaryChange, className }: PropertyMap
         setResults([]);
     };
 
+    // Use effect to fly to context if available
+    useMemo(() => {
+        if (map && contextGeoJson && contextGeoJson.geometry.coordinates.length > 0) {
+            const coords = contextGeoJson.geometry.coordinates[0];
+            // GeoJSON is [lon, lat], Leaflet wants [lat, lon]
+            if (coords.length > 0) {
+                const lat = coords[0][1];
+                const lon = coords[0][0];
+                map.flyTo([lat, lon], 13);
+            }
+        }
+    }, [map, contextGeoJson]);
+
     const handleMapClick = (e: LeafletMouseEvent) => {
         const { lat, lng } = e.latlng;
         const newPoints = [...points, [lat, lng] as [number, number]];
@@ -155,6 +168,13 @@ export function PropertyMapSelector({ onBoundaryChange, className }: PropertyMap
         onBoundaryChange(geojson);
     };
 
+    // Transform contextGeoJSON to Leaflet format for display
+    const contextPolygonPositions = useMemo(() => {
+        if (!contextGeoJson || !contextGeoJson.geometry.coordinates) return null;
+        const coords = contextGeoJson.geometry.coordinates[0];
+        return coords.map((p) => [p[1], p[0]] as [number, number]);
+    }, [contextGeoJson]);
+
     const activePolygonPositions = points;
 
     const resetMap = () => {
@@ -166,12 +186,11 @@ export function PropertyMapSelector({ onBoundaryChange, className }: PropertyMap
         setNoResults(false);
     };
 
-    const center = useMemo(() => [-14.2350, -51.9253] as [number, number], []); // Center of Brazil
+    const center = useMemo(() => [-14.2350, -51.9253] as [number, number], []);
 
     return (
         <div className={`flex flex-col gap-4 ${className}`}>
-
-            {/* Search Bar - External */}
+            {/* ... Search Bar ... */}
             <div className="relative z-[3000]" ref={searchRef}>
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -186,8 +205,10 @@ export function PropertyMapSelector({ onBoundaryChange, className }: PropertyMap
                         }}
                         onKeyDown={handleKeyDown}
                     />
+                    {/* ... loader ... */}
                     {isLoading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-slate-400" />}
                 </div>
+                {/* ... hints and results ... */}
                 <p className="mt-1 text-xs text-slate-500 ml-1">
                     Dica: Você pode buscar por coordenadas (ex: -23.5, -46.6)
                 </p>
@@ -211,9 +232,6 @@ export function PropertyMapSelector({ onBoundaryChange, className }: PropertyMap
                 )}
             </div>
 
-            {/* Controls - Moved outside map */}
-
-            {/* Map Container */}
             <div className="relative h-[400px] w-full overflow-hidden rounded-xl border border-slate-200">
                 <MapContainer
                     center={center}
@@ -227,6 +245,15 @@ export function PropertyMapSelector({ onBoundaryChange, className }: PropertyMap
                     />
                     <MapController isDrawing={isDrawing} onMapClick={handleMapClick} />
 
+                    {/* Context Polygon (Ghost) */}
+                    {contextPolygonPositions && (
+                        <Polygon
+                            positions={contextPolygonPositions}
+                            pathOptions={{ color: "#94a3b8", fillColor: "#94a3b8", fillOpacity: 0.1, weight: 2, dashArray: '5, 5' }}
+                        />
+                    )}
+
+                    {/* Active Drawing */}
                     {points.map((pos, idx) => (
                         <CircleMarker
                             key={idx}
@@ -241,7 +268,6 @@ export function PropertyMapSelector({ onBoundaryChange, className }: PropertyMap
                     )}
                 </MapContainer>
 
-                {/* Controls Overlay */}
                 <div className="absolute top-4 right-4 z-[1000] flex flex-col gap-2">
                     <Button
                         type="button"
@@ -258,4 +284,3 @@ export function PropertyMapSelector({ onBoundaryChange, className }: PropertyMap
         </div>
     );
 }
-

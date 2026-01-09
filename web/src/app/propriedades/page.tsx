@@ -114,8 +114,8 @@ export default function PropertiesListPage() {
                   key={property.id}
                   className="group overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md"
                 >
-                  {/* Card Header / Image Placeholder */}
-                  <div className="relative h-48 w-full bg-slate-100 group-hover:bg-slate-200 transition-colors flex items-center justify-center overflow-hidden">
+                  {/* Card Header / Image Placeholder - Clickable */}
+                  <Link href={`/propriedades/${property.id}`} className="block relative h-48 w-full bg-slate-100 group-hover:bg-slate-200 transition-colors flex items-center justify-center overflow-hidden cursor-pointer">
                     {imageUrl ? (
                       <Image
                         src={imageUrl}
@@ -136,15 +136,17 @@ export default function PropertiesListPage() {
                         Ativo
                       </div>
                     </div>
-                  </div>
+                  </Link>
 
                   {/* Card Body */}
                   <div className="p-5">
                     <div className="mb-4 flex items-start justify-between">
                       <div>
-                        <h3 className="font-semibold text-slate-900 group-hover:text-green-700 transition-colors">
-                          {property.nome}
-                        </h3>
+                        <Link href={`/propriedades/${property.id}`} className="block hover:underline decoration-green-600/30 underline-offset-4">
+                          <h3 className="font-semibold text-slate-900 group-hover:text-green-700 transition-colors">
+                            {property.nome}
+                          </h3>
+                        </Link>
                         <div className="mt-1 flex items-center text-sm text-slate-500">
                           <MapPin className="mr-1 h-3.5 w-3.5 text-slate-400" />
                           -
@@ -158,7 +160,9 @@ export default function PropertiesListPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>Ver Detalhes</DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href={`/propriedades/${property.id}`}>Ver Detalhes</Link>
+                          </DropdownMenuItem>
                           <DropdownMenuItem>Editar</DropdownMenuItem>
                           <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(property.id)}>Excluir</DropdownMenuItem>
                         </DropdownMenuContent>
@@ -181,8 +185,8 @@ export default function PropertiesListPage() {
 
                     <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-4 text-sm">
                       <span className="text-slate-500">Safra: {property.safraAtual}</span>
-                      <Button variant="ghost" size="sm" className="text-green-700 hover:text-green-800 hover:bg-green-50 px-2 -mr-2">
-                        Acessar
+                      <Button variant="ghost" size="sm" asChild className="text-green-700 hover:text-green-800 hover:bg-green-50 px-2 -mr-2">
+                        <Link href={`/propriedades/${property.id}`}>Acessar</Link>
                       </Button>
                     </div>
                   </div>
