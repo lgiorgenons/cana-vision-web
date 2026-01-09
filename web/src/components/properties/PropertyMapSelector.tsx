@@ -249,7 +249,7 @@ export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJso
                     {contextPolygonPositions && (
                         <Polygon
                             positions={contextPolygonPositions}
-                            pathOptions={{ color: "#94a3b8", fillColor: "#94a3b8", fillOpacity: 0.1, weight: 2, dashArray: '5, 5' }}
+                            pathOptions={{ color: "#2563eb", fillColor: "#2563eb", fillOpacity: 0.3, weight: 2, dashArray: '10, 10' }}
                         />
                     )}
 
