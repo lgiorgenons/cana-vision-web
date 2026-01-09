@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Layout } from "@/components/Layout";
@@ -12,52 +13,66 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-// Mock Data
-const MOCK_PROPERTIES: Array<{
-  id: number;
-  name: string;
-  area: number;
-  crop: string;
-  harvest: string;
-  location: string;
-  status: string;
-  imageUrl?: string;
-}> = [
-    {
-      id: 1,
-      name: "Fazenda Santa Mônica",
-      area: 1250.5,
-      crop: "Cana-de-Açúcar",
-      harvest: "2024/2025",
-      location: "Ribeirão Preto - SP",
-      status: "Ativo",
-      imageUrl: "/images/properties/farm_sugarcane.png",
-    },
-    {
-      id: 2,
-      name: "Sítio Vista Alegre",
-      area: 340.0,
-      crop: "Soja",
-      harvest: "2023/2024",
-      location: "Uberaba - MG",
-      status: "Ativo",
-      imageUrl: "/images/properties/farm_soy.png",
-    },
-    {
-      id: 3,
-      name: "Fazenda Boa Esperança",
-      area: 890.2,
-      crop: "Milho",
-      harvest: "2024",
-      location: "Londrina - PR",
-      status: "Manutenção",
-      imageUrl: "/images/properties/farm_corn.png",
-    },
-  ];
+import { listPropriedades, Propriedade, deletePropriedade } from "@/services/propriedades";
+import { getAuthSession } from "@/lib/auth-session";
+import { useToast } from "@/components/ui/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function PropertiesListPage() {
-  const hasProperties = MOCK_PROPERTIES.length > 0;
+  const [properties, setProperties] = useState<Propriedade[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    fetchProperties();
+  }, []);
+
+  const fetchProperties = async () => {
+    setIsLoading(true);
+    try {
+      const session = getAuthSession();
+      // Use explicit fallback if missing
+      const user = session?.user as any;
+      const clienteId = user?.clienteId || user?.cliente_id || "07d351f6-336e-4aeb-94a4-7ce3228e8e14";
+      const data = await listPropriedades(clienteId);
+      setProperties(data);
+    } catch (error) {
+      console.error("Erro ao carregar propriedades:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar as propriedades.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deletePropriedade(id);
+      toast({
+        title: "Sucesso",
+        description: "Propriedade removida com sucesso.",
+      });
+      fetchProperties();
+    } catch (error) {
+      console.error("Erro ao deletar propriedade:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao deletar propriedade.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const getCropImage = (crop: string) => {
+    const normalized = crop.toLowerCase();
+    if (normalized.includes("cana")) return "/images/properties/farm_sugarcane.png";
+    if (normalized.includes("soja")) return "/images/properties/farm_soy.png";
+    if (normalized.includes("milho")) return "/images/properties/farm_corn.png";
+    return undefined;
+  };
 
   return (
     <Layout
@@ -66,39 +81,45 @@ export default function PropertiesListPage() {
     >
       <div className="mx-auto max-w-[1600px] px-4">
 
-        {hasProperties ? (
-          <>
-            {/* Filters & Search */}
-            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="relative w-full max-w-sm">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input
-                  placeholder="Buscar por nome, cultura ou local..."
-                  className="pl-9 bg-white"
-                />
-              </div>
+        {/* Filters & Search - Show even if loading or empty? Yes */}
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative w-full max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input
+              placeholder="Buscar por nome, cultura ou local..."
+              className="pl-9 bg-white"
+            />
+          </div>
 
-              <Button asChild className="bg-[#16A34A] hover:bg-[#15803d] text-white">
-                <Link href="/propriedades/novo">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Nova Propriedade
-                </Link>
-              </Button>
-            </div>
+          <Button asChild className="bg-[#16A34A] hover:bg-[#15803d] text-white">
+            <Link href="/propriedades/novo">
+              <Plus className="mr-2 h-4 w-4" />
+              Nova Propriedade
+            </Link>
+          </Button>
+        </div>
 
-            {/* Properties Grid */}
-            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-              {MOCK_PROPERTIES.map((property) => (
+        {isLoading ? (
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-[300px] w-full rounded-xl" />
+            ))}
+          </div>
+        ) : properties.length > 0 ? (
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {properties.map((property) => {
+              const imageUrl = getCropImage(property.culturaPrincipal);
+              return (
                 <div
                   key={property.id}
                   className="group overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md"
                 >
-                  {/* Card Header / Image Placeholder */}
-                  <div className="relative h-48 w-full bg-slate-100 group-hover:bg-slate-200 transition-colors flex items-center justify-center overflow-hidden">
-                    {property.imageUrl ? (
+                  {/* Card Header / Image Placeholder - Clickable */}
+                  <Link href={`/propriedades/${property.id}`} className="block relative h-48 w-full bg-slate-100 group-hover:bg-slate-200 transition-colors flex items-center justify-center overflow-hidden cursor-pointer">
+                    {imageUrl ? (
                       <Image
-                        src={property.imageUrl}
-                        alt={property.name}
+                        src={imageUrl}
+                        alt={property.nome}
                         fill
                         className="object-cover transition-transform duration-500 group-hover:scale-105"
                       />
@@ -109,26 +130,26 @@ export default function PropertiesListPage() {
                     <div className="absolute top-3 right-3 z-10">
                       <div className="flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-slate-700 shadow-sm backdrop-blur-md border border-white/50">
                         <span className={`relative flex h-2 w-2`}>
-                          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${property.status === 'Ativo' ? 'bg-green-500' : 'bg-amber-500'
-                            }`}></span>
-                          <span className={`relative inline-flex rounded-full h-2 w-2 ${property.status === 'Ativo' ? 'bg-green-500' : 'bg-amber-500'
-                            }`}></span>
+                          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500`}></span>
+                          <span className={`relative inline-flex rounded-full h-2 w-2 bg-green-500`}></span>
                         </span>
-                        {property.status}
+                        Ativo
                       </div>
                     </div>
-                  </div>
+                  </Link>
 
                   {/* Card Body */}
                   <div className="p-5">
                     <div className="mb-4 flex items-start justify-between">
                       <div>
-                        <h3 className="font-semibold text-slate-900 group-hover:text-green-700 transition-colors">
-                          {property.name}
-                        </h3>
+                        <Link href={`/propriedades/${property.id}`} className="block hover:underline decoration-green-600/30 underline-offset-4">
+                          <h3 className="font-semibold text-slate-900 group-hover:text-green-700 transition-colors">
+                            {property.nome}
+                          </h3>
+                        </Link>
                         <div className="mt-1 flex items-center text-sm text-slate-500">
                           <MapPin className="mr-1 h-3.5 w-3.5 text-slate-400" />
-                          {property.location}
+                          -
                         </div>
                       </div>
 
@@ -139,9 +160,11 @@ export default function PropertiesListPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>Ver Detalhes</DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href={`/propriedades/${property.id}`}>Ver Detalhes</Link>
+                          </DropdownMenuItem>
                           <DropdownMenuItem>Editar</DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600">Excluir</DropdownMenuItem>
+                          <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(property.id)}>Excluir</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
@@ -149,28 +172,28 @@ export default function PropertiesListPage() {
                     <div className="grid grid-cols-2 gap-4 py-4 border-t border-slate-100">
                       <div>
                         <p className="text-xs text-slate-500 mb-1">Área Total</p>
-                        <p className="font-medium text-slate-700">{property.area} ha</p>
+                        <p className="font-medium text-slate-700">{property.areaHectares} ha</p>
                       </div>
                       <div>
                         <p className="text-xs text-slate-500 mb-1">Cultura</p>
                         <div className="flex items-center gap-1.5 font-medium text-slate-700">
                           <Sprout className="h-3.5 w-3.5 text-green-600" />
-                          {property.crop}
+                          {property.culturaPrincipal}
                         </div>
                       </div>
                     </div>
 
                     <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-4 text-sm">
-                      <span className="text-slate-500">Safra: {property.harvest}</span>
-                      <Button variant="ghost" size="sm" className="text-green-700 hover:text-green-800 hover:bg-green-50 px-2 -mr-2">
-                        Acessar
+                      <span className="text-slate-500">Safra: {property.safraAtual}</span>
+                      <Button variant="ghost" size="sm" asChild className="text-green-700 hover:text-green-800 hover:bg-green-50 px-2 -mr-2">
+                        <Link href={`/propriedades/${property.id}`}>Acessar</Link>
                       </Button>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          </>
+              );
+            })}
+          </div>
         ) : (
           <div className="flex min-h-[60vh] flex-col items-center justify-center py-12 animate-in fade-in zoom-in-95 duration-700">
 

@@ -1,17 +1,44 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { ChevronRight } from "lucide-react";
-
-const fields = [
-    { id: "T-A01", crop: "Cana", status: "good", area: "45ha" },
-    { id: "T-A02", crop: "Cana", status: "warning", area: "32ha" },
-    { id: "T-B01", crop: "Cana", status: "good", area: "50ha" },
-    { id: "T-B05", crop: "Cana", status: "critical", area: "28ha" },
-    { id: "T-C12", crop: "Soja", status: "good", area: "120ha" },
-    { id: "T-C14", crop: "Soja", status: "good", area: "90ha" },
-];
+import { listTalhoes, Talhao } from "@/services/talhoes";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function FieldListWidget() {
+    const [fields, setFields] = useState<Talhao[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        async function loadFields() {
+            try {
+                // Fetch fields. Assuming backend returns all if no propertyId is provided, 
+                // or we might need to handle per-property logic.
+                const data = await listTalhoes();
+                setFields(data ? data.slice(0, 50) : []); // Limit limit
+            } catch (error) {
+                console.error("Failed to load fields", error);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+        loadFields();
+    }, []);
+
+    if (isLoading) {
+        return (
+            <div className="flex h-full flex-col rounded-[30px] bg-white p-6 shadow-sm ring-1 ring-gray-100">
+                <div className="mb-6 flex items-center justify-between">
+                    <h3 className="font-semibold text-lg text-gray-900">Talhões</h3>
+                    <div className="h-4 w-12 bg-gray-200 rounded animate-pulse" />
+                </div>
+                <div className="flex flex-1 flex-col gap-3">
+                    {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-16 w-full rounded-2xl" />)}
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="flex h-full flex-col rounded-[30px] bg-white p-6 shadow-sm ring-1 ring-gray-100">
             <div className="mb-6 flex items-center justify-between">
@@ -20,22 +47,25 @@ export default function FieldListWidget() {
             </div>
 
             <div className="flex flex-1 flex-col gap-3 overflow-y-auto pr-2 scrollbar-hide">
-                {fields.map((field) => (
-                    <div key={field.id} className="group flex items-center justify-between rounded-2xl bg-gray-50 p-4 transition-all hover:bg-white hover:shadow-md hover:ring-1 hover:ring-gray-100">
-                        <div className="flex items-center gap-4">
-                            <div className={`h-3 w-3 rounded-full shadow-sm ${field.status === 'good' ? 'bg-emerald-500 shadow-emerald-200' :
-                                    field.status === 'warning' ? 'bg-amber-500 shadow-amber-200' : 'bg-red-500 shadow-red-200'
-                                }`} />
-                            <div>
-                                <p className="font-semibold text-gray-900">{field.id}</p>
-                                <p className="text-xs font-medium text-gray-400">{field.crop} • {field.area}</p>
+                {fields.length === 0 ? (
+                    <div className="text-center text-sm text-gray-400 py-4">Nenhum talhão encontrado.</div>
+                ) : (
+                    fields.map((field) => (
+                        <div key={field.id} className="group flex items-center justify-between rounded-2xl bg-gray-50 p-4 transition-all hover:bg-white hover:shadow-md hover:ring-1 hover:ring-gray-100">
+                            <div className="flex items-center gap-4">
+                                {/* Mock status for now as API doesn't provide health status yet */}
+                                <div className={`h-3 w-3 rounded-full shadow-sm bg-emerald-500 shadow-emerald-200`} />
+                                <div>
+                                    <p className="font-semibold text-gray-900">{field.nome || field.codigo}</p>
+                                    <p className="text-xs font-medium text-gray-400">{field.cultura} • {field.areaHectares}ha</p>
+                                </div>
                             </div>
+                            <button className="rounded-full p-1 text-gray-300 transition-colors group-hover:bg-gray-100 group-hover:text-gray-900">
+                                <ChevronRight className="h-4 w-4" />
+                            </button>
                         </div>
-                        <button className="rounded-full p-1 text-gray-300 transition-colors group-hover:bg-gray-100 group-hover:text-gray-900">
-                            <ChevronRight className="h-4 w-4" />
-                        </button>
-                    </div>
-                ))}
+                    ))
+                )}
             </div>
         </div>
     );
