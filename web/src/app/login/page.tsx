@@ -51,14 +51,14 @@ export default function Login() {
   const loginMutation = useMutation({
     mutationFn: (values: LoginFormValues) => loginUser({ email: values.email, password: values.password }),
     onSuccess: (data, variables) => {
-      if (!data.tokens) {
-        toast({
-          variant: "destructive",
-          title: "Sessão não disponível",
-          description: "Confirme seu e-mail antes de acessar a plataforma.",
-        });
-        return;
-      }
+      // if (!data.tokens) {
+      //   toast({
+      //     variant: "destructive",
+      //     title: "Sessão não disponível",
+      //     description: "Confirme seu e-mail antes de acessar a plataforma.",
+      //   });
+      //   return;
+      // }
 
       saveAuthSession(data, variables.remember);
       toast({ title: "Bem-vindo de volta", description: `Olá, ${data.user.nome.split(" ")[0]}!` });
