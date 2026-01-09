@@ -55,9 +55,8 @@ export async function createPropriedade(data: CreatePropriedadeDto): Promise<Pro
     });
 }
 
-export async function listPropriedades(clienteId?: string): Promise<Propriedade[]> {
-    const query = clienteId ? `?clienteId=${clienteId}` : "";
-    return apiFetch<Propriedade[]>(`/propriedades${query}`, {
+export async function listPropriedades(): Promise<Propriedade[]> {
+    return apiFetch<Propriedade[]>("/propriedades", {
         method: "GET",
         headers: getAuthHeaders(),
     });

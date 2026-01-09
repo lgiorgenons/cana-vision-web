@@ -68,9 +68,8 @@ export async function createTalhao(data: CreateTalhaoDto): Promise<Talhao> {
     });
 }
 
-export async function listTalhoes(propriedadeId?: string): Promise<Talhao[]> {
-    const query = propriedadeId ? `?propriedadeId=${propriedadeId}` : "";
-    return apiFetch<Talhao[]>(`/talhoes${query}`, {
+export async function listTalhoes(propriedadeId: string): Promise<Talhao[]> {
+    return apiFetch<Talhao[]>(`/talhoes?propriedadeId=${propriedadeId}`, {
         method: "GET",
         headers: getAuthHeaders(),
     });

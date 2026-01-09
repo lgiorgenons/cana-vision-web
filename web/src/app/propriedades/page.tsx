@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { listPropriedades, Propriedade, deletePropriedade } from "@/services/propriedades";
-import { getAuthSession } from "@/lib/auth-session";
+
 import { useToast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -30,11 +30,7 @@ export default function PropertiesListPage() {
   const fetchProperties = async () => {
     setIsLoading(true);
     try {
-      const session = getAuthSession();
-      // Use explicit fallback if missing
-      const user = session?.user;
-      const clienteId = user?.clienteId || "07d351f6-336e-4aeb-94a4-7ce3228e8e14";
-      const data = await listPropriedades(clienteId);
+      const data = await listPropriedades();
       setProperties(data);
     } catch (error) {
       console.error("Erro ao carregar propriedades:", error);

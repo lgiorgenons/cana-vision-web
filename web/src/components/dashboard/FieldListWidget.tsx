@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { listTalhoes, Talhao } from "@/services/talhoes";
+import { listPropriedades } from "@/services/propriedades";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function FieldListWidget() {
@@ -12,10 +13,18 @@ export default function FieldListWidget() {
     useEffect(() => {
         async function loadFields() {
             try {
-                // Fetch fields. Assuming backend returns all if no propertyId is provided, 
-                // or we might need to handle per-property logic.
-                const data = await listTalhoes();
-                setFields(data ? data.slice(0, 50) : []); // Limit limit
+                // First get properties to know which ID to query
+                const properties = await listPropriedades();
+
+                if (properties && properties.length > 0) {
+                    // For now, load fields from the first property to populate the widget
+                    // Ideal: Allow user to select property in this widget
+                    const firstPropertyId = properties[0].id;
+                    const data = await listTalhoes(firstPropertyId);
+                    setFields(data ? data.slice(0, 50) : []);
+                } else {
+                    setFields([]);
+                }
             } catch (error) {
                 console.error("Failed to load fields", error);
             } finally {

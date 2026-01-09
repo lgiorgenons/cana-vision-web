@@ -92,14 +92,13 @@ export default function NewPropertyPage() {
             const session = getAuthSession();
             // console.log("Session User:", session?.user); // Debug log
 
-            // Try to find clienteId with different casing, or use fallback
             const user = session?.user;
-            const clienteId = user?.clienteId || "07d351f6-336e-4aeb-94a4-7ce3228e8e14";
+            const clienteId = user?.clienteId;
 
             if (!clienteId) {
                 toast({
                     title: "Erro de Autenticação",
-                    description: "Não foi possível identificar o cliente.",
+                    description: "Não foi possível identificar o cliente do usuário logado.",
                     variant: "destructive",
                 });
                 return;
@@ -209,6 +208,7 @@ export default function NewPropertyPage() {
                                                         placeholder="0.00"
                                                         className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                                         {...field}
+                                                        value={field.value ?? ""}
                                                     />
                                                     <span className="absolute right-3 top-2.5 text-sm text-gray-400 font-medium">ha</span>
                                                 </div>
