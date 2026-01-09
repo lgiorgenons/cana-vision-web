@@ -3,6 +3,7 @@
 import { useState } from "react";
 import dynamic from "next/dynamic";
 import NextLink from "next/link";
+import { useRouter } from "next/navigation";
 import { AlertCircle, Save } from "lucide-react";
 
 import { useForm } from "react-hook-form";
@@ -14,6 +15,11 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+
+import { createPropriedade, CreatePropriedadeDto } from "@/services/propriedades";
+import { getAuthSession } from "@/lib/auth-session";
+import { useToast } from "@/components/ui/use-toast";
+import type { GeoJSONFeature } from "@/services/talhoes";
 
 // Dynamically import Map component to avoid window undefined errors in Next.js
 const PropertyMapSelector = dynamic(
@@ -51,8 +57,8 @@ const propertySchema = z.object({
     crop: z.enum(["Cana-de-Açúcar", "Soja", "Milho", "Outra"], {
         required_error: "Selecione a cultura principal.",
     }),
-    internalCode: z.string().optional(),
-    sicarCode: z.string().optional(),
+    internalCode: z.string().min(1, "Código interno é obrigatório."),
+    sicarCode: z.string().min(1, "Código SICAR é obrigatório."),
     geoJson: z.custom<GeoJSONPolygonFeature | null>((val) => {
         const v = val as GeoJSONPolygonFeature | null | undefined;
         return v && v.type === "Feature" && v.geometry && v.geometry.coordinates && v.geometry.coordinates.length > 0;
@@ -63,6 +69,8 @@ type PropertyFormValues = z.infer<typeof propertySchema>;
 
 export default function NewPropertyPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const router = useRouter();
+    const { toast } = useToast();
 
     // Initialize Form
     const form = useForm<PropertyFormValues>({
@@ -78,11 +86,79 @@ export default function NewPropertyPage() {
         },
     });
 
-    const onSubmit = (values: PropertyFormValues) => {
+    const onSubmit = async (values: PropertyFormValues) => {
         setIsSubmitting(true);
-        console.log("Form Values:", values);
-        // TODO: Connect to Backend API
-        setTimeout(() => setIsSubmitting(false), 2000);
+        try {
+            const session = getAuthSession();
+            // console.log("Session User:", session?.user); // Debug log
+
+            // Try to find clienteId with different casing, or use fallback
+            const user = session?.user as any;
+            const clienteId = user?.clienteId || user?.cliente_id || user?.clientId || user?.client_id || "07d351f6-336e-4aeb-94a4-7ce3228e8e14";
+
+            if (!clienteId) {
+                toast({
+                    title: "Erro de Autenticação",
+                    description: "Não foi possível identificar o cliente.",
+                    variant: "destructive",
+                });
+                return;
+            }
+
+            if (!values.geoJson) {
+                toast({
+                    title: "Mapa Obrigatório",
+                    description: "Desenhe a área da propriedade no mapa.",
+                    variant: "destructive",
+                });
+                return;
+            }
+
+            // Map form values to DTO
+            // We need to cast geoJson to expected type or ensure compatibility
+            // The form geoJson matches the structure needed.
+
+            // Clean up optional fields: if empty string, send undefined to avoid validation errors
+            const cleanHarvest = values.harvest?.trim() || "2024/2025"; // Default if missing?
+
+            const payload: CreatePropriedadeDto = {
+                nome: values.name,
+                clienteId: clienteId,
+                areaHectares: Number(values.area), // Ensure number
+                culturaPrincipal: values.crop,
+                safraAtual: cleanHarvest,
+                codigoInterno: values.internalCode,
+                codigoSicar: values.sicarCode,
+                geojson: values.geoJson as unknown as GeoJSONFeature,
+                metadata: {}
+            };
+
+            console.log("Sending Payload:", JSON.stringify(payload, null, 2));
+
+            await createPropriedade(payload);
+
+            toast({
+                title: "Sucesso!",
+                description: "Propriedade criada com sucesso.",
+            });
+
+            router.push("/propriedades");
+
+        } catch (error) {
+            console.error("Erro ao criar propriedade:", error);
+            // Extracts message if it's an ApiError (not imported here but logic in API client throws it)
+            // or regular error
+            let msg = "Erro desconhecido ao salvar propriedade.";
+            if (error instanceof Error) msg = error.message;
+
+            toast({
+                title: "Erro",
+                description: msg,
+                variant: "destructive",
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -208,9 +284,9 @@ export default function NewPropertyPage() {
                                     name="internalCode"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-sm font-medium text-gray-700">Código Interno (ERP)</FormLabel>
+                                            <FormLabel className="text-sm font-medium text-gray-700">Código Interno (ERP) *</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Opcional" {...field} />
+                                                <Input placeholder="Ex: FBE-01" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -223,9 +299,9 @@ export default function NewPropertyPage() {
                                     name="sicarCode"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-sm font-medium text-gray-700">Código CAR/SICAR</FormLabel>
+                                            <FormLabel className="text-sm font-medium text-gray-700">Código CAR/SICAR *</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Opcional" {...field} />
+                                                <Input placeholder="Ex: CAR-12345-BR" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
