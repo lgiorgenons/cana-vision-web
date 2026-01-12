@@ -2,8 +2,8 @@ import { apiFetch } from "@/lib/api-client";
 import { getAuthSession } from "@/lib/auth-session";
 
 export interface GeoJSONGeometry {
-    type: "Polygon" | "Point"; // Add other types if necessary
-    coordinates: number[][][]; // For Polygon
+    type: "Polygon" | "Point" | "MultiPolygon";
+    coordinates: any; // Flexible to handle Point (number[]), Polygon (number[][][]), and MultiPolygon (number[][][][])
 }
 
 export interface GeoJSONFeature {
@@ -64,21 +64,21 @@ export async function createTalhao(data: CreateTalhaoDto): Promise<Talhao> {
     return apiFetch<Talhao>("/talhoes", {
         method: "POST",
         body: JSON.stringify(data),
-        // headers: getAuthHeaders(),
+        headers: getAuthHeaders(),
     });
 }
 
 export async function listTalhoes(propriedadeId: string): Promise<Talhao[]> {
     return apiFetch<Talhao[]>(`/talhoes?propriedadeId=${propriedadeId}`, {
         method: "GET",
-        // headers: getAuthHeaders(),
+        headers: getAuthHeaders(),
     });
 }
 
 export async function getTalhao(id: string): Promise<Talhao> {
     return apiFetch<Talhao>(`/talhoes/${id}`, {
         method: "GET",
-        // headers: getAuthHeaders(),
+        headers: getAuthHeaders(),
     });
 }
 
@@ -86,13 +86,13 @@ export async function updateTalhao(id: string, data: UpdateTalhaoDto): Promise<T
     return apiFetch<Talhao>(`/talhoes/${id}`, {
         method: "PUT",
         body: JSON.stringify(data),
-        // headers: getAuthHeaders(),
+        headers: getAuthHeaders(),
     });
 }
 
 export async function deleteTalhao(id: string): Promise<void> {
     return apiFetch<void>(`/talhoes/${id}`, {
         method: "DELETE",
-        // headers: getAuthHeaders(),
+        headers: getAuthHeaders(),
     });
 }

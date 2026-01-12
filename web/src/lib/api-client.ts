@@ -46,6 +46,9 @@ export async function apiFetch<TResponse>(path: string, options: ApiFetchOptions
   const parsed = text ? safeParseJson(text) : null;
 
   if (!response.ok) {
+    if (response.status === 401 && typeof window !== 'undefined') {
+      window.location.href = "/login";
+    }
     const message = parsed?.message || parsed?.detail || `Erro ao chamar API (${response.status})`;
     throw new ApiError(message, response.status, parsed);
   }
