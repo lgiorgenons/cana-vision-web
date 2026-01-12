@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -197,178 +197,220 @@ export default function NewTalhaoPage() {
             description={`Cadastro de unidade em ${property.nome}`}
             headerBackLink={`/propriedades/${propertyId}`}
         >
-            <div className="mx-auto max-w-5xl p-1 pb-20">
+            <div className="mx-auto max-w-4xl p-1 pb-20">
 
-                <div className="flex flex-col lg:flex-row gap-6">
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-6">
 
-                    {/* Left Column: Map */}
-                    <div className="w-full lg:w-1/2 flex flex-col gap-4">
-                        <div className="rounded-[10px] bg-white p-4 shadow-sm border border-gray-200">
-                            <h3 className="text-sm font-medium text-gray-700 mb-2">Desenhar Talhão</h3>
-                            <p className="text-xs text-gray-500 mb-4">
-                                Use o mapa abaixo para delimitar a área do talhão. O contorno da propriedade está visível em cinza para referência.
-                            </p>
-                            <PropertyMapSelector
-                                key={mapKey}
-                                className="w-full"
-                                onBoundaryChange={handleMapChange}
-                                contextGeoJson={property.geojson as unknown as GeoJSONPolygonFeature} // Cast to compatible polygon type
-                            />
-                            {form.formState.errors.geoJson && (
-                                <p className="text-sm font-medium text-red-500 mt-2">
-                                    {form.formState.errors.geoJson.message}
-                                </p>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Right Column: Form */}
-                    <div className="w-full lg:w-1/2">
+                        {/* Card 1: Dados do Talhão */}
                         <div className="rounded-[10px] bg-white p-6 shadow-sm border border-gray-200">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-6">Dados do Talhão</h2>
+                            <h2 className="text-lg font-semibold text-gray-900 mb-1">Dados do Talhão</h2>
+                            <p className="text-sm text-gray-500 mb-6">Informações de identificação e características agronômicas.</p>
 
-                            <Form {...form}>
-                                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <FormField
-                                            control={form.control}
-                                            name="name"
-                                            render={({ field }) => (
-                                                <FormItem className="col-span-2">
-                                                    <FormLabel>Identificação (Nome)</FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder="Ex: Talhão 01 - Norte" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
+                                {/* Nome */}
+                                <FormField
+                                    control={form.control}
+                                    name="name"
+                                    render={({ field }) => (
+                                        <FormItem className="col-span-1 md:col-span-2">
+                                            <FormLabel className="text-sm font-medium text-gray-700">Identificação (Nome) *</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Ex: Talhão 01 - Norte" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
 
-                                        <FormField
-                                            control={form.control}
-                                            name="code"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Código</FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder="Ex: T01" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
+                                {/* Código */}
+                                <FormField
+                                    control={form.control}
+                                    name="code"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-sm font-medium text-gray-700">Código *</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Ex: T01" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
 
-                                        <FormField
-                                            control={form.control}
-                                            name="area"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Área (ha)</FormLabel>
-                                                    <FormControl>
-                                                        <Input type="number" step="0.01" placeholder="0.00" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </div>
+                                {/* Área */}
+                                <FormField
+                                    control={form.control}
+                                    name="area"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-sm font-medium text-gray-700">Área (ha) *</FormLabel>
+                                            <FormControl>
+                                                <div className="relative">
+                                                    <Input
+                                                        type="number"
+                                                        step="0.01"
+                                                        placeholder="0.00"
+                                                        className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                                        {...field}
+                                                    />
+                                                    <span className="absolute right-3 top-2.5 text-sm text-gray-400 font-medium">ha</span>
+                                                </div>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
 
-                                    <FormField
-                                        control={form.control}
-                                        name="crop"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Cultura</FormLabel>
-                                                <FormControl>
-                                                    <RadioGroup
-                                                        onValueChange={field.onChange}
-                                                        defaultValue={field.value}
-                                                        className="flex gap-2"
-                                                    >
-                                                        {["Cana-de-Açúcar", "Soja", "Milho"].map(crop => (
-                                                            <div key={crop} className="flex items-center space-x-2">
-                                                                <RadioGroupItem value={crop} id={`r-${crop}`} />
-                                                                <label htmlFor={`r-${crop}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                                                    {crop}
-                                                                </label>
-                                                            </div>
-                                                        ))}
-                                                    </RadioGroup>
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
+                                {/* Cultura */}
+                                <FormField
+                                    control={form.control}
+                                    name="crop"
+                                    render={({ field }) => (
+                                        <FormItem className="col-span-1 md:col-span-2">
+                                            <FormLabel className="text-sm font-medium text-gray-700">Cultura *</FormLabel>
+                                            <FormControl>
+                                                <RadioGroup
+                                                    onValueChange={field.onChange}
+                                                    defaultValue={field.value}
+                                                    className="grid grid-cols-2 md:grid-cols-4 gap-3"
+                                                >
+                                                    {["Cana-de-Açúcar", "Soja", "Milho", "Outra"].map((crop) => (
+                                                        <FormItem key={crop} className="space-y-0">
+                                                            <FormControl>
+                                                                <RadioGroupItem value={crop} className="sr-only" />
+                                                            </FormControl>
+                                                            <FormLabel className={`
+                                                relative flex cursor-pointer items-center justify-center rounded-lg border p-3 text-sm font-medium transition-all
+                                                ${field.value === crop
+                                                                    ? "border-emerald-500 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-500"
+                                                                    : "border-gray-200 text-gray-700 hover:bg-gray-50"}
+                                            `}>
+                                                                {crop}
+                                                            </FormLabel>
+                                                        </FormItem>
+                                                    ))}
+                                                </RadioGroup>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
 
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <FormField
-                                            control={form.control}
-                                            name="variety"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Variedade</FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder="Opcional" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                        <FormField
-                                            control={form.control}
-                                            name="harvest"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Safra</FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder="2024/2025" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </div>
+                                {/* Safra e Variedade */}
+                                <FormField
+                                    control={form.control}
+                                    name="harvest"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-sm font-medium text-gray-700">Safra</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Ex: 2024/2025" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
 
-                                    <div className="pt-4 flex flex-col gap-3">
-                                        <Button
-                                            type="submit"
-                                            className="w-full bg-[#16A34A] hover:bg-[#15803d] text-white shadow-sm shadow-green-200"
-                                            disabled={isSubmitting}
-                                            onClick={() => setShouldCreateAnother(false)}
-                                        >
-                                            {isSubmitting && !shouldCreateAnother ? (
-                                                <>
-                                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Salvando...
-                                                </>
-                                            ) : (
-                                                "Salvar e Voltar"
-                                            )}
-                                        </Button>
-
-                                        <Button
-                                            type="submit"
-                                            variant="outline"
-                                            className="w-full border-[#16A34A] text-[#16A34A] hover:bg-green-50"
-                                            disabled={isSubmitting}
-                                            onClick={() => setShouldCreateAnother(true)}
-                                        >
-                                            {isSubmitting && shouldCreateAnother ? (
-                                                <>
-                                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Salvando...
-                                                </>
-                                            ) : (
-                                                "Salvar e Criar Outro"
-                                            )}
-                                        </Button>
-                                    </div>
-
-                                </form>
-                            </Form>
+                                <FormField
+                                    control={form.control}
+                                    name="variety"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-sm font-medium text-gray-700">Variedade</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Opcional" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
                         </div>
-                    </div>
-                </div>
 
+                        {/* Card 2: Delimitação de Área (Mapa) */}
+                        <div className="rounded-[10px] bg-white p-6 shadow-sm border border-gray-200">
+                            <h2 className="text-lg font-semibold text-gray-900 mb-1">Delimitação de Área</h2>
+                            <p className="text-sm text-gray-500 mb-6">Desenhe o perímetro do talhão no mapa. O contorno da propriedade está visível para referência.</p>
+
+                            <FormField
+                                control={form.control}
+                                name="geoJson"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormControl>
+                                            <PropertyMapSelector
+                                                key={mapKey}
+                                                className="w-full"
+                                                onBoundaryChange={(geo) => {
+                                                    field.onChange(geo);
+                                                    handleMapChange(geo);
+                                                }}
+                                                contextGeoJson={property.geojson as unknown as GeoJSONPolygonFeature}
+                                                showSearch={false}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <div className="mt-4 flex items-start gap-2 rounded-lg bg-blue-50 p-3 text-blue-700">
+                                <AlertCircle className="h-5 w-5 shrink-0" />
+                                <p className="text-xs leading-relaxed">
+                                    <strong>Instrução:</strong> Clique nos vértices do terreno para marcar os pontos. O sistema conectará automaticamente para formar a área.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Action Bar */}
+                        <div className="flex items-center justify-end gap-3 pt-4">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900 w-auto px-6 h-12"
+                                onClick={() => router.push(`/propriedades/${propertyId}`)}
+                            >
+                                Cancelar
+                            </Button>
+
+                            <div className="flex gap-3">
+                                <Button
+                                    type="submit"
+                                    variant="outline"
+                                    className="border-[#16A34A] text-[#16A34A] hover:bg-green-50 h-12 px-6"
+                                    disabled={isSubmitting}
+                                    onClick={() => setShouldCreateAnother(true)}
+                                >
+                                    {isSubmitting && shouldCreateAnother ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Salvando...
+                                        </>
+                                    ) : (
+                                        "Salvar e Criar Outro"
+                                    )}
+                                </Button>
+                                
+                                <Button
+                                    type="submit"
+                                    className="bg-[#16A34A] hover:bg-[#15803d] text-white shadow-sm shadow-green-200 h-12 px-8"
+                                    disabled={isSubmitting}
+                                    onClick={() => setShouldCreateAnother(false)}
+                                >
+                                    {isSubmitting && !shouldCreateAnother ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Salvando...
+                                        </>
+                                    ) : (
+                                        "Salvar e Voltar"
+                                    )}
+                                </Button>
+                            </div>
+                        </div>
+
+                    </form>
+                </Form>
             </div>
         </Layout>
     );

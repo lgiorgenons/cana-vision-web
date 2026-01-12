@@ -22,6 +22,7 @@ interface PropertyMapSelectorProps {
     onBoundaryChange: (geojson: GeoJSONPolygonFeature | null) => void;
     className?: string;
     contextGeoJson?: GeoJSONPolygonFeature | null;
+    showSearch?: boolean;
 }
 
 const MapController = ({
@@ -41,7 +42,7 @@ const MapController = ({
     return null;
 };
 
-export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJson }: PropertyMapSelectorProps) {
+export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJson, showSearch = true }: PropertyMapSelectorProps) {
     const [points, setPoints] = useState<[number, number][]>([]);
     const [isDrawing, setIsDrawing] = useState(true);
     const [map, setMap] = useState<LeafletMap | null>(null);
@@ -190,7 +191,8 @@ export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJso
 
     return (
         <div className={`flex flex-col gap-4 ${className}`}>
-            {/* ... Search Bar ... */}
+            {/* Search Bar */}
+            {showSearch && (
             <div className="relative z-[3000]" ref={searchRef}>
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -231,6 +233,7 @@ export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJso
                     </div>
                 )}
             </div>
+            )}
 
             <div className="relative h-[400px] w-full overflow-hidden rounded-xl border border-slate-200">
                 <MapContainer
