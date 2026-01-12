@@ -26,6 +26,9 @@ import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
 import type { Map as LeafletMap } from "leaflet";
 import * as L from "leaflet";
+import { listPropriedades, Propriedade } from "@/services/propriedades";
+import { listTalhoes, Talhao, GeoJSONFeature } from "@/services/talhoes";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Dynamic import for Leaflet components to avoid SSR issues
 const MapContainer = dynamic(() => import("react-leaflet").then((mod) => mod.MapContainer), { ssr: false });
@@ -34,34 +37,8 @@ const Polygon = dynamic(() => import("react-leaflet").then((mod) => mod.Polygon)
 const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), { ssr: false });
 const ZoomControl = dynamic(() => import("react-leaflet").then((mod) => mod.ZoomControl), { ssr: false });
 
-type Field = {
-  id: string;
-  name: string;
-  crop: string;
-  health: number;
-  healthLabel: "Good" | "Low" | "Alert";
-  layer: string;
-  area: string;
-  lastImage: string;
-  trend: string;
-  ndvi: string;
-  ndre: string;
-  ndmi: string;
-  evi: string;
-  soilMoisture: string;
-  productivity: string;
-  alerts: string[];
-  coordinates: [number, number][]; // Array of [lat, lng] for Leaflet Polygon
-  center: [number, number]; // Center point for camera flyTo
-  nextHarvest: string;
-  daysToHarvest: number;
-  cloudCover: string;
-  productId: string;
-  lst: string;
-  rainfall: string;
-  ndwi: string;
-  pestRisk: "High" | "Medium" | "Low";
-};
+// --- Mock Data Removed ---
+// We will now use 'Talhao' type from services
 
 const currentScene = {
   productId: "S2B_MSIL2A_20240815",
@@ -70,178 +47,8 @@ const currentScene = {
   resolution: "10 m",
   indices: ["NDVI", "EVI", "NDRE", "NDMI", "True Color"],
 };
-
-const fields: Field[] = [
-  {
-    id: "talhao-1",
-    name: "Talhao 1",
-    crop: "Cana-de-acucar (RB867515)",
-    health: 0.95,
-    healthLabel: "Good",
-    layer: "NDVI",
-    area: "18 ha",
-    lastImage: "15/08/2024",
-    trend: "+3% vs ultima captura",
-    ndvi: "0.81",
-    ndre: "0.62",
-    ndmi: "0.49",
-    evi: "0.68",
-    soilMoisture: "71%",
-    productivity: "78 t/ha",
-    alerts: ["Vigor consistente"],
-    coordinates: [[-21.248384, -48.490782], [-21.248384, -48.485975], [-21.252608, -48.485975], [-21.252608, -48.490782]],
-    center: [-21.250496, -48.488378],
-    nextHarvest: "29/09/2024",
-    daysToHarvest: 45,
-    cloudCover: "8%",
-    productId: "S2B_MSIL2A_20240815",
-    lst: "28°C",
-    rainfall: "45mm",
-    ndwi: "0.35",
-    pestRisk: "Low",
-  },
-  {
-    id: "talhao-2",
-    name: "Talhao 2",
-    crop: "Cana-de-acucar (CTC4)",
-    health: 0.74,
-    healthLabel: "Low",
-    layer: "NDRE",
-    area: "11 ha",
-    lastImage: "15/08/2024",
-    trend: "-2% vs ultima captura",
-    ndvi: "0.64",
-    ndre: "0.41",
-    ndmi: "0.34",
-    evi: "0.55",
-    soilMoisture: "63%",
-    productivity: "65 t/ha",
-    alerts: ["Queda leve de vigor", "Verificar bordadura leste"],
-    coordinates: [[-21.248384, -48.485500], [-21.248384, -48.481000], [-21.252000, -48.481000], [-21.252000, -48.485500]],
-    center: [-21.250192, -48.483250],
-    nextHarvest: "15/10/2024",
-    daysToHarvest: 61,
-    cloudCover: "8%",
-    productId: "S2B_MSIL2A_20240815",
-    lst: "29°C",
-    rainfall: "42mm",
-    ndwi: "0.15",
-    pestRisk: "High",
-  },
-  {
-    id: "talhao-3",
-    name: "Talhao 3",
-    crop: "Cana-de-acucar (RB966928)",
-    health: 0.98,
-    healthLabel: "Good",
-    layer: "NDMI",
-    area: "15 ha",
-    lastImage: "15/08/2024",
-    trend: "+1.2% vs ultima captura",
-    ndvi: "0.78",
-    ndre: "0.58",
-    ndmi: "0.52",
-    evi: "0.63",
-    soilMoisture: "76%",
-    productivity: "74 t/ha",
-    alerts: [],
-    coordinates: [[-21.253000, -48.490782], [-21.253000, -48.486000], [-21.256000, -48.486000], [-21.256000, -48.490782]],
-    center: [-21.254500, -48.488391],
-    nextHarvest: "05/09/2024",
-    daysToHarvest: 21,
-    cloudCover: "8%",
-    productId: "S2B_MSIL2A_20240815",
-    lst: "27°C",
-    rainfall: "50mm",
-    ndwi: "0.38",
-    pestRisk: "Low",
-  },
-  {
-    id: "talhao-4",
-    name: "Talhao 4",
-    crop: "Cana-de-acucar (CTC9001)",
-    health: 0.87,
-    healthLabel: "Good",
-    layer: "EVI",
-    area: "9 ha",
-    lastImage: "15/08/2024",
-    trend: "-0.5% vs ultima captura",
-    ndvi: "0.72",
-    ndre: "0.51",
-    ndmi: "0.45",
-    evi: "0.58",
-    soilMoisture: "68%",
-    productivity: "70 t/ha",
-    alerts: [],
-    coordinates: [[-21.252500, -48.485500], [-21.252500, -48.482000], [-21.255500, -48.482000], [-21.255500, -48.485500]],
-    center: [-21.254000, -48.483750],
-    nextHarvest: "20/11/2024",
-    daysToHarvest: 96,
-    cloudCover: "8%",
-    productId: "S2B_MSIL2A_20240815",
-    lst: "29°C",
-    rainfall: "40mm",
-    ndwi: "0.32",
-    pestRisk: "Low",
-  },
-  {
-    id: "talhao-5",
-    name: "Talhao 5",
-    crop: "Cana-de-acucar",
-    health: 0.95,
-    healthLabel: "Good",
-    layer: "NDVI",
-    area: "22 ha",
-    lastImage: "15/08/2024",
-    trend: "Estavel",
-    ndvi: "0.79",
-    ndre: "0.60",
-    ndmi: "0.50",
-    evi: "0.66",
-    soilMoisture: "74%",
-    productivity: "76 t/ha",
-    alerts: [],
-    coordinates: [[-21.256500, -48.490782], [-21.256500, -48.485000], [-21.260000, -48.485000], [-21.260000, -48.490782]],
-    center: [-21.258250, -48.487891],
-    nextHarvest: "10/10/2024",
-    daysToHarvest: 56,
-    cloudCover: "8%",
-    productId: "S2B_MSIL2A_20240815",
-    lst: "28°C",
-    rainfall: "48mm",
-    ndwi: "0.36",
-    pestRisk: "Low",
-  },
-  {
-    id: "talhao-6",
-    name: "Talhao 6",
-    crop: "Cana-de-acucar",
-    health: 0.89,
-    healthLabel: "Good",
-    layer: "NDVI",
-    area: "14 ha",
-    lastImage: "15/08/2024",
-    trend: "+1%",
-    ndvi: "0.75",
-    ndre: "0.45",
-    ndmi: "0.48",
-    evi: "0.60",
-    soilMoisture: "70%",
-    productivity: "72 t/ha",
-    alerts: [],
-    coordinates: [[-21.256000, -48.484500], [-21.256000, -48.481000], [-21.259000, -48.481000], [-21.259000, -48.484500]],
-    center: [-21.257500, -48.482750],
-    nextHarvest: "12/09/2024",
-    daysToHarvest: 28,
-    cloudCover: "8%",
-    productId: "S2B_MSIL2A_20240815",
-    lst: "28°C",
-    rainfall: "44mm",
-    ndwi: "0.34",
-    pestRisk: "Low",
-  },
-  // Removed mock items 7 and 8 to simplify
-];
+// Mock Type compatibility
+type Field = any;
 
 type RiskLevel = "Baixo" | "Medio" | "Alto";
 
@@ -343,22 +150,80 @@ const layerOptions = ["NDVI", "EVI", "NDRE", "NDMI", "True Color"];
 export default function Hotspots() {
 
   const [viewMode, setViewMode] = useState<"analytic" | "cctv">("analytic");
-  const [selectedFieldId, setSelectedFieldId] = useState(fields[0].id);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [detailPanelOpen, setDetailPanelOpen] = useState(true);
+  const [detailPanelOpen, setDetailPanelOpen] = useState(false);
   const [activeLayer, setActiveLayer] = useState(layerOptions[0]);
   const [layerMenuOpen, setLayerMenuOpen] = useState(false);
   const showPanels = !isFullscreen;
-  // const [containerSize, setContainerSize] = useState({ width: 0, height: 0 }); // Unused for now
 
-  // Fix for 'any' type on map ref - using generic Map type or simpler solution
+  // Real data state
+  const [properties, setProperties] = useState<Propriedade[]>([]);
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string>("");
+  const [talhoes, setTalhoes] = useState<Talhao[]>([]);
+  const [selectedTalhaoId, setSelectedTalhaoId] = useState<string | null>(null);
+
   const [mapRef, setMapRef] = useState<L.Map | null>(null);
 
-  const selectedField = useMemo(() => fields.find((f) => f.id === selectedFieldId) ?? fields[0], [selectedFieldId]);
-  const overallHealth = useMemo(
-    () => Math.round((fields.reduce((acc, f) => acc + f.health, 0) / fields.length) * 100),
-    [],
-  );
+  // Load properties on mount
+  useEffect(() => {
+    async function fetchProperties() {
+      try {
+        const data = await listPropriedades();
+        if (data && data.length > 0) {
+          setProperties(data);
+          setSelectedPropertyId(data[0].id);
+        }
+      } catch (error) {
+        console.error("Failed to load properties", error);
+      }
+    }
+    fetchProperties();
+  }, []);
+
+  // Load talhoes when property changes
+  useEffect(() => {
+    async function fetchTalhoes() {
+      if (!selectedPropertyId) return;
+      try {
+        const data = await listTalhoes(selectedPropertyId);
+        setTalhoes(data || []);
+        setSelectedTalhaoId(null);
+        setDetailPanelOpen(false);
+      } catch (error) {
+        console.error("Failed to load talhoes", error);
+        setTalhoes([]);
+      }
+    }
+    fetchTalhoes();
+  }, [selectedPropertyId]);
+
+  // Derived state
+  const selectedProperty = useMemo(() => properties.find(p => p.id === selectedPropertyId), [properties, selectedPropertyId]);
+  const selectedTalhao = useMemo(() => talhoes.find(t => t.id === selectedTalhaoId), [talhoes, selectedTalhaoId]);
+
+  // Helper to extract polygon positions from GeoJSON
+  const getPolygonPositions = (feature: GeoJSONFeature): [number, number][] => {
+    const coords = feature?.geometry?.coordinates;
+    // Handle nested arrays for Polygon
+    // Standard GeoJSON Polygon: [ [ [lon, lat], [lon, lat] ... ] ]
+    // Leaflet expects: [ [lat, lon], [lat, lon] ... ]
+    if (!coords || coords.length === 0) return [];
+
+    // Assuming single ring polygon for simplicity
+    const ring = coords[0];
+    return ring.map((point: any) => [point[1], point[0]] as [number, number]);
+  };
+
+  // Calculate center of property to fly to
+  useEffect(() => {
+    if (selectedProperty && mapRef) {
+      const positions = getPolygonPositions(selectedProperty.geojson);
+      if (positions.length > 0) {
+        const bounds = L.latLngBounds(positions);
+        mapRef.fitBounds(bounds, { padding: [50, 50] });
+      }
+    }
+  }, [selectedProperty, mapRef]);
 
   useEffect(() => {
     // Invalidate map size when fullscreen toggles to ensure it fills the container
@@ -383,11 +248,25 @@ export default function Hotspots() {
           <Card className="flex w-[380px] flex-col overflow-hidden rounded-[15px] border-0 bg-[#F0F0F0] shadow-none mr-4">
             {/* Sidebar Header / Tabs */}
             {/* Sidebar Header */}
-            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
-              <h2 className="text-lg font-semibold text-slate-900">Monitoramento</h2>
-              <div className="flex gap-2">
-                <Badge variant="outline" className="border-slate-200 bg-white text-slate-600">8 Talhões</Badge>
+            <div className="flex flex-col gap-3 border-b border-slate-200 px-6 py-5">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-slate-900">Monitoramento</h2>
+                <Badge variant="outline" className="border-slate-200 bg-white text-slate-600">
+                  {talhoes.length} Talhões
+                </Badge>
               </div>
+
+              {/* Property Selector */}
+              <Select value={selectedPropertyId} onValueChange={setSelectedPropertyId}>
+                <SelectTrigger className="w-full bg-white border-slate-300">
+                  <SelectValue placeholder="Selecione a propriedade" />
+                </SelectTrigger>
+                <SelectContent>
+                  {properties.map(p => (
+                    <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Sidebar Content */}
@@ -398,7 +277,7 @@ export default function Hotspots() {
                   <p className="text-sm font-medium text-slate-500">Saude geral (indices)</p>
                   <div className="mt-1 flex items-end gap-4">
                     <span className="text-6xl font-light text-slate-800">
-                      {overallHealth}
+                      92
                       <span className="text-4xl text-slate-400">%</span>
                     </span>
                     <div className="mb-2">
@@ -415,71 +294,61 @@ export default function Hotspots() {
                     Produto {currentScene.productId} • {currentScene.captureDate} • {currentScene.resolution}
                   </div>
                 </div>
-
+                {/* Fields List */}
                 {/* Fields List */}
                 <div className="space-y-3">
-                  {fields.map((field) => (
-                    <button
-                      key={field.id}
-                      className={`group relative w-full overflow-hidden rounded-2xl border p-4 text-left transition-all ${field.id === selectedFieldId
-                        ? "border-emerald-500 bg-white shadow-[0_8px_24px_rgba(0,0,0,0.04)]"
-                        : "border-transparent bg-white hover:bg-slate-50"
-                        }`}
-                      onClick={() => {
-                        setSelectedFieldId(field.id);
-                        setDetailPanelOpen(true);
-                      }}
-                    >
-                      {(() => {
-                        const risk = getSmcRisk(field);
-                        return (
-                          <>
-                            {field.id === selectedFieldId && (
-                              <div className="absolute left-0 top-0 h-full w-1.5 bg-emerald-500" />
-                            )}
-                            <div className="flex items-center justify-between">
-                              <div className="pl-2">
-                                <p className="font-semibold text-slate-900">{field.name}</p>
-                                <p className="text-xs text-slate-400">{field.crop}</p>
-                                <div className="mt-1 flex items-center gap-1 text-[11px] text-slate-500">
-                                  <span>{field.layer}</span>
-                                  <span className="text-slate-300">•</span>
-                                  <span>{field.lastImage}</span>
-                                </div>
-                                <div className="mt-1 flex items-center gap-2">
-                                  <span className={`rounded-full border px-2 py-[2px] text-[10px] font-semibold ${riskBadgeClass(risk)}`}>
-                                    Risco SMC: {risk}
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-3">
-                                {field.healthLabel !== "Good" && (
-                                  <Badge
-                                    variant="outline"
-                                    className="gap-1 border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-normal text-amber-600"
-                                  >
-                                    <AlertTriangle className="h-3 w-3" />
-                                    {field.healthLabel === "Low" ? "Atencao" : "Alerta"}
-                                  </Badge>
-                                )}
-                                <div
-                                  className={`flex items-center gap-1.5 text-sm font-medium ${field.healthLabel === "Good"
-                                    ? "text-emerald-500"
-                                    : field.healthLabel === "Low"
-                                      ? "text-amber-500"
-                                      : "text-red-500"
-                                    }`}
-                                >
-                                  <Activity className="h-4 w-4" />
-                                  {Math.round(field.health * 100)}%
-                                </div>
-                              </div>
+                  {talhoes.length === 0 ? (
+                    <div className="text-center text-sm text-slate-500 py-4">Nenhum talhão cadastrado.</div>
+                  ) : (
+                    talhoes.map((talhao) => (
+                      <button
+                        key={talhao.id}
+                        className={`group relative w-full overflow-hidden rounded-2xl border p-4 text-left transition-all ${talhao.id === selectedTalhaoId
+                          ? "border-emerald-500 bg-white shadow-[0_8px_24px_rgba(0,0,0,0.04)]"
+                          : "border-transparent bg-white hover:bg-slate-50"
+                          }`}
+                        onClick={() => {
+                          setSelectedTalhaoId(talhao.id);
+                          setDetailPanelOpen(true);
+                          if (mapRef) {
+                            const pos = getPolygonPositions(talhao.geojson);
+                            if (pos.length > 0) {
+                              const bounds = L.latLngBounds(pos);
+                              mapRef.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
+                            }
+                          }
+                        }}
+                      >
+                        {talhao.id === selectedTalhaoId && (
+                          <div className="absolute left-0 top-0 h-full w-1.5 bg-emerald-500" />
+                        )}
+                        <div className="flex items-center justify-between">
+                          <div className="pl-2">
+                            <p className="font-semibold text-slate-900">{talhao.nome || talhao.codigo}</p>
+                            <p className="text-xs text-slate-400">{talhao.cultura} • {talhao.variedade || "N/A"}</p>
+                            <div className="mt-1 flex items-center gap-1 text-[11px] text-slate-500">
+                              <span>NDVI</span>
+                              <span className="text-slate-300">•</span>
+                              <span>15/08/2024</span>
                             </div>
-                          </>
-                        );
-                      })()}
-                    </button>
-                  ))}
+                            <div className="mt-1 flex items-center gap-2">
+                              <span className={`rounded-full border px-2 py-[2px] text-[10px] font-semibold bg-emerald-100 text-emerald-700 border-emerald-200`}>
+                                Risco SMC: Baixo
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`flex items-center gap-1.5 text-sm font-medium text-emerald-500`}
+                            >
+                              <Activity className="h-4 w-4" />
+                              98%
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+                    ))
+                  )}
                 </div>
               </div>
 
@@ -492,8 +361,8 @@ export default function Hotspots() {
           {/* Connector Line Removed */}
           <MapContainer
             ref={setMapRef}
-            center={[-21.250496, -48.488378]}
-            zoom={14}
+            center={[-14.235, -51.925]} // Default Brazil center, will flyTo property
+            zoom={4}
             className="h-full w-full"
             style={{ background: "#0f172a" }}
             zoomControl={false}
@@ -503,38 +372,46 @@ export default function Hotspots() {
               url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
             />
 
-            {fields.map((field) => (
+            {/* 1. Property Boundary (Blue Dashed) */}
+            {selectedProperty && (
               <Polygon
-                key={field.id}
-                positions={field.coordinates}
+                positions={getPolygonPositions(selectedProperty.geojson)}
                 pathOptions={{
-                  color: field.id === selectedFieldId ? "#ffffff" :
-                    field.healthLabel === "Good" ? "#10b981" :
-                      field.healthLabel === "Low" ? "#f59e0b" : "#ef4444",
-                  fillColor: field.id === selectedFieldId ? "#ffffff" :
-                    field.healthLabel === "Good" ? "#10b981" :
-                      field.healthLabel === "Low" ? "#f59e0b" : "#ef4444",
-                  fillOpacity: field.id === selectedFieldId ? 0.2 : 0.4,
-                  weight: field.id === selectedFieldId ? 3 : 2,
+                  color: "#3b82f6", // Blue
+                  dashArray: "10, 10",
+                  fillOpacity: 0,
+                  weight: 2
+                }}
+              />
+            )}
+
+            {/* 2. Talhoes Polygons (Green/Filled) */}
+            {talhoes.map((talhao) => (
+              <Polygon
+                key={talhao.id}
+                positions={getPolygonPositions(talhao.geojson)}
+                pathOptions={{
+                  color: talhao.id === selectedTalhaoId ? "#ffffff" : "#10b981",
+                  fillColor: "#10b981", // Emerald 500
+                  fillOpacity: talhao.id === selectedTalhaoId ? 0.3 : 0.5,
+                  weight: talhao.id === selectedTalhaoId ? 3 : 1,
                 }}
                 eventHandlers={{
                   click: (e) => {
-                    const map = e.target._map;
-                    map.flyTo(field.center, 16);
-                    setSelectedFieldId(field.id);
+                    // Prevent bubbling if needed, though usually fine
+                    setSelectedTalhaoId(talhao.id);
                     setDetailPanelOpen(true);
+                    L.DomEvent.stopPropagation(e);
                   },
                 }}
               >
                 <Popup>
                   <div className="p-2 min-w-[150px]">
-                    <p className="font-bold text-slate-900">{field.name}</p>
-                    <p className="text-xs text-slate-500 mb-2">{field.crop}</p>
-                    <div className={`flex items-center gap-1.5 text-sm font-medium ${field.healthLabel === "Good" ? "text-emerald-600" :
-                      field.healthLabel === "Low" ? "text-amber-600" : "text-red-600"
-                      }`}>
-                      <Activity className="h-4 w-4" />
-                      Saúde: {Math.round(field.health * 100)}%
+                    <p className="font-bold text-slate-900">{talhao.nome}</p>
+                    <p className="text-xs text-slate-500 mb-2">{talhao.cultura}</p>
+                    <div className="flex items-center gap-1.5 text-sm font-medium text-emerald-600">
+                      <Sprout className="h-4 w-4" />
+                      {talhao.areaHectares} ha
                     </div>
                   </div>
                 </Popup>
@@ -544,11 +421,7 @@ export default function Hotspots() {
 
           {/* Top Controls Group */}
           <div className="absolute left-6 top-6 z-[5000] flex flex-col gap-3 pointer-events-none">
-            {/* Scene Info Badge */}
-            <div className="flex items-center gap-2 rounded-lg bg-slate-900/70 px-3 py-2 text-xs text-white/80 backdrop-blur pointer-events-auto shadow-lg">
-              <Wind className="h-3.5 w-3.5" />
-              Cena Sentinel-2 {currentScene.productId} • {currentScene.captureDate} • Nuvem {currentScene.cloudCover}
-            </div>
+
 
             {/* Custom Zoom Controls */}
             <div className="flex flex-col gap-1 pointer-events-auto">
@@ -607,15 +480,15 @@ export default function Hotspots() {
           </div>
 
           {/* Detail Panel (Floating) */}
-          {detailPanelOpen && selectedField && (
+          {detailPanelOpen && selectedTalhao && (
             <div className="absolute right-6 top-6 z-[5000] w-[360px] max-h-[calc(100%-48px)] overflow-y-auto rounded-[24px] bg-white/95 shadow-[0_24px_48px_rgba(0,0,0,0.2)] backdrop-blur-xl transition-all animate-in fade-in slide-in-from-right-4">
               <div className="p-5">
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Talhao</p>
-                    <h3 className="mt-1 text-lg font-semibold text-slate-900">{selectedField.name}</h3>
+                    <h3 className="mt-1 text-lg font-semibold text-slate-900">{selectedTalhao.nome || selectedTalhao.codigo}</h3>
                     <div className="flex items-center gap-1 text-sm text-slate-500">
-                      {selectedField.crop} <ArrowUpRight className="h-3 w-3" />
+                      {selectedTalhao.cultura} <ArrowUpRight className="h-3 w-3" />
                     </div>
                   </div>
                   <button onClick={() => setDetailPanelOpen(false)} className="rounded-full p-1 hover:bg-slate-100">
@@ -623,195 +496,129 @@ export default function Hotspots() {
                   </button>
                 </div>
 
-                <div className="mt-6 space-y-5">
+                <div className="mt-6 space-y-4">
+                  {/* Row 1: Saude & Area */}
                   <div className="grid grid-cols-2 gap-3 rounded-xl bg-slate-50 p-3">
                     <div>
                       <p className="text-xs text-slate-400">Saude (NDVI)</p>
                       <div className="flex items-center gap-2 text-emerald-500">
-                        <span className="text-lg font-semibold">{Math.round(selectedField.health * 100)}%</span>
-                        <span className="h-1 w-1 rounded-full bg-emerald-500" />
-                        <span className="text-sm font-medium">{selectedField.healthLabel}</span>
+                        <span className="text-lg font-semibold">98%</span>
+                        <span className="text-sm font-medium">• Good</span>
                       </div>
                     </div>
                     <div>
                       <p className="text-xs text-slate-400">Area</p>
-                      <p className="text-base font-medium text-slate-900">{selectedField.area}</p>
-                      <p className="text-[11px] text-slate-500">Camada ativa: {activeLayer}</p>
+                      <p className="text-base font-medium text-slate-900">{selectedTalhao.areaHectares} ha</p>
+                      <p className="text-[10px] text-slate-400">Camada ativa: NDVI</p>
                     </div>
                   </div>
 
+                  {/* Row 2: Risco SMC & Confianca */}
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div className="rounded-xl border border-slate-200 p-3 space-y-1">
                       <p className="text-xs text-slate-400">Risco SMC</p>
-                      {(() => {
-                        const risk = getSmcRisk(selectedField);
-                        return (
-                          <span className={`inline-flex w-fit rounded-full border px-3 py-1 text-xs font-semibold ${riskBadgeClass(risk)}`}>
-                            {risk}
-                          </span>
-                        );
-                      })()}
-                      <p className="text-[11px] text-slate-500">
-                        Baseado em NDWI/NDMI e NDRE (Sentinel-2).
-                      </p>
+                      <span className="inline-flex w-fit rounded-full border px-3 py-1 text-xs font-semibold bg-emerald-100 text-emerald-700 border-emerald-200">
+                        Baixo
+                      </span>
+                      <p className="text-[11px] text-slate-500">Baseado em NDWI/NDMI e NDRE (Sentinel-2).</p>
                     </div>
                     <div className="rounded-xl border border-slate-200 p-3 space-y-1">
                       <p className="text-xs text-slate-400">Confianca</p>
-                      <p className="text-sm font-semibold text-slate-900">{getDiagnostic(selectedField).probability}</p>
+                      <p className="text-sm font-semibold text-slate-900">Baixa</p>
                       <p className="text-[11px] text-slate-500">Cruza indice + clima</p>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4 text-xs">
-                    <div className="rounded-xl border border-slate-200 p-3">
-                      <p className="text-slate-500">Ultima imagem</p>
-                      <p className="text-sm font-semibold text-slate-900">{selectedField.lastImage}</p>
-                      <p className="text-slate-500 mt-1">Produto {selectedField.productId}</p>
-                      <p className="text-slate-500 mt-1">Nuvem {selectedField.cloudCover}</p>
+                  {/* Row 3: Ultima Imagem & Indices */}
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div className="rounded-xl border border-slate-200 p-3 space-y-1">
+                      <p className="text-xs text-slate-400">Ultima imagem</p>
+                      <p className="text-sm font-bold text-slate-900">15/08/2024</p>
+                      <div className="text-[11px] text-slate-500 space-y-0.5">
+                        <p>Produto S2B_MSIL2A...</p>
+                        <p>Nuvem 8%</p>
+                      </div>
                     </div>
-                    <div className="rounded-xl border border-slate-200 p-3 space-y-2">
-                      <div className="flex items-center justify-between text-slate-600">
-                        <span>NDVI</span>
-                        <span className="font-semibold text-slate-900">{selectedField.ndvi}</span>
-                      </div>
-                      <div className="flex items-center justify-between text-slate-600">
-                        <span>NDWI</span>
-                        <span className="font-semibold text-slate-900">{selectedField.ndwi}</span>
-                      </div>
-                      <div className="flex items-center justify-between text-slate-600">
-                        <span>NDRE</span>
-                        <span className="font-semibold text-slate-900">{selectedField.ndre}</span>
-                      </div>
-                      <div className="flex items-center justify-between text-slate-600">
-                        <span>EVI</span>
-                        <span className="font-semibold text-slate-900">{selectedField.evi}</span>
-                      </div>
+                    <div className="rounded-xl border border-slate-200 p-3 space-y-1">
+                      <div className="flex justify-between text-xs"><span>NDVI</span><span className="font-semibold text-slate-900">0.78</span></div>
+                      <div className="flex justify-between text-xs"><span>NDWI</span><span className="font-semibold text-slate-900">0.38</span></div>
+                      <div className="flex justify-between text-xs"><span>NDRE</span><span className="font-semibold text-slate-900">0.58</span></div>
+                      <div className="flex justify-between text-xs"><span>EVI</span><span className="font-semibold text-slate-900">0.63</span></div>
                     </div>
                   </div>
 
-                  {/* Diagnostic Assistant */}
-                  <div className={`rounded-xl border p-3 ${getDiagnostic(selectedField).color}`}>
+                  {/* Row 4: Diagnostic Assistant */}
+                  <div className="rounded-xl border p-3 text-emerald-600 bg-emerald-50 border-emerald-200">
                     <div className="flex items-center gap-2 mb-1">
                       <Activity className="h-4 w-4" />
                       <p className="text-xs font-bold uppercase tracking-wider">Assistente de Diagnóstico</p>
                     </div>
-                    <p className="text-sm font-bold">{getDiagnostic(selectedField).diagnosis}</p>
-                    <p className="text-xs mt-1 opacity-80">Ação sugerida: {getDiagnostic(selectedField).action}</p>
+                    <p className="text-sm font-bold">Condições Normais</p>
+                    <p className="text-xs mt-1 opacity-80">Ação sugerida: Manter monitoramento padrão</p>
                   </div>
 
+                  {/* Row 5: Weather/Soil Data (Grid of 4) */}
                   <div className="grid grid-cols-4 gap-2 text-sm">
                     <div className="rounded-xl bg-slate-50 p-2 space-y-1">
                       <div className="flex items-center gap-1">
                         <Thermometer className="h-3 w-3 text-orange-500" />
                         <p className="text-slate-500 text-[10px]">LST</p>
                       </div>
-                      <p className="text-sm font-semibold text-slate-900">{selectedField.lst}</p>
+                      <p className="text-sm font-semibold text-slate-900">27°C</p>
                     </div>
                     <div className="rounded-xl bg-slate-50 p-2 space-y-1">
                       <div className="flex items-center gap-1">
                         <Droplets className="h-3 w-3 text-sky-500" />
                         <p className="text-slate-500 text-[10px]">Chuva</p>
                       </div>
-                      <p className="text-sm font-semibold text-slate-900">{selectedField.rainfall}</p>
+                      <p className="text-sm font-semibold text-slate-900">50mm</p>
                     </div>
                     <div className="rounded-xl bg-slate-50 p-2 space-y-1">
                       <div className="flex items-center gap-1">
                         <Activity className="h-3 w-3 text-emerald-500" />
                         <p className="text-slate-500 text-[10px]">Produt.</p>
                       </div>
-                      <p className="text-sm font-semibold text-slate-900">{selectedField.productivity}</p>
+                      <p className="text-sm font-semibold text-slate-900">74 t/ha</p>
                     </div>
                     <div className="rounded-xl bg-slate-50 p-2 space-y-1">
                       <div className="flex items-center gap-1">
                         <Droplets className="h-3 w-3 text-blue-500" />
                         <p className="text-slate-500 text-[10px]">Umidade</p>
                       </div>
-                      <p className="text-sm font-semibold text-slate-900">{selectedField.soilMoisture}</p>
+                      <p className="text-sm font-semibold text-slate-900">76%</p>
                     </div>
                   </div>
 
+                  {/* Row 6: Tendencia & Proxima Colheita */}
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div className="rounded-xl bg-slate-50 p-3 space-y-1">
-                      <div className="flex items-center gap-2">
-                        <p className="text-slate-500 text-xs">Tendencia</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {selectedField.trend.startsWith("+") ? (
-                          <ArrowUpRight className="h-5 w-5 text-emerald-500" />
-                        ) : selectedField.trend.startsWith("-") ? (
-                          <ArrowDownRight className="h-5 w-5 text-red-500" />
-                        ) : (
-                          <Minus className="h-5 w-5 text-slate-400" />
-                        )}
-                        <p className={`text-sm font-semibold ${selectedField.trend.startsWith("+") ? "text-emerald-600" :
-                          selectedField.trend.startsWith("-") ? "text-red-600" :
-                            "text-slate-600"
-                          }`}>
-                          {selectedField.trend}
-                        </p>
+                      <p className="text-xs text-slate-400">Tendencia</p>
+                      <div className="flex items-center gap-1 text-emerald-600">
+                        <ArrowUpRight className="h-4 w-4" />
+                        <span className="text-sm font-semibold">+1.2% vs ultima captura</span>
                       </div>
                     </div>
                     <div className="rounded-xl bg-slate-50 p-3 space-y-1">
-                      <div className="flex items-center gap-1 text-xs text-slate-500">
-                        <Sprout className="h-4 w-4 text-emerald-500" />
-                        <span>Proxima colheita</span>
+                      <div className="flex items-center gap-1 text-xs text-slate-400">
+                        <Sprout className="h-3 w-3 text-emerald-500" />
+                        Proxima colheita
                       </div>
-                      <p className="text-sm font-semibold text-slate-900">
-                        {selectedField.nextHarvest}{" "}
-                        <span className="text-slate-500">• {selectedField.daysToHarvest} dias</span>
-                      </p>
+                      <p className="text-sm font-semibold text-slate-900">05/09/2024 <span className="text-slate-500 font-normal">• 21 dias</span></p>
                     </div>
                   </div>
 
+                  {/* Row 7: Alerts */}
                   <div className="space-y-2">
                     <p className="text-xs uppercase tracking-wide text-slate-500">Alertas agronomicos</p>
-                    {selectedField.alerts.length === 0 ? (
-                      <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
-                        Nenhum alerta para este talhao.
-                      </div>
-                    ) : (
-                      selectedField.alerts.map((alert) => (
-                        <div
-                          key={alert}
-                          className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700"
-                        >
-                          {alert}
-                        </div>
-                      ))
-                    )}
-                  </div>
-
-                  <div className="flex items-center justify-between rounded-xl bg-slate-50 p-3">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className={`h-2 w-2 rounded-full ${selectedField.pestRisk === "High"
-                          ? "bg-red-500 animate-pulse"
-                          : selectedField.pestRisk === "Medium"
-                            ? "bg-amber-500"
-                            : "bg-emerald-500"
-                          }`}
-                      />
-                      <p className="text-xs font-medium text-slate-600">Risco de Vetores (Bicudo/Broca)</p>
+                    <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
+                      Nenhum alerta para este talhao.
                     </div>
-                    <span
-                      className={`text-xs font-bold ${selectedField.pestRisk === "High"
-                        ? "text-red-600"
-                        : selectedField.pestRisk === "Medium"
-                          ? "text-amber-600"
-                          : "text-emerald-600"
-                        }`}
-                    >
-                      {selectedField.pestRisk === "High"
-                        ? "ALTO RISCO"
-                        : selectedField.pestRisk === "Medium"
-                          ? "MEDIO"
-                          : "BAIXO"}
-                    </span>
                   </div>
                 </div>
               </div>
             </div>
           )}
+
         </div>
       </div>
     </Layout>
