@@ -12,6 +12,7 @@ export interface Propriedade {
     areaHectares: number;
     culturaPrincipal: string; // "Cana-de-açúcar"
     safraAtual: string; // "2024/2025"
+    qntTalhoes?: number;
     metadata?: Record<string, unknown>;
     createdAt?: string;
     updatedAt?: string;

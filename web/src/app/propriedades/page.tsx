@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { listPropriedades, Propriedade, deletePropriedade } from "@/services/propriedades";
+import { listTalhoes } from "@/services/talhoes";
 
 import { useToast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -31,7 +32,21 @@ export default function PropertiesListPage() {
     setIsLoading(true);
     try {
       const data = await listPropriedades();
-      setProperties(data);
+
+      // Fetch plot counts for each property in parallel
+      const enrichedData = await Promise.all(
+        data.map(async (prop) => {
+          try {
+            const talhoes = await listTalhoes(prop.id);
+            return { ...prop, qntTalhoes: talhoes.length };
+          } catch (e) {
+            console.error(`Failed to load plots for property ${prop.id}`, e);
+            return { ...prop, qntTalhoes: 0 };
+          }
+        })
+      );
+
+      setProperties(enrichedData);
     } catch (error) {
       console.error("Erro ao carregar propriedades:", error);
       toast({
@@ -176,6 +191,10 @@ export default function PropertiesListPage() {
                           <Sprout className="h-3.5 w-3.5 text-green-600" />
                           {property.culturaPrincipal}
                         </div>
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-500 mb-1">Talhões</p>
+                        <p className="font-medium text-slate-700">{property.qntTalhoes ?? "-"}</p>
                       </div>
                     </div>
 
