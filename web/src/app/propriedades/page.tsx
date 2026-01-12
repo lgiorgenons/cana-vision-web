@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Plus, MapPin, MoreVertical, Tractor, Sprout } from "lucide-react";
+import { Search, Plus, MapPin, MoreVertical, Tractor, Sprout, Eye, Pencil, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -172,10 +172,26 @@ export default function PropertiesListPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem asChild>
-                            <Link href={`/propriedades/${property.id}`}>Ver Detalhes</Link>
+                            <Link href={`/propriedades/${property.id}`} className="flex items-center w-full">
+                              <Eye className="mr-2 h-3.5 w-3.5" />
+                              Ver Detalhes
+                            </Link>
                           </DropdownMenuItem>
-                          <DropdownMenuItem>Editar</DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(property.id)}>Excluir</DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href={`/propriedades/${property.id}/editar`} className="flex items-center w-full">
+                              <Pencil className="mr-2 h-3.5 w-3.5" />
+                              Editar
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-red-600 focus:text-red-700 focus:bg-red-50"
+                            onClick={() => handleDelete(property.id)}
+                          >
+                            <div className="flex items-center w-full">
+                              <Trash2 className="mr-2 h-3.5 w-3.5" />
+                              Excluir
+                            </div>
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>

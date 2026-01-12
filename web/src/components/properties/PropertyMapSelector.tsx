@@ -23,6 +23,7 @@ interface PropertyMapSelectorProps {
     onBoundaryChange: (geojson: GeoJSONPolygonFeature | null) => void;
     className?: string;
     contextGeoJson?: GeoJSONPolygonFeature | null;
+    initialGeoJson?: GeoJSONPolygonFeature | null;
     showSearch?: boolean;
 }
 
@@ -43,10 +44,22 @@ const MapController = ({
     return null;
 };
 
-export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJson, showSearch = true }: PropertyMapSelectorProps) {
+export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJson, initialGeoJson, showSearch = true }: PropertyMapSelectorProps) {
     const [points, setPoints] = useState<[number, number][]>([]);
     const [isDrawing, setIsDrawing] = useState(true);
     const [map, setMap] = useState<LeafletMap | null>(null);
+
+    // Initialize points if initialGeoJson provided
+    useEffect(() => {
+        if (initialGeoJson && initialGeoJson.geometry && initialGeoJson.geometry.coordinates && points.length === 0) {
+            const coords = initialGeoJson.geometry.coordinates[0];
+            if (coords) {
+                // GeoJSON [lon, lat] -> Leaflet [lat, lon]
+                const latLngs = coords.slice(0, -1).map(c => [c[1], c[0]] as [number, number]);
+                setPoints(latLngs);
+            }
+        }
+    }, [initialGeoJson, points.length]);
 
     // Search State
     const [query, setQuery] = useState("");

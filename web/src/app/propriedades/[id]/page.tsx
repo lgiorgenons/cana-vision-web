@@ -1,23 +1,27 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Plus, MapPin, Ruler, Sprout, Calendar } from "lucide-react";
+import { Plus, MapPin, Ruler, Sprout, Calendar, MoreVertical, Pencil, Trash2, Eye } from "lucide-react";
 
 import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { Separator } from "@/components/ui/separator";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import { getPropriedade, Propriedade, listTalhoesDaPropriedade } from "@/services/propriedades";
-import { Talhao } from "@/services/talhoes";
+import { Talhao, deleteTalhao } from "@/services/talhoes";
 
 export default function PropertyDetailsPage() {
     const params = useParams();
-    const router = useRouter();
     const { toast } = useToast();
     const id = params.id as string;
 
@@ -25,30 +29,48 @@ export default function PropertyDetailsPage() {
     const [talhoes, setTalhoes] = useState<Talhao[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        async function loadData() {
-            if (!id) return;
-            try {
-                const [propData, talhoesData] = await Promise.all([
-                    getPropriedade(id),
-                    listTalhoesDaPropriedade(id)
-                ]);
-                setProperty(propData);
-                setTalhoes(talhoesData || []);
-            } catch (error) {
-                console.error("Erro ao carregar detalhes:", error);
-                toast({
-                    title: "Erro",
-                    description: "Não foi possível carregar os dados da propriedade.",
-                    variant: "destructive",
-                });
-                // router.push("/propriedades"); // Optional: redirect back on error
-            } finally {
-                setIsLoading(false);
-            }
+    const loadData = async () => {
+        if (!id) return;
+        try {
+            const [propData, talhoesData] = await Promise.all([
+                getPropriedade(id),
+                listTalhoesDaPropriedade(id)
+            ]);
+            setProperty(propData);
+            setTalhoes(talhoesData || []);
+        } catch (error) {
+            console.error("Erro ao carregar detalhes:", error);
+            toast({
+                title: "Erro",
+                description: "Não foi possível carregar os dados da propriedade.",
+                variant: "destructive",
+            });
+        } finally {
+            setIsLoading(false);
         }
+    };
+
+    useEffect(() => {
         loadData();
-    }, [id, toast, router]);
+    }, [id]);
+
+    const handleDeleteTalhao = async (talhaoId: string) => {
+        try {
+            await deleteTalhao(talhaoId);
+            toast({
+                title: "Sucesso",
+                description: "Talhão removido com sucesso.",
+            });
+            loadData(); // Reload list
+        } catch (error) {
+            console.error("Erro ao deletar talhão:", error);
+            toast({
+                title: "Erro",
+                description: "Não foi possível excluir o talhão.",
+                variant: "destructive",
+            });
+        }
+    };
 
     if (isLoading) {
         return (
@@ -175,10 +197,40 @@ export default function PropertyDetailsPage() {
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            {/* Actions like Edit/Delete could go here */}
-                                            <Button variant="ghost" size="sm" asChild>
-                                                <Link href={`/propriedades/${id}/talhoes/${talhao.id}`}>Detalhes</Link>
-                                            </Button>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-gray-600">
+                                                        <MoreVertical className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem asChild>
+                                                        <Link href={`/propriedades/${id}/talhoes/${talhao.id}`}>
+                                                            <div className="flex items-center w-full">
+                                                                <Eye className="mr-2 h-3.5 w-3.5" />
+                                                                Ver Detalhes
+                                                            </div>
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem asChild>
+                                                        <Link href={`/propriedades/${id}/talhoes/${talhao.id}/editar`}>
+                                                            <div className="flex items-center w-full">
+                                                                <Pencil className="mr-2 h-3.5 w-3.5" />
+                                                                Editar
+                                                            </div>
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        className="text-red-600 focus:text-red-700 focus:bg-red-50"
+                                                        onClick={() => handleDeleteTalhao(talhao.id)}
+                                                    >
+                                                        <div className="flex items-center w-full">
+                                                            <Trash2 className="mr-2 h-3.5 w-3.5" />
+                                                            Excluir
+                                                        </div>
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
                                         </div>
                                     </div>
                                 ))}

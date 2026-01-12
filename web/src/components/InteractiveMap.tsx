@@ -28,6 +28,7 @@ const MapContainer = dynamic(() => import("react-leaflet").then((mod) => mod.Map
 const TileLayer = dynamic(() => import("react-leaflet").then((mod) => mod.TileLayer), { ssr: false });
 const Polygon = dynamic(() => import("react-leaflet").then((mod) => mod.Polygon), { ssr: false });
 const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), { ssr: false });
+const Tooltip = dynamic(() => import("react-leaflet").then((mod) => mod.Tooltip), { ssr: false });
 
 const currentScene = {
     productId: "S2B_MSIL2A_20240815",
@@ -372,6 +373,9 @@ export default function InteractiveMap() {
                                 },
                             }}
                         >
+                            <Tooltip permanent direction="center" className="bg-transparent border-0 shadow-none font-bold text-white text-shadow-sm">
+                                {talhao.nome}
+                            </Tooltip>
                             <Popup>
                                 <div className="p-2 min-w-[150px]">
                                     <p className="font-bold text-slate-900">{talhao.nome}</p>
