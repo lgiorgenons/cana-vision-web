@@ -1,14 +1,15 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
-import { MapContainer, TileLayer, Polygon, CircleMarker, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, Polygon, CircleMarker, useMapEvents, Tooltip } from "react-leaflet";
 import { LeafletMouseEvent, Map as LeafletMap } from "leaflet";
 import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash2, Search, Loader2 } from "lucide-react";
+import { Trash2, Search, Loader2, AlertTriangle, ArrowLeft, RotateCcw } from "lucide-react";
 import { useOnClickOutside } from "@/hooks/use-click-outside";
+import * as turf from "@turf/turf";
 
 interface GeoJSONPolygonFeature {
     type: "Feature";
@@ -24,6 +25,7 @@ interface PropertyMapSelectorProps {
     className?: string;
     contextGeoJson?: GeoJSONPolygonFeature | null;
     initialGeoJson?: GeoJSONPolygonFeature | null;
+    otherPolygons?: GeoJSONPolygonFeature[];
     showSearch?: boolean;
 }
 
@@ -44,10 +46,12 @@ const MapController = ({
     return null;
 };
 
-export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJson, initialGeoJson, showSearch = true }: PropertyMapSelectorProps) {
+export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJson, initialGeoJson, otherPolygons = [], showSearch = true }: PropertyMapSelectorProps) {
+    console.log("PropertyMapSelector: otherPolygons received:", otherPolygons);
     const [points, setPoints] = useState<[number, number][]>([]);
     const [isDrawing, setIsDrawing] = useState(true);
     const [map, setMap] = useState<LeafletMap | null>(null);
+    const [validationError, setValidationError] = useState<string | null>(null);
 
     // Initialize points if initialGeoJson provided
     useEffect(() => {
@@ -158,11 +162,61 @@ export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJso
         updateParent(newPoints);
     };
 
+    const validateGeometry = (geojson: GeoJSONPolygonFeature): string | null => {
+        try {
+            // 1. Check if inside context (Property Boundary)
+            if (contextGeoJson) {
+                // turf expects [lon, lat] which is what our geojson has
+                // Ensure polygons are closed
+                // booleanContains returns false if edges touch sometimes depending on precision, 
+                // but for "new talhao" it should be strictly inside or touching edges is fine?
+                // Let's rely on booleanContains for now. 
+                // Note: If drawing points individually, the polygon might be invalid until closed. 
+                // The updateParent creates a closed polygon.
+
+                // Relax check: Check if verify if checking intersection is better?
+                // If Difference(Talhao, Property) is not empty, then it's outside.
+                // Actually turf.difference(feature1, feature2).
+                // If A is inside B, then A - B should be empty? No. 
+                // We want to check if Talhao is covered by Property.
+                // booleanWithin(Talhao, Property) is better.
+                if (!turf.booleanWithin(geojson as any, contextGeoJson as any)) {
+                    return "A área do talhão deve estar dentro da propriedade.";
+                }
+            }
+
+            // 2. Check overlap with other talhões
+            for (const other of otherPolygons) {
+                if (!other || !other.geometry) continue;
+
+                // Ignore if it's the same polygon (usually filtered out by parent, but safe check)
+                // Using intersect
+                // Turf v7: intersect(FeatureCollection)
+                const intersection = turf.intersect(turf.featureCollection([geojson as any, other as any]));
+                // If intersection exists and area > 0 (to ignore just touching edges)
+                if (intersection) {
+                    // Check area of intersection to allow shared boundaries
+                    const intersectionArea = turf.area(intersection);
+                    if (intersectionArea > 10) { // Tolerance of 10 sq meters?
+                        return `Sobreposição detectada com outro talhão.`;
+                    }
+                }
+            }
+
+            return null;
+
+        } catch (error) {
+            console.error("Validation error:", error);
+            return null; // Ignore validation errors if turf fails (e.g. self-intersection during drawing)
+        }
+    };
+
     const updateParent = (currentPoints: [number, number][]) => {
         // Convert to simple GeoJSON Polygon format
         // Note: GeoJSON expects [lng, lat], Leaflet uses [lat, lng]
         if (currentPoints.length < 3) {
             onBoundaryChange(null);
+            setValidationError(null);
             return;
         }
 
@@ -182,7 +236,11 @@ export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJso
             properties: {},
         };
 
-        onBoundaryChange(geojson);
+        const error = validateGeometry(geojson);
+        setValidationError(error);
+
+        // If error, pass null to parent to prevent form submission
+        onBoundaryChange(error ? null : geojson);
     };
 
     // Transform contextGeoJSON to Leaflet format for display
@@ -198,9 +256,28 @@ export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJso
         setPoints([]);
         setIsDrawing(true);
         onBoundaryChange(null);
+        setValidationError(null);
         setQuery("");
         setResults([]);
         setNoResults(false);
+    };
+
+    const undoLastPoint = () => {
+        if (points.length === 0) return;
+        const newPoints = points.slice(0, -1);
+        setPoints(newPoints);
+        updateParent(newPoints);
+    };
+
+    const resetToInitial = () => {
+        if (initialGeoJson && initialGeoJson.geometry && initialGeoJson.geometry.coordinates) {
+            const coords = initialGeoJson.geometry.coordinates[0];
+            if (coords) {
+                const latLngs = coords.slice(0, -1).map(c => [c[1], c[0]] as [number, number]);
+                setPoints(latLngs);
+                updateParent(latLngs);
+            }
+        }
     };
 
     const center = useMemo(() => [-14.2350, -51.9253] as [number, number], []);
@@ -268,22 +345,46 @@ export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJso
                     {contextPolygonPositions && (
                         <Polygon
                             positions={contextPolygonPositions}
-                            pathOptions={{ color: "#2563eb", fillColor: "#2563eb", fillOpacity: 0.3, weight: 2, dashArray: '10, 10' }}
+                            pathOptions={{ color: "#2563eb", fillColor: "#2563eb", fillOpacity: 0.1, weight: 2, dashArray: '10, 10' }}
                         />
                     )}
+
+                    {/* Other Polygons (Existing Fields) */}
+                    {otherPolygons.map((poly, idx) => {
+                        if (!poly || !poly.geometry || !poly.geometry.coordinates || poly.geometry.coordinates.length === 0) return null;
+                        const positions = poly.geometry.coordinates[0].map(c => [c[1], c[0]] as [number, number]);
+                        return (
+                            <Polygon
+                                key={`other-${idx}`}
+                                positions={positions}
+                                pathOptions={{ color: "#64748b", fillColor: "#94a3b8", fillOpacity: 0.4, weight: 1 }}
+                            >
+                                <Tooltip direction="center" permanent className="bg-transparent border-0 shadow-none font-bold text-white text-shadow-sm">
+                                    {poly.properties?.nome as string || ""}
+                                </Tooltip>
+                            </Polygon>
+                        )
+                    })}
 
                     {/* Active Drawing */}
                     {points.map((pos, idx) => (
                         <CircleMarker
                             key={idx}
                             center={pos}
-                            pathOptions={{ color: "white", fillColor: "#10b981", fillOpacity: 1, weight: 2 }}
+                            pathOptions={{ color: "white", fillColor: validationError ? "#ef4444" : "#10b981", fillOpacity: 1, weight: 2 }}
                             radius={5}
                         />
                     ))}
 
                     {points.length > 1 && (
-                        <Polygon positions={activePolygonPositions} pathOptions={{ color: "#10b981", fillColor: "#10b981", fillOpacity: 0.2 }} />
+                        <Polygon
+                            positions={activePolygonPositions}
+                            pathOptions={{
+                                color: validationError ? "#ef4444" : "#10b981",
+                                fillColor: validationError ? "#ef4444" : "#10b981",
+                                fillOpacity: 0.4
+                            }}
+                        />
                     )}
                 </MapContainer>
 
@@ -293,13 +394,46 @@ export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJso
                         onClick={resetMap}
                         variant="outline"
                         size="sm"
-                        className="bg-white hover:bg-red-50 hover:text-red-600 border-slate-200 shadow-sm"
+                        className="bg-white hover:bg-red-50 hover:text-red-600 border-slate-200 shadow-sm justify-start"
                     >
                         <Trash2 className="mr-2 h-4 w-4" />
                         Limpar
                     </Button>
+
+                    <Button
+                        type="button"
+                        onClick={undoLastPoint}
+                        disabled={points.length === 0}
+                        variant="outline"
+                        size="sm"
+                        className="bg-white hover:bg-slate-50 hover:text-slate-900 border-slate-200 shadow-sm justify-start"
+                    >
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Desfazer
+                    </Button>
+
+                    {initialGeoJson && (
+                        <Button
+                            type="button"
+                            onClick={resetToInitial}
+                            variant="outline"
+                            size="sm"
+                            className="bg-white hover:bg-emerald-50 hover:text-emerald-700 border-slate-200 shadow-sm justify-start"
+                        >
+                            <RotateCcw className="mr-2 h-4 w-4" />
+                            Reverter Original
+                        </Button>
+                    )}
                 </div>
             </div>
+
+            {/* Validation Error Message */}
+            {validationError && (
+                <div className="flex items-center gap-2 rounded-md bg-red-50 p-3 text-sm text-red-600 border border-red-100 animate-in fade-in slide-in-from-top-1">
+                    <AlertTriangle className="h-4 w-4 shrink-0" />
+                    <span className="font-medium">{validationError}</span>
+                </div>
+            )}
         </div>
     );
 }

@@ -90,12 +90,17 @@ export default function EditPropertyPage() {
         },
     });
 
+    const [initialGeoJson, setInitialGeoJson] = useState<GeoJSONPolygonFeature | null>(null);
+
     // Load Data
     useEffect(() => {
         async function loadProperty() {
             if (!id) return;
             try {
                 const data = await getPropriedade(id);
+                const loadedGeoJson = data.geojson as unknown as GeoJSONPolygonFeature;
+                setInitialGeoJson(loadedGeoJson);
+
                 form.reset({
                     name: data.nome,
                     area: data.areaHectares,
@@ -103,7 +108,7 @@ export default function EditPropertyPage() {
                     crop: data.culturaPrincipal as any, // Cast if necessary
                     internalCode: data.codigoInterno || "", // Handle optional
                     sicarCode: data.codigoSicar || "", // Handle optional
-                    geoJson: data.geojson as unknown as GeoJSONPolygonFeature,
+                    geoJson: loadedGeoJson,
                 });
             } catch (error) {
                 console.error("Erro ao carregar propriedade:", error);
@@ -342,14 +347,12 @@ export default function EditPropertyPage() {
                                 name="geoJson"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormControl>
-                                            <PropertyMapSelector
-                                                onBoundaryChange={(geojson) => field.onChange(geojson)}
-                                                contextGeoJson={field.value}
-                                                initialGeoJson={field.value}
-                                                className="w-full"
-                                            />
-                                        </FormControl>
+                                        <PropertyMapSelector
+                                            onBoundaryChange={(geojson) => field.onChange(geojson)}
+                                            contextGeoJson={null} // Validation disabled for Property itself
+                                            initialGeoJson={initialGeoJson}
+                                            className="w-full"
+                                        />
                                         <FormMessage />
                                     </FormItem>
                                 )}

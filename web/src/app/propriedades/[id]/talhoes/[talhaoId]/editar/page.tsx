@@ -13,10 +13,19 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 
+import dynamic from "next/dynamic";
 import { Layout } from "@/components/Layout";
-import { PropertyMapSelector } from "@/components/properties/PropertyMapSelector";
+// import { PropertyMapSelector } from "@/components/properties/PropertyMapSelector";
 import { getPropriedade, Propriedade } from "@/services/propriedades";
-import { updateTalhao, getTalhao, UpdateTalhaoDto, GeoJSONFeature, Talhao } from "@/services/talhoes";
+
+const PropertyMapSelector = dynamic(
+    () => import("@/components/properties/PropertyMapSelector").then((mod) => mod.PropertyMapSelector),
+    {
+        ssr: false,
+        loading: () => <div className="h-[400px] w-full bg-slate-100 flex items-center justify-center rounded-xl">Carregando mapa...</div>
+    }
+);
+import { updateTalhao, getTalhao, listTalhoes, UpdateTalhaoDto, GeoJSONFeature, Talhao } from "@/services/talhoes";
 
 // --- Type Definition ---
 type GeoJSONPolygonFeature = {
@@ -54,6 +63,7 @@ export default function EditTalhaoPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [property, setProperty] = useState<Propriedade | null>(null);
     const [talhao, setTalhao] = useState<Talhao | null>(null);
+    const [existingTalhoes, setExistingTalhoes] = useState<Talhao[]>([]);
 
     // Key to force re-mounting Map if needed
     const [mapKey] = useState(0);
@@ -72,18 +82,37 @@ export default function EditTalhaoPage() {
         },
     });
 
+    const [initialGeoJson, setInitialGeoJson] = useState<GeoJSONPolygonFeature | null>(null);
+
     // Load Data
     useEffect(() => {
         async function loadData() {
             if (!propertyId || !talhaoId) return;
             try {
-                const [propData, talhaoData] = await Promise.all([
+                const [propData, talhaoData, shallowList] = await Promise.all([
                     getPropriedade(propertyId),
-                    getTalhao(talhaoId)
+                    getTalhao(talhaoId),
+                    listTalhoes(propertyId)
                 ]);
+
+                // 2. Fetch full details for each talhao to get GeoJSON
+                const fullTalhoes = await Promise.all(
+                    shallowList.map(async (t) => {
+                        try {
+                            return await getTalhao(t.id);
+                        } catch (e) {
+                            console.error(`Failed to fetch details for talhao ${t.id}`, e);
+                            return t;
+                        }
+                    })
+                );
+
+                const loadedGeoJson = talhaoData.geojson as unknown as GeoJSONPolygonFeature;
+                setInitialGeoJson(loadedGeoJson);
 
                 setProperty(propData);
                 setTalhao(talhaoData);
+                setExistingTalhoes(fullTalhoes);
 
                 // Populate form
                 form.reset({
@@ -93,7 +122,7 @@ export default function EditTalhaoPage() {
                     crop: talhaoData.cultura,
                     variety: talhaoData.variedade || "",
                     harvest: talhaoData.safra,
-                    geoJson: talhaoData.geojson as unknown as GeoJSONPolygonFeature,
+                    geoJson: loadedGeoJson,
                 });
 
             } catch (error) {
@@ -332,7 +361,21 @@ export default function EditTalhaoPage() {
                                                 }}
                                                 // We pass property geojson as context
                                                 contextGeoJson={property.geojson as unknown as GeoJSONPolygonFeature}
-                                                initialGeoJson={field.value}
+                                                initialGeoJson={initialGeoJson}
+                                                otherPolygons={existingTalhoes
+                                                    .filter(t => {
+                                                        const isSelf = t.id === talhaoId;
+                                                        const isValid = t.geojson && t.geojson.geometry && t.geojson.geometry.coordinates && t.geojson.geometry.coordinates.length > 0;
+                                                        if (!isValid && !isSelf) console.warn("EditTalhaoPage: Invalid talhao geojson:", t);
+                                                        return !isSelf && isValid;
+                                                    })
+                                                    .map(t => ({
+                                                        ...t.geojson,
+                                                        properties: {
+                                                            ...t.geojson.properties,
+                                                            nome: t.nome || t.codigo
+                                                        }
+                                                    } as unknown as GeoJSONPolygonFeature))}
 
                                                 showSearch={false}
                                             />

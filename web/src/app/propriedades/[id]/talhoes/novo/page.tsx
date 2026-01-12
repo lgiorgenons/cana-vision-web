@@ -13,10 +13,19 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 
+import dynamic from "next/dynamic";
 import { Layout } from "@/components/Layout";
-import { PropertyMapSelector } from "@/components/properties/PropertyMapSelector";
+// import { PropertyMapSelector } from "@/components/properties/PropertyMapSelector"; // Removed static import
 import { getPropriedade, Propriedade } from "@/services/propriedades";
-import { createTalhao, CreateTalhaoDto, GeoJSONFeature } from "@/services/talhoes";
+
+const PropertyMapSelector = dynamic(
+    () => import("@/components/properties/PropertyMapSelector").then((mod) => mod.PropertyMapSelector),
+    {
+        ssr: false,
+        loading: () => <div className="h-[400px] w-full bg-slate-100 flex items-center justify-center rounded-xl">Carregando mapa...</div>
+    }
+);
+import { createTalhao, listTalhoes, getTalhao, CreateTalhaoDto, GeoJSONFeature, Talhao } from "@/services/talhoes";
 
 // --- Type Definition ---
 type GeoJSONPolygonFeature = {
@@ -52,6 +61,7 @@ export default function NewTalhaoPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoadingProperty, setIsLoadingProperty] = useState(true);
     const [property, setProperty] = useState<Propriedade | null>(null);
+    const [existingTalhoes, setExistingTalhoes] = useState<Talhao[]>([]);
     const [shouldCreateAnother, setShouldCreateAnother] = useState(false);
 
     // Key to force re-mounting/resetting the map component
@@ -76,16 +86,38 @@ export default function NewTalhaoPage() {
         async function loadProperty() {
             if (!propertyId) return;
             try {
-                const data = await getPropriedade(propertyId);
-                setProperty(data);
-                if (data.culturaPrincipal) {
-                    form.setValue("crop", data.culturaPrincipal);
+                // 1. Fetch Property and List of Talhoes (Shallow)
+                const [propData, shallowTalhoes] = await Promise.all([
+                    getPropriedade(propertyId),
+                    listTalhoes(propertyId)
+                ]);
+
+                // 2. Fetch full details for each talhao to get GeoJSON
+                const fullTalhoes = await Promise.all(
+                    shallowTalhoes.map(async (t) => {
+                        try {
+                            return await getTalhao(t.id);
+                        } catch (e) {
+                            console.error(`Failed to fetch details for talhao ${t.id}`, e);
+                            return t; // Fallback to shallow if fail
+                        }
+                    })
+                );
+
+                console.log("NewTalhaoPage: Fetched property:", propData);
+                console.log("NewTalhaoPage: Fetched talhoes (full):", fullTalhoes);
+
+                setProperty(propData);
+                setExistingTalhoes(fullTalhoes);
+
+                if (propData.culturaPrincipal) {
+                    form.setValue("crop", propData.culturaPrincipal);
                 }
-                if (data.safraAtual) {
-                    form.setValue("harvest", data.safraAtual);
+                if (propData.safraAtual) {
+                    form.setValue("harvest", propData.safraAtual);
                 }
             } catch (error) {
-                console.error("Erro ao carregar propriedade:", error);
+                console.error("Erro ao carregar dados:", error);
                 toast({
                     title: "Erro",
                     description: "Não foi possível carregar os dados da propriedade.",
@@ -348,6 +380,19 @@ export default function NewTalhaoPage() {
                                                     handleMapChange(geo);
                                                 }}
                                                 contextGeoJson={property.geojson as unknown as GeoJSONPolygonFeature}
+                                                otherPolygons={existingTalhoes
+                                                    .filter(t => {
+                                                        const isValid = t.geojson && t.geojson.geometry && t.geojson.geometry.coordinates && t.geojson.geometry.coordinates.length > 0;
+                                                        if (!isValid) console.warn("NewTalhaoPage: Invalid talhao geojson:", t);
+                                                        return isValid;
+                                                    })
+                                                    .map(t => ({
+                                                        ...t.geojson,
+                                                        properties: {
+                                                            ...t.geojson.properties,
+                                                            nome: t.nome || t.codigo
+                                                        }
+                                                    } as unknown as GeoJSONPolygonFeature))}
                                                 showSearch={false}
                                             />
                                         </FormControl>
@@ -379,7 +424,7 @@ export default function NewTalhaoPage() {
                                 <Button
                                     type="submit"
                                     variant="outline"
-                                    className="border-[#16A34A] text-[#16A34A] hover:bg-green-50 h-12 px-6"
+                                    className="border-[#16A34A] text-[#16A34A] hover:bg-green-50 hover:text-[#16A34A] h-12 px-6"
                                     disabled={isSubmitting}
                                     onClick={() => setShouldCreateAnother(true)}
                                 >
@@ -391,7 +436,7 @@ export default function NewTalhaoPage() {
                                         "Salvar e Criar Outro"
                                     )}
                                 </Button>
-                                
+
                                 <Button
                                     type="submit"
                                     className="bg-[#16A34A] hover:bg-[#15803d] text-white shadow-sm shadow-green-200 h-12 px-8"
