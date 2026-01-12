@@ -387,7 +387,7 @@ export default function InteractiveMap() {
                 </MapContainer>
 
                 {/* Top Controls Group */}
-                <div className="absolute left-6 top-6 z-[5000] flex flex-col gap-3 pointer-events-none">
+                <div className="absolute left-6 top-6 z-[400] flex flex-col gap-3 pointer-events-none">
 
 
                     {/* Custom Zoom Controls */}
@@ -410,7 +410,7 @@ export default function InteractiveMap() {
                 </div>
 
                 {/* Bottom Left Controls */}
-                <div className="absolute bottom-6 left-6 z-[5000] flex gap-3 pointer-events-none">
+                <div className="absolute bottom-6 left-6 z-[400] flex gap-3 pointer-events-none">
                     <button
                         className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900/60 text-white backdrop-blur-md ring-1 ring-white/10 transition hover:bg-slate-900/80 pointer-events-auto"
                         onClick={() => setIsFullscreen((prev) => !prev)}
@@ -448,7 +448,7 @@ export default function InteractiveMap() {
 
                 {/* Detail Panel (Floating) */}
                 {detailPanelOpen && selectedTalhao && (
-                    <div className="absolute right-6 top-6 z-[5000] w-[360px] max-h-[calc(100%-48px)] overflow-y-auto rounded-[24px] bg-white/95 shadow-[0_24px_48px_rgba(0,0,0,0.2)] backdrop-blur-xl transition-all animate-in fade-in slide-in-from-right-4">
+                    <div className="absolute right-6 top-6 z-[400] w-[360px] max-h-[calc(100%-48px)] overflow-y-auto rounded-[24px] bg-white/95 shadow-[0_24px_48px_rgba(0,0,0,0.2)] backdrop-blur-xl transition-all animate-in fade-in slide-in-from-right-4">
                         <div className="p-5">
                             <div className="flex items-start justify-between">
                                 <div>

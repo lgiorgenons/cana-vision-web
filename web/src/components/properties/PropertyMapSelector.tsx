@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { MapContainer, TileLayer, Polygon, CircleMarker, useMapEvents } from "react-leaflet";
 import { LeafletMouseEvent, Map as LeafletMap } from "leaflet";
+import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -122,15 +123,17 @@ export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJso
         setResults([]);
     };
 
-    // Use effect to fly to context if available
-    useMemo(() => {
-        if (map && contextGeoJson && contextGeoJson.geometry.coordinates.length > 0) {
+    // Use effect to fit bounds to context if available
+    useEffect(() => {
+        if (map && contextGeoJson && contextGeoJson.geometry && contextGeoJson.geometry.coordinates.length > 0) {
+            // Handle MultiPolygon or Polygon? The interface says Polygon but let's be safe or strict
+            // contentGeoJson interface is Polygon
             const coords = contextGeoJson.geometry.coordinates[0];
-            // GeoJSON is [lon, lat], Leaflet wants [lat, lon]
-            if (coords.length > 0) {
-                const lat = coords[0][1];
-                const lon = coords[0][0];
-                map.flyTo([lat, lon], 13);
+            if (coords && coords.length > 0) {
+                // GeoJSON is [lon, lat], Leaflet wants [lat, lon]
+                const latLngs = coords.map(c => [c[1], c[0]] as [number, number]);
+                const bounds = L.latLngBounds(latLngs);
+                map.fitBounds(bounds, { padding: [50, 50] });
             }
         }
     }, [map, contextGeoJson]);
@@ -193,46 +196,46 @@ export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJso
         <div className={`flex flex-col gap-4 ${className}`}>
             {/* Search Bar */}
             {showSearch && (
-            <div className="relative z-[3000]" ref={searchRef}>
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <Input
-                        type="text"
-                        placeholder="Buscar cidade, endereço ou coordenadas..."
-                        className="pl-9 bg-white shadow-sm"
-                        value={query}
-                        onChange={(e) => {
-                            setQuery(e.target.value);
-                            setNoResults(false);
-                        }}
-                        onKeyDown={handleKeyDown}
-                    />
-                    {/* ... loader ... */}
-                    {isLoading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-slate-400" />}
+                <div className="relative z-[3000]" ref={searchRef}>
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                        <Input
+                            type="text"
+                            placeholder="Buscar cidade, endereço ou coordenadas..."
+                            className="pl-9 bg-white shadow-sm"
+                            value={query}
+                            onChange={(e) => {
+                                setQuery(e.target.value);
+                                setNoResults(false);
+                            }}
+                            onKeyDown={handleKeyDown}
+                        />
+                        {/* ... loader ... */}
+                        {isLoading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-slate-400" />}
+                    </div>
+                    {/* ... hints and results ... */}
+                    <p className="mt-1 text-xs text-slate-500 ml-1">
+                        Dica: Você pode buscar por coordenadas (ex: -23.5, -46.6)
+                    </p>
+                    {results.length > 0 && (
+                        <div className="absolute top-full mt-1 w-full bg-white rounded-md shadow-lg border border-slate-100 overflow-hidden max-h-60 overflow-y-auto z-[2000]">
+                            {results.map((item, idx) => (
+                                <button
+                                    key={idx}
+                                    className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 border-b border-slate-50 last:border-0"
+                                    onClick={() => handleSelectLocation(item.lat, item.lon)}
+                                >
+                                    {item.display_name}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                    {noResults && (
+                        <div className="absolute top-full mt-1 w-full bg-white rounded-md shadow-lg border border-slate-100 p-4 text-center text-sm text-slate-500 z-[2000]">
+                            Nenhum resultado encontrado
+                        </div>
+                    )}
                 </div>
-                {/* ... hints and results ... */}
-                <p className="mt-1 text-xs text-slate-500 ml-1">
-                    Dica: Você pode buscar por coordenadas (ex: -23.5, -46.6)
-                </p>
-                {results.length > 0 && (
-                    <div className="absolute top-full mt-1 w-full bg-white rounded-md shadow-lg border border-slate-100 overflow-hidden max-h-60 overflow-y-auto z-[2000]">
-                        {results.map((item, idx) => (
-                            <button
-                                key={idx}
-                                className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 border-b border-slate-50 last:border-0"
-                                onClick={() => handleSelectLocation(item.lat, item.lon)}
-                            >
-                                {item.display_name}
-                            </button>
-                        ))}
-                    </div>
-                )}
-                {noResults && (
-                    <div className="absolute top-full mt-1 w-full bg-white rounded-md shadow-lg border border-slate-100 p-4 text-center text-sm text-slate-500 z-[2000]">
-                        Nenhum resultado encontrado
-                    </div>
-                )}
-            </div>
             )}
 
             <div className="relative h-[400px] w-full overflow-hidden rounded-xl border border-slate-200">

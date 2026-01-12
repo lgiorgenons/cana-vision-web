@@ -312,12 +312,12 @@ export const Layout = ({ title, description, headerActions, headerBackLink, chil
       )}
 
       <main className="flex flex-1 flex-col h-full overflow-hidden bg-slate-50 px-4 py-4 lg:px-6">
-        <header className="shrink-0 transition-all duration-300 ease-in-out">
+        <header className="shrink-0 transition-all duration-300 ease-in-out relative z-50">
           <div className="mx-auto flex w-full max-w-[1600px] flex-wrap items-center justify-between gap-4 px-4">
             <div className="flex items-start gap-4">
               {headerBackLink && (
                 <Link href={headerBackLink} className="mt-1 flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-900 transition-colors">
-                    <ChevronLeft className="h-5 w-5" />
+                  <ChevronLeft className="h-5 w-5" />
                 </Link>
               )}
               <div>
@@ -344,12 +344,12 @@ export const Layout = ({ title, description, headerActions, headerBackLink, chil
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
-                      <DropdownMenuItem asChild className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer">
-                          <Link href="/login" className="flex w-full items-center">
-                              <LogOut className="mr-2 h-4 w-4" />
-                              <span>Sair da conta</span>
-                          </Link>
-                      </DropdownMenuItem>
+                    <DropdownMenuItem asChild className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer">
+                      <Link href="/login" className="flex w-full items-center">
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>Sair da conta</span>
+                      </Link>
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -357,7 +357,7 @@ export const Layout = ({ title, description, headerActions, headerBackLink, chil
           </div>
         </header>
 
-        <section className="mt-4 flex-1 overflow-y-auto">{children}</section>
+        <section className="mt-4 flex-1 overflow-y-auto relative z-0">{children}</section>
       </main>
     </div>
   );
