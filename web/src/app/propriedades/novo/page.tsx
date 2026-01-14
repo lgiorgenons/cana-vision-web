@@ -332,12 +332,7 @@ export default function NewPropertyPage() {
                                 )}
                             />
 
-                            <div className="mt-4 flex items-start gap-2 rounded-lg bg-blue-50 p-3 text-blue-700">
-                                <AlertCircle className="h-5 w-5 shrink-0" />
-                                <p className="text-xs leading-relaxed">
-                                    <strong>Instrução:</strong> Clique nos vértices do terreno para marcar os pontos. O sistema conectará automaticamente para formar a área.
-                                </p>
-                            </div>
+
                         </div>
 
                         {/* Action Bar */}

@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
-import { MapContainer, TileLayer, Polygon, Marker, useMapEvents, Tooltip } from "react-leaflet";
+import { MapContainer, TileLayer, Polygon, Marker, useMapEvents, Tooltip, Circle } from "react-leaflet";
 import { LeafletMouseEvent, Map as LeafletMap } from "leaflet";
 import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash2, Search, Loader2, AlertTriangle, ArrowLeft, RotateCcw } from "lucide-react";
+import { Trash2, Search, Loader2, AlertTriangle, ArrowLeft, RotateCcw, Circle as CircleIcon, Hexagon, Info as InfoIcon } from "lucide-react";
 import { useOnClickOutside } from "@/hooks/use-click-outside";
 import * as turf from "@turf/turf";
 
@@ -31,27 +31,46 @@ interface PropertyMapSelectorProps {
 
 const MapController = ({
     isDrawing,
-    onMapClick,
+    drawingMode,
+    onPolygonClick,
+    onCircleClick,
+    onMouseMove
 }: {
     isDrawing: boolean;
-    onMapClick: (e: LeafletMouseEvent) => void;
+    drawingMode: 'polygon' | 'circle';
+    onPolygonClick: (e: LeafletMouseEvent) => void;
+    onCircleClick: (e: LeafletMouseEvent) => void;
+    onMouseMove: (e: LeafletMouseEvent) => void;
 }) => {
     useMapEvents({
         click: (e) => {
             if (isDrawing) {
-                onMapClick(e);
+                if (drawingMode === 'polygon') {
+                    onPolygonClick(e);
+                } else {
+                    onCircleClick(e);
+                }
             }
         },
+        mousemove: (e) => {
+            if (isDrawing && drawingMode === 'circle') {
+                onMouseMove(e);
+            }
+        }
     });
     return null;
 };
 
 export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJson, initialGeoJson, otherPolygons = [], showSearch = true }: PropertyMapSelectorProps) {
-    console.log("PropertyMapSelector: otherPolygons received:", otherPolygons);
     const [points, setPoints] = useState<[number, number][]>([]);
     const [isDrawing, setIsDrawing] = useState(true);
     const [map, setMap] = useState<LeafletMap | null>(null);
     const [validationError, setValidationError] = useState<string | null>(null);
+
+    // Circle Mode State
+    const [drawingMode, setDrawingMode] = useState<'polygon' | 'circle'>('polygon');
+    const [circleCenter, setCircleCenter] = useState<[number, number] | null>(null);
+    const [currentRadius, setCurrentRadius] = useState<number>(0);
 
     // Initialize points if initialGeoJson provided
     useEffect(() => {
@@ -84,8 +103,6 @@ export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJso
         setIsLoading(true);
         setNoResults(false);
 
-        // Check for coordinates (Lat, Lon)
-        // Supports: "lat, lon" or "lat lon"
         const coordRegex = /^(-?\d+(\.\d+)?)[,\s]+(-?\d+(\.\d+)?)$/;
         const match = query.trim().match(coordRegex);
 
@@ -104,7 +121,6 @@ export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJso
             const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
             const data: { lat: string; lon: string; display_name: string }[] = await response.json();
 
-            // Filter duplicates based on display_name
             const uniqueData = data.filter((item, index, self) =>
                 index === self.findIndex((t) => (
                     t.display_name === item.display_name
@@ -140,14 +156,10 @@ export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJso
         setResults([]);
     };
 
-    // Use effect to fit bounds to context if available
     useEffect(() => {
         if (map && contextGeoJson && contextGeoJson.geometry && contextGeoJson.geometry.coordinates.length > 0) {
-            // Handle MultiPolygon or Polygon? The interface says Polygon but let's be safe or strict
-            // contentGeoJson interface is Polygon
             const coords = contextGeoJson.geometry.coordinates[0];
             if (coords && coords.length > 0) {
-                // GeoJSON is [lon, lat], Leaflet wants [lat, lon]
                 const latLngs = coords.map(c => [c[1], c[0]] as [number, number]);
                 const bounds = L.latLngBounds(latLngs);
                 map.fitBounds(bounds, { padding: [50, 50] });
@@ -155,49 +167,65 @@ export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJso
         }
     }, [map, contextGeoJson]);
 
-    const handleMapClick = (e: LeafletMouseEvent) => {
+    const handlePolygonClick = (e: LeafletMouseEvent) => {
         const { lat, lng } = e.latlng;
+        // If we were in circle mode but decided to click, ensure we are clean
+        if (drawingMode !== 'polygon') return;
+
         const newPoints = [...points, [lat, lng] as [number, number]];
         setPoints(newPoints);
         updateParent(newPoints);
     };
 
+    const handleCircleClick = (e: LeafletMouseEvent) => {
+        if (!circleCenter) {
+            // First click: Start circle
+            setCircleCenter([e.latlng.lat, e.latlng.lng]);
+            setCurrentRadius(0);
+        } else {
+            // Second click: Finish circle
+            const center = circleCenter;
+            const radiusInMeters = currentRadius;
+
+            if (radiusInMeters > 0) {
+                const centerLonLat = [center[1], center[0]];
+                const options = { steps: 64, units: 'meters' as const };
+                const circlePoly = turf.circle(centerLonLat, radiusInMeters, options);
+
+                const newPoints = circlePoly.geometry.coordinates[0].slice(0, -1).map(p => [p[1], p[0]] as [number, number]);
+
+                setPoints(newPoints);
+                updateParent(newPoints);
+            }
+
+            setCircleCenter(null);
+            setCurrentRadius(0);
+            setDrawingMode('polygon');
+        }
+    };
+
+    const handleMouseMove = (e: LeafletMouseEvent) => {
+        if (circleCenter) {
+            const dist = e.latlng.distanceTo(circleCenter);
+            setCurrentRadius(dist);
+        }
+    };
+
     const validateGeometry = (geojson: GeoJSONPolygonFeature): string | null => {
         try {
-            // 1. Check if inside context (Property Boundary)
             if (contextGeoJson) {
-                // turf expects [lon, lat] which is what our geojson has
-                // Ensure polygons are closed
-                // booleanContains returns false if edges touch sometimes depending on precision, 
-                // but for "new talhao" it should be strictly inside or touching edges is fine?
-                // Let's rely on booleanContains for now. 
-                // Note: If drawing points individually, the polygon might be invalid until closed. 
-                // The updateParent creates a closed polygon.
-
-                // Relax check: Check if verify if checking intersection is better?
-                // If Difference(Talhao, Property) is not empty, then it's outside.
-                // Actually turf.difference(feature1, feature2).
-                // If A is inside B, then A - B should be empty? No. 
-                // We want to check if Talhao is covered by Property.
-                // booleanWithin(Talhao, Property) is better.
                 if (!turf.booleanWithin(geojson as any, contextGeoJson as any)) {
                     return "A área do talhão deve estar dentro da propriedade.";
                 }
             }
 
-            // 2. Check overlap with other talhões
             for (const other of otherPolygons) {
                 if (!other || !other.geometry) continue;
 
-                // Ignore if it's the same polygon (usually filtered out by parent, but safe check)
-                // Using intersect
-                // Turf v7: intersect(FeatureCollection)
                 const intersection = turf.intersect(turf.featureCollection([geojson as any, other as any]));
-                // If intersection exists and area > 0 (to ignore just touching edges)
                 if (intersection) {
-                    // Check area of intersection to allow shared boundaries
                     const intersectionArea = turf.area(intersection);
-                    if (intersectionArea > 10) { // Tolerance of 10 sq meters?
+                    if (intersectionArea > 10) {
                         return `Sobreposição detectada com outro talhão.`;
                     }
                 }
@@ -207,13 +235,11 @@ export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJso
 
         } catch (error) {
             console.error("Validation error:", error);
-            return null; // Ignore validation errors if turf fails (e.g. self-intersection during drawing)
+            return null;
         }
     };
 
     const updateParent = (currentPoints: [number, number][]) => {
-        // Convert to simple GeoJSON Polygon format
-        // Note: GeoJSON expects [lng, lat], Leaflet uses [lat, lng]
         if (currentPoints.length < 3) {
             onBoundaryChange(null);
             setValidationError(null);
@@ -223,7 +249,7 @@ export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJso
         const coordinates = [
             [
                 ...currentPoints.map((p) => [p[1], p[0]]),
-                [currentPoints[0][1], currentPoints[0][0]], // Close the loop
+                [currentPoints[0][1], currentPoints[0][0]],
             ],
         ];
 
@@ -238,12 +264,9 @@ export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJso
 
         const error = validateGeometry(geojson);
         setValidationError(error);
-
-        // If error, pass null to parent to prevent form submission
         onBoundaryChange(error ? null : geojson);
     };
 
-    // Transform contextGeoJSON to Leaflet format for display
     const contextPolygonPositions = useMemo(() => {
         if (!contextGeoJson || !contextGeoJson.geometry.coordinates) return null;
         const coords = contextGeoJson.geometry.coordinates[0];
@@ -260,6 +283,9 @@ export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJso
         setQuery("");
         setResults([]);
         setNoResults(false);
+        setCircleCenter(null);
+        setCurrentRadius(0);
+        setDrawingMode('polygon');
     };
 
     const undoLastPoint = () => {
@@ -284,6 +310,8 @@ export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJso
 
     return (
         <div className={`flex flex-col gap-4 ${className}`}>
+
+
             {/* Search Bar */}
             {showSearch && (
                 <div className="relative z-[3000]" ref={searchRef}>
@@ -300,10 +328,9 @@ export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJso
                             }}
                             onKeyDown={handleKeyDown}
                         />
-                        {/* ... loader ... */}
                         {isLoading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-slate-400" />}
                     </div>
-                    {/* ... hints and results ... */}
+
                     <p className="mt-1 text-xs text-slate-500 ml-1">
                         Dica: Você pode buscar por coordenadas (ex: -23.5, -46.6)
                     </p>
@@ -328,6 +355,31 @@ export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJso
                 </div>
             )}
 
+            <div className="flex bg-slate-100 p-1 rounded-lg w-max mb-1">
+                <button
+                    type="button"
+                    onClick={() => { setDrawingMode('polygon'); setCircleCenter(null); }}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${drawingMode === 'polygon'
+                        ? 'bg-white text-emerald-600 shadow-sm'
+                        : 'text-slate-500 hover:text-slate-900'
+                        }`}
+                >
+                    <Hexagon className="w-4 h-4" />
+                    Polígono
+                </button>
+                <button
+                    type="button"
+                    onClick={() => { setDrawingMode('circle'); setPoints([]); onBoundaryChange(null); }}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${drawingMode === 'circle'
+                        ? 'bg-white text-emerald-600 shadow-sm'
+                        : 'text-slate-500 hover:text-slate-900'
+                        }`}
+                >
+                    <CircleIcon className="w-4 h-4" />
+                    Círculo
+                </button>
+            </div>
+
             <div className="relative h-[400px] w-full overflow-hidden rounded-xl border border-slate-200">
                 <MapContainer
                     center={center}
@@ -339,9 +391,14 @@ export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJso
                         attribution='Tiles &copy; Esri, USGS, USDA'
                         url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
                     />
-                    <MapController isDrawing={isDrawing} onMapClick={handleMapClick} />
+                    <MapController
+                        isDrawing={isDrawing}
+                        drawingMode={drawingMode}
+                        onPolygonClick={handlePolygonClick}
+                        onCircleClick={handleCircleClick}
+                        onMouseMove={handleMouseMove}
+                    />
 
-                    {/* Context Polygon (Ghost) */}
                     {contextPolygonPositions && (
                         <Polygon
                             positions={contextPolygonPositions}
@@ -349,7 +406,6 @@ export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJso
                         />
                     )}
 
-                    {/* Other Polygons (Existing Fields) */}
                     {otherPolygons.map((poly, idx) => {
                         if (!poly || !poly.geometry || !poly.geometry.coordinates || poly.geometry.coordinates.length === 0) return null;
                         const positions = poly.geometry.coordinates[0].map(c => [c[1], c[0]] as [number, number]);
@@ -366,8 +422,14 @@ export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJso
                         )
                     })}
 
-                    {/* Active Drawing */}
-                    {/* Active Drawing */}
+                    {circleCenter && (
+                        <Circle
+                            center={circleCenter}
+                            radius={currentRadius}
+                            pathOptions={{ color: "#10b981", fillColor: "#10b981", fillOpacity: 0.2, dashArray: '5, 5' }}
+                        />
+                    )}
+
                     {points.map((pos, idx) => (
                         <Marker
                             key={`point-${idx}-${pos[0]}-${pos[1]}`}
@@ -459,6 +521,22 @@ export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJso
                     <span className="font-medium">{validationError}</span>
                 </div>
             )}
+
+            {/* Integrated Instruction Box */}
+            <div className="mt-1 flex items-start gap-2 rounded-lg bg-blue-50 p-3 text-blue-700">
+                <div className="flex-shrink-0 mt-0.5">
+                    <InfoIcon className="h-5 w-5 text-blue-500" />
+                </div>
+                <p className="text-sm leading-relaxed">
+                    <strong>Instrução:</strong> {drawingMode === 'polygon'
+                        ? "Clique no mapa para adicionar pontos. Arraste os pontos brancos para ajustar o desenho. O sistema fecha a área automaticamente."
+                        : (circleCenter
+                            ? "Arraste o mouse para definir o raio e clique novamente para finalizar o desenho do pivô."
+                            : "Clique no centro do pivô para começar a desenhar."
+                        )
+                    }
+                </p>
+            </div>
         </div>
     );
 }
