@@ -388,7 +388,7 @@ export default function EditTalhaoPage() {
                             <div className="mt-4 flex items-start gap-2 rounded-lg bg-blue-50 p-3 text-blue-700">
                                 <AlertCircle className="h-5 w-5 shrink-0" />
                                 <p className="text-xs leading-relaxed">
-                                    <strong>Instrução:</strong> Edite os vértices para ajustar a área.
+                                    <strong>Instrução:</strong> Arraste os pontos brancos para ajustar os vértices da área. Clique em &quot;Limpar&quot; para recomeçar o desenho se necessário.
                                 </p>
                             </div>
                         </div>

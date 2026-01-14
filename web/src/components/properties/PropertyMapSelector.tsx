@@ -373,6 +373,7 @@ export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJso
                             key={`point-${idx}-${pos[0]}-${pos[1]}`}
                             position={pos}
                             draggable={true}
+                            title="Arraste para ajustar"
                             icon={L.divIcon({
                                 className: "bg-transparent",
                                 html: `<div style="
@@ -382,6 +383,7 @@ export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJso
                                     height: 12px; 
                                     border-radius: 50%;
                                     box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+                                    cursor: move;
                                 "></div>`,
                                 iconSize: [12, 12],
                                 iconAnchor: [6, 6],

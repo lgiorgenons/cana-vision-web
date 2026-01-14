@@ -7,7 +7,6 @@ import FarmWeatherWidget from "@/components/dashboard/FarmWeatherWidget";
 import FieldListWidget from "@/components/dashboard/FieldListWidget";
 import HealthScoreCard from "@/components/dashboard/HealthScoreCard";
 import MetricCard from "@/components/dashboard/MetricCard";
-import SatelliteWidget from "@/components/dashboard/SatelliteWidget";
 
 export default function DashboardPage() {
   return (
@@ -29,13 +28,8 @@ export default function DashboardPage() {
           </div>
 
           {/* Visual Feed Stack (Right) - 1 Col */}
-          <div className="md:col-span-1 flex flex-col gap-6">
-            <div className="flex-1">
-              <SatelliteWidget />
-            </div>
-            <div className="flex-1">
-              <AlertsWidget />
-            </div>
+          <div className="md:col-span-1">
+            <AlertsWidget />
           </div>
         </div>
 
