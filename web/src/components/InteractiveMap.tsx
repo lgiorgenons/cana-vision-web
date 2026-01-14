@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
     Activity,
@@ -14,6 +14,9 @@ import {
     X,
     Minus,
     Plus,
+    Upload,
+    Trash2,
+    Loader2
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
@@ -22,6 +25,10 @@ import { listPropriedades, getPropriedade, Propriedade } from "@/services/propri
 import { Talhao, GeoJSONFeature, listTalhoes, getTalhao } from "@/services/talhoes";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
+// @ts-ignore
+import parseGeoraster from "georaster";
+// @ts-ignore
+import GeoRasterLayer from "georaster-layer-for-leaflet";
 
 // Dynamic import for Leaflet components to avoid SSR issues with them as well
 const MapContainer = dynamic(() => import("react-leaflet").then((mod) => mod.MapContainer), { ssr: false });
@@ -58,6 +65,72 @@ export default function InteractiveMap() {
     const [selectedTalhaoDetails, setSelectedTalhaoDetails] = useState<Talhao | null>(null);
 
     const [mapRef, setMapRef] = useState<L.Map | null>(null);
+
+    // TIFF State
+    const [tiffLayer, setTiffLayer] = useState<any>(null);
+    const [isTiffLoading, setIsTiffLoading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // TIFF Handlers
+    const handleTiffUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file || !mapRef) return;
+
+        setIsTiffLoading(true);
+
+        try {
+            const arrayBuffer = await file.arrayBuffer();
+            const georaster = await parseGeoraster(arrayBuffer);
+
+            // Remove previous layer if exists
+            if (tiffLayer) {
+                mapRef.removeLayer(tiffLayer);
+            }
+
+            const layer = new GeoRasterLayer({
+                georaster: georaster,
+                opacity: 0.7,
+                resolution: 96, // DPI
+                pixelValuesToColorFn: (values: number[]) => {
+                    const value = values[0];
+
+                    // Handle NoData or invalid values
+                    if (value === -9999 || value === null || isNaN(value)) return null;
+
+                    // Logged values are mostly between 0.0 and 0.6
+                    // Adjusted scale for better contrast
+
+                    if (value < 0.2) return "#d7191c"; // Red (Low)
+                    if (value < 0.3) return "#fdae61"; // Orange
+                    if (value < 0.4) return "#ffffbf"; // Yellow
+                    if (value < 0.5) return "#a6d96a"; // Light Green
+                    if (value >= 0.5) return "#1a9641"; // Dark Green (High)
+
+                    return "#1a9641";
+                }
+            });
+
+            layer.addTo(mapRef);
+            setTiffLayer(layer);
+            mapRef.fitBounds(layer.getBounds());
+
+        } catch (error) {
+            console.error("Error loading GeoTIFF:", error);
+            alert("Erro ao carregar o arquivo GeoTIFF. Verifique se o formato é válido.");
+        } finally {
+            setIsTiffLoading(false);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
+        }
+    };
+
+    const clearTiff = () => {
+        if (mapRef && tiffLayer) {
+            mapRef.removeLayer(tiffLayer);
+            setTiffLayer(null);
+        }
+    };
 
     // Load properties on mount
     useEffect(() => {
@@ -347,7 +420,7 @@ export default function InteractiveMap() {
                                 color: "#2563eb", // Blue (matching registration)
                                 dashArray: "10, 10",
                                 fillColor: "#2563eb",
-                                fillOpacity: 0.3,
+                                fillOpacity: tiffLayer ? 0 : 0.3,
                                 weight: 2
                             }}
                         />
@@ -447,6 +520,39 @@ export default function InteractiveMap() {
                                 ))}
                             </div>
                         )}
+                    </div>
+
+                    {/* TIFF Upload Control */}
+                    <div className="relative pointer-events-auto">
+                        <input
+                            type="file"
+                            accept=".tiff,.tif"
+                            ref={fileInputRef}
+                            onChange={handleTiffUpload}
+                            className="hidden"
+                        />
+                        <button
+                            className={`flex h-12 w-12 items-center justify-center rounded-2xl backdrop-blur-md ring-1 ring-white/10 transition pointer-events-auto ${tiffLayer
+                                ? "bg-blue-600/80 text-white hover:bg-blue-700/80"
+                                : "bg-slate-900/60 text-white hover:bg-slate-900/80"
+                                }`}
+                            onClick={() => {
+                                if (tiffLayer) {
+                                    clearTiff();
+                                } else {
+                                    fileInputRef.current?.click();
+                                }
+                            }}
+                            disabled={isTiffLoading}
+                            aria-label="Carregar GeoTIFF"
+                            title={tiffLayer ? "Remover TIFF" : "Carregar GeoTIFF"}
+                        >
+                            {isTiffLoading ? (
+                                <Loader2 className="h-5 w-5 animate-spin" />
+                            ) : (
+                                tiffLayer ? <Trash2 className="h-5 w-5" /> : <Upload className="h-5 w-5" />
+                            )}
+                        </button>
                     </div>
                 </div>
 
