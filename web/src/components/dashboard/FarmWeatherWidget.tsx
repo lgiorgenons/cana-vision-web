@@ -5,7 +5,7 @@ import Image from "next/image";
 
 export default function FarmWeatherWidget() {
     return (
-        <div className="relative h-auto md:h-[375px] w-full rounded-[10px] bg-white shadow-[0px_4px_24px_rgba(0,0,0,0.08)] border border-gray-200 font-sans overflow-hidden hover:shadow-[0px_8px_32px_rgba(0,0,0,0.12)] transition-shadow duration-300 flex flex-col md:block">
+        <div className="relative h-auto md:h-[375px] w-full rounded-[20px] bg-white shadow-[0px_4px_24px_rgba(0,0,0,0.08)] border border-gray-200 font-sans overflow-hidden hover:shadow-[0px_8px_32px_rgba(0,0,0,0.12)] transition-shadow duration-300 flex flex-col md:block">
 
             {/* Header Row: Location (Left) & Date (Right) */}
             {/* Mobile: Relative Stacked / Desktop: Absolute Top */}
@@ -60,7 +60,7 @@ export default function FarmWeatherWidget() {
 
                 {/* Right Side: Map Card */}
                 {/* Mobile: Full Width Bottom / Desktop: Fixed 370x310 Bottom Right */}
-                <div className="w-full h-[250px] relative mt-4 md:mt-0 md:absolute md:bottom-0 md:right-0 md:w-[370px] md:h-[310px] md:rounded-tl-[10px] md:rounded-br-[10px] shadow-[inset_2px_2px_10px_rgba(0,0,0,0.05)] overflow-hidden">
+                <div className="w-full h-[250px] relative mt-4 md:mt-0 md:absolute md:bottom-0 md:right-0 md:w-[370px] md:h-[310px] md:rounded-tl-[20px] md:rounded-br-[20px] shadow-[inset_2px_2px_10px_rgba(0,0,0,0.05)] overflow-hidden">
                     <Image
                         src="/images/img_campo_hero.jpg"
                         alt="Mapa"

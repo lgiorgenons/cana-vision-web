@@ -4,7 +4,7 @@ import { Leaf, ArrowUpRight } from "lucide-react";
 
 export default function HealthScoreCard() {
     return (
-        <div className="relative flex h-full min-h-[180px] flex-col justify-between overflow-hidden rounded-[30px] bg-gradient-to-br from-[#22C55E] to-[#16A34A] p-6 text-white shadow-lg shadow-emerald-200/50">
+        <div className="relative flex h-full min-h-[180px] flex-col justify-between overflow-hidden rounded-[20px] bg-gradient-to-br from-[#22C55E] to-[#16A34A] p-6 text-white shadow-lg shadow-emerald-200/50">
 
             {/* Header */}
             <div className="flex items-start justify-between">
