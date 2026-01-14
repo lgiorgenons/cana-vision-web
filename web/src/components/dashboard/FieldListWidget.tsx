@@ -52,7 +52,10 @@ export default function FieldListWidget() {
         <div className="flex h-full flex-col rounded-[20px] bg-white p-6 shadow-sm ring-1 ring-gray-100">
             <div className="mb-6 flex items-center justify-between">
                 <h3 className="font-semibold text-lg text-gray-900">Talhões</h3>
-                <button className="text-sm font-medium text-gray-400 hover:text-gray-900">Ver todos</button>
+                <button className="group flex items-center gap-0.5 text-sm font-medium text-gray-400 hover:text-gray-900 transition-colors">
+                    Ver todos
+                    <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                </button>
             </div>
 
             <div className="flex flex-1 flex-col gap-3 overflow-y-auto pr-2 scrollbar-hide">
