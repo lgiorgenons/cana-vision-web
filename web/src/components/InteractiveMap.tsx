@@ -21,6 +21,7 @@ import {
 import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
 import * as L from "leaflet";
+import proj4 from "proj4";
 import { listPropriedades, getPropriedade, Propriedade } from "@/services/propriedades";
 import { Talhao, GeoJSONFeature, listTalhoes, getTalhao } from "@/services/talhoes";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -31,11 +32,87 @@ import parseGeoraster from "georaster";
 import GeoRasterLayer from "georaster-layer-for-leaflet";
 
 // Dynamic import for Leaflet components to avoid SSR issues with them as well
+// Dynamic import for Leaflet components/hooks
 const MapContainer = dynamic(() => import("react-leaflet").then((mod) => mod.MapContainer), { ssr: false });
 const TileLayer = dynamic(() => import("react-leaflet").then((mod) => mod.TileLayer), { ssr: false });
 const Polygon = dynamic(() => import("react-leaflet").then((mod) => mod.Polygon), { ssr: false });
 const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), { ssr: false });
 const Tooltip = dynamic(() => import("react-leaflet").then((mod) => mod.Tooltip), { ssr: false });
+const TiffInspector = dynamic(() => import("./TiffInspector").then((mod) => mod.TiffInspector), { ssr: false });
+
+type RasterStats = {
+    mins: number[];
+    maxs: number[];
+    ranges: number[];
+    noDataValue: unknown;
+    numberOfRasters: number;
+};
+
+const ensureProj4 = () => {
+    if (typeof globalThis === "undefined") return;
+    const globalAny = globalThis as typeof globalThis & { proj4?: typeof proj4 };
+    if (!globalAny.proj4) {
+        globalAny.proj4 = proj4;
+    }
+};
+
+const getRasterStats = (georaster: any): RasterStats => {
+    const mins = Array.isArray(georaster?.mins) ? georaster.mins : [];
+    const maxs = Array.isArray(georaster?.maxs) ? georaster.maxs : [];
+    const ranges = Array.isArray(georaster?.ranges) ? georaster.ranges : [];
+    const numberOfRasters = typeof georaster?.numberOfRasters === "number"
+        ? georaster.numberOfRasters
+        : Array.isArray(georaster?.values)
+            ? georaster.values.length
+            : 1;
+
+    return {
+        mins,
+        maxs,
+        ranges,
+        noDataValue: georaster?.noDataValue ?? null,
+        numberOfRasters,
+    };
+};
+
+const resolveNoDataValue = (noDataValue: unknown, bandIndex: number): number | null => {
+    if (Array.isArray(noDataValue)) {
+        const value = noDataValue[bandIndex];
+        return Number.isFinite(value) ? value : null;
+    }
+    return Number.isFinite(noDataValue as number) ? (noDataValue as number) : null;
+};
+
+const resolveBandMinMax = (stats: RasterStats, bandIndex: number) => {
+    const fallbackMin = Number.isFinite(stats.mins[0]) ? stats.mins[0] : 0;
+    const fallbackMax = Number.isFinite(stats.maxs[0])
+        ? stats.maxs[0]
+        : Number.isFinite(stats.ranges[0])
+            ? fallbackMin + stats.ranges[0]
+            : fallbackMin + 1;
+
+    const min = Number.isFinite(stats.mins[bandIndex]) ? stats.mins[bandIndex] : fallbackMin;
+    let max = Number.isFinite(stats.maxs[bandIndex]) ? stats.maxs[bandIndex] : fallbackMax;
+    if (!Number.isFinite(max)) {
+        const rangeCandidate = stats.ranges[bandIndex];
+        if (Number.isFinite(rangeCandidate)) {
+            max = min + rangeCandidate;
+        }
+    }
+    if (!Number.isFinite(max) || min === max) {
+        max = min + 1;
+    }
+
+    return { min, max };
+};
+
+const normalizeValue = (value: number, min: number, max: number) => {
+    if (!Number.isFinite(value)) return null;
+    const range = max - min;
+    if (!Number.isFinite(range) || range === 0) return 0;
+    const normalized = (value - min) / range;
+    return Math.min(1, Math.max(0, normalized));
+};
 
 const currentScene = {
     productId: "S2B_MSIL2A_20240815",
@@ -68,8 +145,14 @@ export default function InteractiveMap() {
 
     // TIFF State
     const [tiffLayer, setTiffLayer] = useState<any>(null);
+    const [georasterData, setGeorasterData] = useState<any>(null); // Store raw data for inspection
     const [isTiffLoading, setIsTiffLoading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Inspector State
+    const [hoverValue, setHoverValue] = useState<number | null>(null);
+    const [hoverPos, setHoverPos] = useState<{ x: number, y: number } | null>(null);
+
 
     // TIFF Handlers
     const handleTiffUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -77,10 +160,28 @@ export default function InteractiveMap() {
         if (!file || !mapRef) return;
 
         setIsTiffLoading(true);
+        ensureProj4();
 
         try {
             const arrayBuffer = await file.arrayBuffer();
             const georaster = await parseGeoraster(arrayBuffer);
+            setGeorasterData(georaster); // Save for TiffHoverHandler
+            const rasterStats = getRasterStats(georaster);
+
+            const isNoDataValue = (value: number, bandIndex: number) => {
+                const noDataValue = resolveNoDataValue(rasterStats.noDataValue, bandIndex);
+                return noDataValue !== null && value === noDataValue;
+            };
+
+            const scaleTo8Bit = (value: number, bandIndex: number) => {
+                if (typeof value !== "number" || !Number.isFinite(value) || isNoDataValue(value, bandIndex)) {
+                    return null;
+                }
+                const { min, max } = resolveBandMinMax(rasterStats, bandIndex);
+                const normalized = normalizeValue(value, min, max);
+                if (normalized === null) return null;
+                return Math.round(normalized * 255);
+            };
 
             // Remove previous layer if exists
             if (tiffLayer) {
@@ -92,28 +193,54 @@ export default function InteractiveMap() {
                 opacity: 0.7,
                 resolution: 96, // DPI
                 pixelValuesToColorFn: (values: number[]) => {
+                    if (!Array.isArray(values) || values.length === 0) return null;
+
+                    if (rasterStats.numberOfRasters >= 3 && values.length >= 3) {
+                        const r = scaleTo8Bit(values[0], 0);
+                        const g = scaleTo8Bit(values[1], 1);
+                        const b = scaleTo8Bit(values[2], 2);
+                        if (r === null || g === null || b === null) return null;
+                        return `rgb(${r}, ${g}, ${b})`;
+                    }
+
                     const value = values[0];
+                    if (typeof value !== "number" || !Number.isFinite(value) || isNoDataValue(value, 0)) return null;
 
-                    // Handle NoData or invalid values
-                    if (value === -9999 || value === null || isNaN(value)) return null;
+                    // Robust scaling for NDVI (usually -1 to 1)
+                    // If metadata claims a Huge max (e.g. 24 or 255) but values are small float, ignore metadata
+                    let { min, max } = resolveBandMinMax(rasterStats, 0);
 
-                    // Logged values are mostly between 0.0 and 0.6
-                    // Adjusted scale for better contrast
+                    // Heuristic: If max is > 1.2 but our value is small (< 1.2), and it's a float, 
+                    // it's likely an NDVI with bad metadata or outlier pixels.
+                    // We force the scale to be roughly 0 to 1 for better contrast.
+                    if (max > 1.5 && value >= -1.0 && value <= 1.0) {
+                        min = 0;
+                        max = 1;
+                    }
 
-                    if (value < 0.2) return "#d7191c"; // Red (Low)
-                    if (value < 0.3) return "#fdae61"; // Orange
-                    if (value < 0.4) return "#ffffbf"; // Yellow
-                    if (value < 0.5) return "#a6d96a"; // Light Green
-                    if (value >= 0.5) return "#1a9641"; // Dark Green (High)
+                    const normalized = normalizeValue(value, min, max);
 
-                    return "#1a9641";
+                    // DEBUG: Log first few pixels to debug color scale
+                    // @ts-ignore
+                    if (!window.tiffDebugLogged) {
+                        console.log("[TIFF Color Debug]", { value, min, max, normalized });
+                        // @ts-ignore
+                        window.tiffDebugLogged = true;
+                    }
+
+                    if (normalized === null) return null;
+
+                    if (normalized < 0.2) return "#d7191c"; // Red (Low)
+                    if (normalized < 0.4) return "#fdae61"; // Orange
+                    if (normalized < 0.6) return "#ffffbf"; // Yellow
+                    if (normalized < 0.8) return "#a6d96a"; // Light Green
+                    return "#1a9641"; // Dark Green (High)
                 }
             });
 
             layer.addTo(mapRef);
             setTiffLayer(layer);
             mapRef.fitBounds(layer.getBounds());
-
         } catch (error) {
             console.error("Error loading GeoTIFF:", error);
             alert("Erro ao carregar o arquivo GeoTIFF. Verifique se o formato é válido.");
@@ -137,7 +264,7 @@ export default function InteractiveMap() {
         async function fetchProperties() {
             try {
                 const data = await listPropriedades();
-                console.log("[InteractiveMap] Fetched Properties List:", JSON.stringify(data, null, 2));
+                // console.log("[InteractiveMap] Fetched Properties List:", JSON.stringify(data, null, 2));
                 if (data && data.length > 0) {
                     setProperties(data);
                     setSelectedPropertyId(data[0].id);
@@ -404,7 +531,7 @@ export default function InteractiveMap() {
                     center={[-14.235, -51.925]} // Default Brazil center, will flyTo property
                     zoom={4}
                     className="h-full w-full"
-                    style={{ background: "#0f172a" }}
+                    style={{ background: "#0f172a", cursor: tiffLayer ? "crosshair" : "grab" }}
                     zoomControl={false}
                 >
                     <TileLayer
@@ -461,7 +588,34 @@ export default function InteractiveMap() {
                             </Popup>
                         </Polygon>
                     ))}
+
+                    {/* 3. TIFF Inspection Layer */}
+                    {tiffLayer && (
+                        <TiffInspector
+                            georaster={georasterData || tiffLayer.options?.georaster}
+                            onHover={(val, pos) => {
+                                setHoverValue(val);
+                                setHoverPos(pos);
+                            }}
+                        />
+                    )}
                 </MapContainer>
+
+                {/* Floating Tooltip for Inspection */}
+                {hoverValue !== null && hoverPos && (
+                    <div
+                        className="pointer-events-none fixed z-[500] flex flex-col items-center rounded-lg bg-slate-900/90 px-3 py-2 text-white shadow-xl backdrop-blur-md"
+                        style={{
+                            left: hoverPos.x + 20, // Offset to right
+                            top: hoverPos.y - 20, // Offset to top
+                        }}
+                    >
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">ÍNDICE (NDVI)</p>
+                        <p className="text-lg font-bold text-emerald-400">
+                            {hoverValue.toFixed(2)}
+                        </p>
+                    </div>
+                )}
 
                 {/* Top Controls Group */}
                 <div className="absolute left-6 top-6 z-[400] flex flex-col gap-3 pointer-events-none">
@@ -696,6 +850,6 @@ export default function InteractiveMap() {
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 }

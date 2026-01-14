@@ -46,6 +46,7 @@
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
     "geist": "^1.5.1",
+    "geoblaze": "^2.8.0",
     "georaster": "^1.6.0",
     "georaster-layer-for-leaflet": "^4.1.2",
     "geotiff": "^2.1.4-beta.1",
