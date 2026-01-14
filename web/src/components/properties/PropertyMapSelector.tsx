@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
-import { MapContainer, TileLayer, Polygon, CircleMarker, useMapEvents, Tooltip } from "react-leaflet";
+import { MapContainer, TileLayer, Polygon, Marker, useMapEvents, Tooltip } from "react-leaflet";
 import { LeafletMouseEvent, Map as LeafletMap } from "leaflet";
 import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -367,12 +367,35 @@ export function PropertyMapSelector({ onBoundaryChange, className, contextGeoJso
                     })}
 
                     {/* Active Drawing */}
+                    {/* Active Drawing */}
                     {points.map((pos, idx) => (
-                        <CircleMarker
-                            key={idx}
-                            center={pos}
-                            pathOptions={{ color: "white", fillColor: validationError ? "#ef4444" : "#10b981", fillOpacity: 1, weight: 2 }}
-                            radius={5}
+                        <Marker
+                            key={`point-${idx}-${pos[0]}-${pos[1]}`}
+                            position={pos}
+                            draggable={true}
+                            icon={L.divIcon({
+                                className: "bg-transparent",
+                                html: `<div style="
+                                    background-color: white; 
+                                    border: 2px solid ${validationError ? "#ef4444" : "#10b981"}; 
+                                    width: 12px; 
+                                    height: 12px; 
+                                    border-radius: 50%;
+                                    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+                                "></div>`,
+                                iconSize: [12, 12],
+                                iconAnchor: [6, 6],
+                            })}
+                            eventHandlers={{
+                                dragend: (e: any) => {
+                                    const marker = e.target;
+                                    const newPos = marker.getLatLng();
+                                    const newPoints = [...points];
+                                    newPoints[idx] = [newPos.lat, newPos.lng];
+                                    setPoints(newPoints);
+                                    updateParent(newPoints);
+                                }
+                            }}
                         />
                     ))}
 
