@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import * as turf from "@turf/turf";
 import { Loader2, AlertCircle } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +28,7 @@ const PropertyMapSelector = dynamic(
     }
 );
 import { createTalhao, listTalhoes, getTalhao, CreateTalhaoDto, GeoJSONFeature, Talhao } from "@/services/talhoes";
+import { dataCache } from "@/services/dataCache";
 
 // --- Type Definition ---
 type GeoJSONPolygonFeature = {
@@ -87,23 +89,40 @@ export default function NewTalhaoPage() {
         async function loadProperty() {
             if (!propertyId) return;
             try {
-                // 1. Fetch Property and List of Talhoes (Shallow)
-                const [propData, shallowTalhoes] = await Promise.all([
-                    getPropriedade(propertyId),
-                    listTalhoes(propertyId)
-                ]);
+                // 1. Fetch Property and Talhoes (Try Cache First)
+                let propData = dataCache.getPropertyDetails(propertyId);
+                let fullTalhoes = dataCache.getTalhoes(propertyId) || [];
 
-                // 2. Fetch full details for each talhao to get GeoJSON
-                const fullTalhoes = await Promise.all(
-                    shallowTalhoes.map(async (t) => {
-                        try {
-                            return await getTalhao(t.id);
-                        } catch (e) {
-                            console.error(`Failed to fetch details for talhao ${t.id}`, e);
-                            return t; // Fallback to shallow if fail
-                        }
-                    })
-                );
+                if (!propData) {
+                    propData = await getPropriedade(propertyId);
+                    dataCache.setPropertyDetails(propertyId, propData);
+                }
+
+                // If cached talhoes are empty or missing geojson (shallow), we might need to fetch better data.
+                // But for now, if we have cache, we assume it's good (InteractiveMap usually populates it fully).
+                // If it's empty, we must fetch list.
+                if (fullTalhoes.length === 0) {
+                    const shallowTalhoes = await listTalhoes(propertyId);
+
+                    // Fetch full details if needed (check if first item has geojson)
+                    const hasGeoJson = shallowTalhoes.length > 0 && shallowTalhoes[0].geojson && shallowTalhoes[0].geojson.type;
+
+                    if (hasGeoJson) {
+                        fullTalhoes = shallowTalhoes;
+                    } else {
+                        fullTalhoes = await Promise.all(
+                            shallowTalhoes.map(async (t) => {
+                                try {
+                                    return await getTalhao(t.id);
+                                } catch (e) {
+                                    return t;
+                                }
+                            })
+                        );
+                    }
+                    // Update Cache
+                    dataCache.setTalhoes(propertyId, fullTalhoes);
+                }
 
                 console.log("NewTalhaoPage: Fetched property:", propData);
                 console.log("NewTalhaoPage: Fetched talhoes (full):", fullTalhoes);
@@ -166,6 +185,10 @@ export default function NewTalhaoPage() {
             };
 
             const newTalhao = await createTalhao(payload);
+
+            // Invalidate cache for this property so next load fetches fresh list
+            dataCache.invalidateTalhoes(propertyId);
+
             setExistingTalhoes(prev => [...prev, newTalhao]);
 
             toast({
@@ -216,8 +239,22 @@ export default function NewTalhaoPage() {
     if (isLoadingProperty) {
         return (
             <Layout title="Carregando..." description="Preparando ambiente de cadastro.">
-                <div className="flex h-96 items-center justify-center">
-                    <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+                <div className="mx-auto max-w-4xl p-1 pb-20 space-y-6">
+                    {/* Skeleton Card 1 */}
+                    <div className="rounded-[10px] bg-white p-6 shadow-sm border border-gray-200 space-y-4">
+                        <Skeleton className="h-6 w-48" />
+                        <Skeleton className="h-4 w-96" />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                            <Skeleton className="h-12 w-full col-span-2" />
+                            <Skeleton className="h-12 w-full" />
+                            <Skeleton className="h-12 w-full" />
+                        </div>
+                    </div>
+                    {/* Skeleton Card 2 */}
+                    <div className="rounded-[10px] bg-white p-6 shadow-sm border border-gray-200">
+                        <Skeleton className="h-6 w-48 mb-2" />
+                        <Skeleton className="h-[400px] w-full rounded-xl" />
+                    </div>
                 </div>
             </Layout>
         );

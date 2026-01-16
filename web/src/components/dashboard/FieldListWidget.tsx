@@ -5,6 +5,7 @@ import { ChevronRight } from "lucide-react";
 import { listTalhoes, Talhao } from "@/services/talhoes";
 import { listPropriedades } from "@/services/propriedades";
 import { Skeleton } from "@/components/ui/skeleton";
+import { dataCache } from "@/services/dataCache";
 
 export default function FieldListWidget() {
     const [fields, setFields] = useState<Talhao[]>([]);
@@ -13,15 +14,46 @@ export default function FieldListWidget() {
     useEffect(() => {
         async function loadFields() {
             try {
-                // First get properties to know which ID to query
-                const properties = await listPropriedades();
+                // First get properties
+                let properties = dataCache.getProperties();
+
+                if (!properties) {
+                    properties = await listPropriedades();
+                    if (properties && properties.length > 0) {
+                        dataCache.setProperties(properties);
+                    }
+                }
 
                 if (properties && properties.length > 0) {
-                    // For now, load fields from the first property to populate the widget
-                    // Ideal: Allow user to select property in this widget
                     const firstPropertyId = properties[0].id;
+
+                    // Check talhoes cache
+                    const cachedTalhoes = dataCache.getTalhoes(firstPropertyId);
+
+                    if (cachedTalhoes) {
+                        setFields(cachedTalhoes.slice(0, 50));
+                        setIsLoading(false);
+                        return; // Done
+                    }
+
                     const data = await listTalhoes(firstPropertyId);
-                    setFields(data ? data.slice(0, 50) : []);
+                    if (data) {
+                        // We might want to cache this merely as list, but InteractiveMap often needs full details.
+                        // However, caching the list is better than nothing.
+                        // Ideally we should be consistent. listTalhoes returns partial or full?
+                        // It returns whatever the API returns. InteractiveMap does extra fetch if needed.
+                        // Let's cache it ONLY if we are sure it's useful, or just rely on it being fast.
+                        // Actually, if we cache it here, InteractiveMap will see it.
+                        // But InteractiveMap expects "hasGeoJson" potentially.
+                        // If this list is shallow, InteractiveMap will needlessly fetch details again if it thinks cached data is full.
+                        // CAUTION: dataCache.talhoes expects `Talhao[]`.
+                        // If we save shallow here, InteractiveMap will load shallow data -> then fetch details.
+                        // That is ACCEPTABLE.
+                        dataCache.setTalhoes(firstPropertyId, data);
+                        setFields(data.slice(0, 50));
+                    } else {
+                        setFields([]);
+                    }
                 } else {
                     setFields([]);
                 }

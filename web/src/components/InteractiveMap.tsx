@@ -24,6 +24,7 @@ import * as L from "leaflet";
 import proj4 from "proj4";
 import { listPropriedades, getPropriedade, Propriedade } from "@/services/propriedades";
 import { Talhao, GeoJSONFeature, listTalhoes, getTalhao } from "@/services/talhoes";
+import { dataCache } from "@/services/dataCache";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -131,9 +132,6 @@ const currentScene = {
 type Field = any;
 
 const layerOptions = ["NDVI", "EVI", "NDRE", "NDMI", "True Color"];
-
-// Simple in-memory cache for talhoes to prevent re-fetching on property switch
-const talhoesCache: Record<string, Talhao[]> = {};
 
 export default function InteractiveMap() {
     const [isFullscreen, setIsFullscreen] = useState(false);
@@ -273,11 +271,21 @@ export default function InteractiveMap() {
     useEffect(() => {
         async function fetchProperties() {
             try {
-                const data = await listPropriedades();
-                // console.log("[InteractiveMap] Fetched Properties List:", JSON.stringify(data, null, 2));
-                if (data && data.length > 0) {
-                    setProperties(data);
-                    setSelectedPropertyId(data[0].id);
+                const cachedProps = dataCache.getProperties();
+                if (cachedProps) {
+                    // Use cache if available
+                    setProperties(cachedProps);
+                    if (cachedProps.length > 0) {
+                        setSelectedPropertyId(cachedProps[0].id);
+                    }
+                } else {
+                    const data = await listPropriedades();
+                    // console.log("[InteractiveMap] Fetched Properties List:", JSON.stringify(data, null, 2));
+                    if (data && data.length > 0) {
+                        dataCache.setProperties(data); // Set cache
+                        setProperties(data);
+                        setSelectedPropertyId(data[0].id);
+                    }
                 }
             } catch (error) {
                 console.error("Failed to load properties", error);
@@ -293,9 +301,16 @@ export default function InteractiveMap() {
 
             // 1. Fetch full property details (for GeoJSON)
             try {
-                const details = await getPropriedade(selectedPropertyId);
-                console.log("[InteractiveMap] Fetched Property Details:", JSON.stringify(details, null, 2));
-                setSelectedPropertyDetails(details);
+                const cachedDetails = dataCache.getPropertyDetails(selectedPropertyId);
+                if (cachedDetails) {
+                    console.log("[InteractiveMap] Using cached property details for:", selectedPropertyId);
+                    setSelectedPropertyDetails(cachedDetails);
+                } else {
+                    const details = await getPropriedade(selectedPropertyId);
+                    console.log("[InteractiveMap] Fetched Property Details:", JSON.stringify(details, null, 2));
+                    dataCache.setPropertyDetails(selectedPropertyId, details); // Set cache
+                    setSelectedPropertyDetails(details);
+                }
             } catch (error) {
                 console.error("Failed to load property details", error);
                 return; // Stop if prop details fail
@@ -304,9 +319,10 @@ export default function InteractiveMap() {
             // 2. Fetch talhoes
             try {
                 // Check Cache First
-                if (talhoesCache[selectedPropertyId]) {
+                const cachedTalhoes = dataCache.getTalhoes(selectedPropertyId);
+                if (cachedTalhoes) {
                     console.log("[InteractiveMap] Using cached talhoes for:", selectedPropertyId);
-                    setTalhoes(talhoesCache[selectedPropertyId]);
+                    setTalhoes(cachedTalhoes);
                     setIsLoadingTalhoes(false);
                 } else {
                     setIsLoadingTalhoes(true);
@@ -339,7 +355,7 @@ export default function InteractiveMap() {
                     }
 
                     // Save to Cache
-                    talhoesCache[selectedPropertyId] = finalTalhoes;
+                    dataCache.setTalhoes(selectedPropertyId, finalTalhoes);
                     setTalhoes(finalTalhoes);
                 }
 
@@ -363,9 +379,16 @@ export default function InteractiveMap() {
                 return;
             }
             try {
-                const details = await getTalhao(selectedTalhaoId);
-                console.log("[InteractiveMap] Fetched Talhao Details:", JSON.stringify(details, null, 2));
-                setSelectedTalhaoDetails(details);
+                const cachedDetails = dataCache.getTalhaoDetails(selectedTalhaoId);
+                if (cachedDetails) {
+                    console.log("[InteractiveMap] Using cached talhao details for:", selectedTalhaoId);
+                    setSelectedTalhaoDetails(cachedDetails);
+                } else {
+                    const details = await getTalhao(selectedTalhaoId);
+                    console.log("[InteractiveMap] Fetched Talhao Details:", JSON.stringify(details, null, 2));
+                    dataCache.setTalhaoDetails(selectedTalhaoId, details); // Set cache
+                    setSelectedTalhaoDetails(details);
+                }
             } catch (error) {
                 console.error("Failed to load talhao details", error);
             }
@@ -590,45 +613,54 @@ export default function InteractiveMap() {
                     />
 
                     {/* 1. Property Boundary (Blue Dashed) */}
-                    {selectedPropertyDetails && (
-                        <Polygon
-                            positions={getPolygonPositions(selectedPropertyDetails.geojson)}
-                            pathOptions={{
-                                color: "#2563eb", // Blue (matching registration)
-                                dashArray: "10, 10",
-                                fillColor: "#2563eb",
-                                fillOpacity: tiffLayer ? 0 : 0.3,
-                                weight: 2
-                            }}
-                        />
-                    )}
+                    {selectedPropertyDetails && (() => {
+                        const positions = getPolygonPositions(selectedPropertyDetails.geojson);
+                        if (!positions || positions.length === 0) return null;
+                        return (
+                            <Polygon
+                                positions={positions}
+                                pathOptions={{
+                                    color: "#2563eb", // Blue (matching registration)
+                                    dashArray: "10, 10",
+                                    fillColor: "#2563eb",
+                                    fillOpacity: tiffLayer ? 0 : 0.3,
+                                    weight: 2
+                                }}
+                            />
+                        )
+                    })()}
 
                     {/* 2. Talhoes Polygons (Green/Filled) */}
-                    {talhoes.map((talhao) => (
-                        <Polygon
-                            key={talhao.id}
-                            positions={getPolygonPositions(talhao.geojson)}
-                            pathOptions={{
-                                color: talhao.id === selectedTalhaoId ? "#ffffff" : "#10b981",
-                                fillColor: "#10b981", // Emerald 500
-                                fillOpacity: talhao.id === selectedTalhaoId ? 0.3 : 0.5,
-                                weight: talhao.id === selectedTalhaoId ? 3 : 1,
-                            }}
-                            eventHandlers={{
-                                click: (e) => {
-                                    // Prevent bubbling if needed, though usually fine
-                                    setSelectedTalhaoId(talhao.id);
-                                    setDetailPanelOpen(true);
-                                    L.DomEvent.stopPropagation(e);
-                                },
-                            }}
-                        >
-                            <Tooltip permanent direction="center" className="bg-transparent border-0 shadow-none font-bold text-white text-shadow-sm">
-                                {talhao.nome}
-                            </Tooltip>
+                    {talhoes.map((talhao) => {
+                        const positions = getPolygonPositions(talhao.geojson);
+                        if (!positions || positions.length === 0) return null;
 
-                        </Polygon>
-                    ))}
+                        return (
+                            <Polygon
+                                key={talhao.id}
+                                positions={positions}
+                                pathOptions={{
+                                    color: talhao.id === selectedTalhaoId ? "#ffffff" : "#10b981",
+                                    fillColor: "#10b981", // Emerald 500
+                                    fillOpacity: talhao.id === selectedTalhaoId ? 0.3 : 0.5,
+                                    weight: talhao.id === selectedTalhaoId ? 3 : 1,
+                                }}
+                                eventHandlers={{
+                                    click: (e) => {
+                                        // Prevent bubbling if needed, though usually fine
+                                        setSelectedTalhaoId(talhao.id);
+                                        setDetailPanelOpen(true);
+                                        L.DomEvent.stopPropagation(e);
+                                    },
+                                }}
+                            >
+                                <Tooltip permanent direction="center" className="bg-transparent border-0 shadow-none font-bold text-white text-shadow-sm">
+                                    {talhao.nome}
+                                </Tooltip>
+
+                            </Polygon>
+                        )
+                    })}
 
                     {/* 3. TIFF Inspection Layer */}
                     {tiffLayer && (
