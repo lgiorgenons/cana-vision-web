@@ -26,6 +26,7 @@ import { listPropriedades, getPropriedade, Propriedade } from "@/services/propri
 import { Talhao, GeoJSONFeature, listTalhoes, getTalhao } from "@/services/talhoes";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 // @ts-ignore
 import parseGeoraster from "georaster";
 // @ts-ignore
@@ -138,6 +139,7 @@ export default function InteractiveMap() {
     const [selectedPropertyId, setSelectedPropertyId] = useState<string>("");
     const [selectedPropertyDetails, setSelectedPropertyDetails] = useState<Propriedade | null>(null);
     const [talhoes, setTalhoes] = useState<Talhao[]>([]);
+    const [isLoadingTalhoes, setIsLoadingTalhoes] = useState(false);
     const [selectedTalhaoId, setSelectedTalhaoId] = useState<string | null>(null);
     const [selectedTalhaoDetails, setSelectedTalhaoDetails] = useState<Talhao | null>(null);
 
@@ -293,30 +295,40 @@ export default function InteractiveMap() {
 
             // 2. Fetch talhoes
             try {
+                setIsLoadingTalhoes(true);
                 console.log("[InteractiveMap] Fetching talhoes for property:", selectedPropertyId);
-                // First get the list (shallow)
-                const shallowList = await listTalhoes(selectedPropertyId);
+                // First get the list
+                const list = await listTalhoes(selectedPropertyId);
 
-                // Then fetch details for EACH to get GeoJSON (since list endpoint is shallow)
-                // This is an N+1 but acceptable for small numbers of fields per property
-                const fullList = await Promise.all(
-                    shallowList.map(async (t) => {
-                        try {
-                            return await getTalhao(t.id);
-                        } catch (e) {
-                            console.error(`Failed to fetch details for talhao ${t.id}`, e);
-                            return t; // Fallback to shallow
-                        }
-                    })
-                );
+                // Check if list already has valid geojson (optimization)
+                const hasGeoJson = list.length > 0 && list[0].geojson && list[0].geojson.type;
 
-                console.log("[InteractiveMap] Fetched Full Talhoes:", JSON.stringify(fullList, null, 2));
-                setTalhoes(fullList || []);
+                if (hasGeoJson) {
+                    console.log("[InteractiveMap] Using list data directly (GeoJSON present)");
+                    setTalhoes(list);
+                } else {
+                    console.log("[InteractiveMap] Fetching details for each talhao (GeoJSON missing in list)");
+                    // Fallback to N+1 if needed
+                    const fullList = await Promise.all(
+                        list.map(async (t) => {
+                            try {
+                                return await getTalhao(t.id);
+                            } catch (e) {
+                                console.error(`Failed to fetch details for talhao ${t.id}`, e);
+                                return t;
+                            }
+                        })
+                    );
+                    setTalhoes(fullList || []);
+                }
+
                 setSelectedTalhaoId(null);
                 setDetailPanelOpen(false);
             } catch (error) {
                 console.error("Failed to load talhoes", error);
                 setTalhoes([]);
+            } finally {
+                setIsLoadingTalhoes(false);
             }
         }
         fetchData();
@@ -464,7 +476,24 @@ export default function InteractiveMap() {
                             </div>
                             {/* Fields List */}
                             <div className="space-y-3">
-                                {talhoes.length === 0 ? (
+                                {isLoadingTalhoes ? (
+                                    // Skeleton Loading State
+                                    Array.from({ length: 5 }).map((_, i) => (
+                                        <div key={i} className="flex w-full flex-col gap-2 rounded-2xl border border-slate-100 bg-white p-4">
+                                            <div className="flex items-start justify-between">
+                                                <div className="space-y-2">
+                                                    <Skeleton className="h-4 w-32 bg-slate-200" />
+                                                    <Skeleton className="h-3 w-24 bg-slate-100" />
+                                                </div>
+                                                <Skeleton className="h-8 w-12 rounded-lg bg-slate-100" />
+                                            </div>
+                                            <div className="mt-2 flex gap-2">
+                                                <Skeleton className="h-5 w-20 rounded-full bg-slate-100" />
+                                                <Skeleton className="h-5 w-16 rounded-full bg-slate-100" />
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : talhoes.length === 0 ? (
                                     <div className="text-center text-sm text-slate-500 py-4">Nenhum talhão cadastrado.</div>
                                 ) : (
                                     talhoes.map((talhao) => (
