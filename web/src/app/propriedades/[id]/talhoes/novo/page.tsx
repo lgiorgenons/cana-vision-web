@@ -156,7 +156,8 @@ export default function NewTalhaoPage() {
                 metadata: {}
             };
 
-            await createTalhao(payload);
+            const newTalhao = await createTalhao(payload);
+            setExistingTalhoes(prev => [...prev, newTalhao]);
 
             toast({
                 title: "Talhão criado!",
