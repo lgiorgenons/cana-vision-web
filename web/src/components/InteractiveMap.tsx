@@ -164,8 +164,19 @@ const maskGeoraster = (georaster: any, polygonGeoJson: GeoJSONFeature) => {
 
     try {
         const { width, height, xmin, ymax, pixelWidth, pixelHeight } = georaster;
-        // pixelHeight is usually positive in georaster attributes (resolution), 
-        // but Y axis goes down, so we subtract: lat = ymax - row * pixelHeight
+
+        // HEURISTIC: Check if projection is WGS84 (Lat/Lng) or similar.
+        // If pixelWidth is large (e.g. > 0.01), it's likely Meters (UTM), not Degrees.
+        // 1 degree ~ 111km. 10m ~ 0.00009 degrees.
+        // If pixelWidth > 0.01, it implies > 1km per pixel (unlikely for drone/satellite?) OR it implies METERS (UTM).
+        // Standard Lat/Lng rasters have specific small pixel sizes.
+
+        // If it looks like meters, we cannot easily mask without reprojection (proj4 defs needed).
+        // For now, SKIP masking to prevent disappearance.
+        if (pixelWidth > 0.01) {
+            console.warn("[InteractiveMap] Skipping mask: Raster appears to be in projected coordinates (Meters), not WGS84.", { pixelWidth });
+            return georaster;
+        }
 
         // 1. Create a canvas to draw the mask
         const canvas = document.createElement("canvas");
@@ -335,8 +346,6 @@ export default function InteractiveMap() {
 
                     const value = values[0];
                     if (typeof value !== "number" || !Number.isFinite(value) || isNoDataValue(value, 0)) return null;
-                    if (value === 0) return null; // Hard filter for 0 values to remove artifacts
-
                     // Robust scaling for NDVI (usually -1 to 1)
                     // If metadata claims a Huge max (e.g. 24 or 255) but values are small float, ignore metadata
                     let { min, max } = resolveBandMinMax(rasterStats, 0);
