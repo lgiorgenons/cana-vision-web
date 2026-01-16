@@ -132,6 +132,9 @@ type Field = any;
 
 const layerOptions = ["NDVI", "EVI", "NDRE", "NDMI", "True Color"];
 
+// Simple in-memory cache for talhoes to prevent re-fetching on property switch
+const talhoesCache: Record<string, Talhao[]> = {};
+
 export default function InteractiveMap() {
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [detailPanelOpen, setDetailPanelOpen] = useState(false);
@@ -300,31 +303,44 @@ export default function InteractiveMap() {
 
             // 2. Fetch talhoes
             try {
-                setIsLoadingTalhoes(true);
-                console.log("[InteractiveMap] Fetching talhoes for property:", selectedPropertyId);
-                // First get the list
-                const list = await listTalhoes(selectedPropertyId);
-
-                // Check if list already has valid geojson (optimization)
-                const hasGeoJson = list.length > 0 && list[0].geojson && list[0].geojson.type;
-
-                if (hasGeoJson) {
-                    console.log("[InteractiveMap] Using list data directly (GeoJSON present)");
-                    setTalhoes(list);
+                // Check Cache First
+                if (talhoesCache[selectedPropertyId]) {
+                    console.log("[InteractiveMap] Using cached talhoes for:", selectedPropertyId);
+                    setTalhoes(talhoesCache[selectedPropertyId]);
+                    setIsLoadingTalhoes(false);
                 } else {
-                    console.log("[InteractiveMap] Fetching details for each talhao (GeoJSON missing in list)");
-                    // Fallback to N+1 if needed
-                    const fullList = await Promise.all(
-                        list.map(async (t) => {
-                            try {
-                                return await getTalhao(t.id);
-                            } catch (e) {
-                                console.error(`Failed to fetch details for talhao ${t.id}`, e);
-                                return t;
-                            }
-                        })
-                    );
-                    setTalhoes(fullList || []);
+                    setIsLoadingTalhoes(true);
+                    console.log("[InteractiveMap] Fetching talhoes for property:", selectedPropertyId);
+                    // First get the list
+                    const list = await listTalhoes(selectedPropertyId);
+
+                    // Check if list already has valid geojson (optimization)
+                    const hasGeoJson = list.length > 0 && list[0].geojson && list[0].geojson.type;
+
+                    let finalTalhoes: Talhao[] = [];
+
+                    if (hasGeoJson) {
+                        console.log("[InteractiveMap] Using list data directly (GeoJSON present)");
+                        finalTalhoes = list;
+                    } else {
+                        console.log("[InteractiveMap] Fetching details for each talhao (GeoJSON missing in list)");
+                        // Fallback to N+1 if needed
+                        const fullList = await Promise.all(
+                            list.map(async (t) => {
+                                try {
+                                    return await getTalhao(t.id);
+                                } catch (e) {
+                                    console.error(`Failed to fetch details for talhao ${t.id}`, e);
+                                    return t;
+                                }
+                            })
+                        );
+                        finalTalhoes = fullList || [];
+                    }
+
+                    // Save to Cache
+                    talhoesCache[selectedPropertyId] = finalTalhoes;
+                    setTalhoes(finalTalhoes);
                 }
 
                 setSelectedTalhaoId(null);
