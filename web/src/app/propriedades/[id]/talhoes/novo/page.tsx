@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import * as turf from "@turf/turf";
 import { Loader2, AlertCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -130,13 +131,21 @@ export default function NewTalhaoPage() {
         loadProperty();
     }, [propertyId, form, toast]);
 
-    // Calculate Area from GeoJSON (Simple logic for UX, backend usually validates/recalcs)
+    // Calculate Area from GeoJSON
     const handleMapChange = (geojson: GeoJSONPolygonFeature | null) => {
         form.setValue("geoJson", geojson);
         if (geojson) {
-            // Optional: Calculate approximate area in client side or leave to user
-            // For now, user inputs manually as per design, but we could auto-fill
-            console.log("Plot geometry updated");
+            try {
+                const areaSqMeters = turf.area(geojson as any);
+                const areaHectares = (areaSqMeters / 10000).toFixed(2);
+                form.setValue("area", areaHectares);
+                toast({
+                    title: "Área Calculada",
+                    description: `${areaHectares} hectares identificados no desenho.`,
+                });
+            } catch (e) {
+                console.error("Error calculating area:", e);
+            }
         }
     };
 
