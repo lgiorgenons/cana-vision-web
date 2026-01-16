@@ -34,12 +34,17 @@ import GeoRasterLayer from "georaster-layer-for-leaflet";
 
 // Dynamic import for Leaflet components to avoid SSR issues with them as well
 // Dynamic import for Leaflet components/hooks
-const MapContainer = dynamic(() => import("react-leaflet").then((mod) => mod.MapContainer), { ssr: false });
-const TileLayer = dynamic(() => import("react-leaflet").then((mod) => mod.TileLayer), { ssr: false });
-const Polygon = dynamic(() => import("react-leaflet").then((mod) => mod.Polygon), { ssr: false });
+import { MapContainer, TileLayer, Polygon, Tooltip } from "react-leaflet";
+import { TiffInspector } from "./TiffInspector";
 
-const Tooltip = dynamic(() => import("react-leaflet").then((mod) => mod.Tooltip), { ssr: false });
-const TiffInspector = dynamic(() => import("./TiffInspector").then((mod) => mod.TiffInspector), { ssr: false });
+// Dynamic import for MapZoomListener is fine as it's a separate component file, 
+// BUT importantly MapContainer etc should be static if InteractiveMap is dynamic.
+// Actually, I'll keep TiffInspector dynamic just in case, or make it static too.
+// Given InteractiveMap is ssr: false, static imports are safe.
+// Let's import TiffInspector dynamically to keep behavior consistent OR standard if it uses window.
+// TiffInspector uses 'georaster' which might use window.
+// Safer to keep TiffInspector dynamic if unsure, but standard for react-leaflet components.
+
 
 type RasterStats = {
     mins: number[];
@@ -620,6 +625,19 @@ export default function InteractiveMap() {
                         />
                     )}
                 </MapContainer>
+
+                {/* Loading Overlay */}
+                {isLoadingTalhoes && (
+                    <div className="absolute inset-0 z-[1000] flex flex-col items-center justify-center bg-slate-900/50 backdrop-blur-sm transition-all duration-500">
+                        <div className="relative flex flex-col items-center">
+                            <div className="h-16 w-16 animate-spin rounded-full border-4 border-emerald-500/30 border-t-emerald-500 shadow-lg shadow-emerald-500/20" />
+                            <div className="mt-4 flex flex-col items-center space-y-1">
+                                <span className="text-sm font-semibold text-white tracking-wide">Carregando mapa...</span>
+                                <span className="text-xs text-slate-300">Processando geometria dos talhões</span>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Floating Tooltip for Inspection */}
                 {hoverValue !== null && hoverPos && (
