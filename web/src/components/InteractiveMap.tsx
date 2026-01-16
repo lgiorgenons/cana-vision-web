@@ -36,7 +36,7 @@ import GeoRasterLayer from "georaster-layer-for-leaflet";
 const MapContainer = dynamic(() => import("react-leaflet").then((mod) => mod.MapContainer), { ssr: false });
 const TileLayer = dynamic(() => import("react-leaflet").then((mod) => mod.TileLayer), { ssr: false });
 const Polygon = dynamic(() => import("react-leaflet").then((mod) => mod.Polygon), { ssr: false });
-const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), { ssr: false });
+
 const Tooltip = dynamic(() => import("react-leaflet").then((mod) => mod.Tooltip), { ssr: false });
 const TiffInspector = dynamic(() => import("./TiffInspector").then((mod) => mod.TiffInspector), { ssr: false });
 
@@ -576,16 +576,7 @@ export default function InteractiveMap() {
                             <Tooltip permanent direction="center" className="bg-transparent border-0 shadow-none font-bold text-white text-shadow-sm">
                                 {talhao.nome}
                             </Tooltip>
-                            <Popup>
-                                <div className="p-2 min-w-[150px]">
-                                    <p className="font-bold text-slate-900">{talhao.nome}</p>
-                                    <p className="text-xs text-slate-500 mb-2">{talhao.cultura}</p>
-                                    <div className="flex items-center gap-1.5 text-sm font-medium text-emerald-600">
-                                        <Sprout className="h-4 w-4" />
-                                        {talhao.areaHectares} ha
-                                    </div>
-                                </div>
-                            </Popup>
+
                         </Polygon>
                     ))}
 
