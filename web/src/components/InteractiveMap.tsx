@@ -121,6 +121,122 @@ const normalizeValue = (value: number, min: number, max: number) => {
     return Math.min(1, Math.max(0, normalized));
 };
 
+// Helper to extract polygon positions from GeoJSON
+const getPolygonPositions = (feature: GeoJSONFeature | undefined): [number, number][] => {
+    if (!feature) {
+        return [];
+    }
+
+    // Handle case where feature IS the geometry (no geometry property)
+    const geometry = feature.geometry || feature;
+
+    if (!geometry || !geometry.coordinates) {
+        return [];
+    }
+
+    const { type, coordinates } = geometry as any;
+
+    try {
+        if (type === "MultiPolygon") {
+            const multiCoords = coordinates as unknown as number[][][][];
+            if (multiCoords.length > 0 && multiCoords[0].length > 0) {
+                const outerRing = multiCoords[0][0];
+                return outerRing.map((p) => [p[1], p[0]] as [number, number]);
+            }
+        } else {
+            const polygonCoords = coordinates as number[][][];
+            if (polygonCoords.length > 0) {
+                const outerRing = polygonCoords[0];
+                return outerRing.map((p) => [p[1], p[0]] as [number, number]);
+            }
+        }
+    } catch (e) {
+        console.error("Error parsing GeoJSON", e);
+        return [];
+    }
+
+    return [];
+};
+
+// Helper to mask georaster values outside the polygon
+const maskGeoraster = (georaster: any, polygonGeoJson: GeoJSONFeature) => {
+    if (!polygonGeoJson || !georaster) return georaster;
+
+    try {
+        const { width, height, xmin, ymax, pixelWidth, pixelHeight } = georaster;
+        // pixelHeight is usually positive in georaster attributes (resolution), 
+        // but Y axis goes down, so we subtract: lat = ymax - row * pixelHeight
+
+        // 1. Create a canvas to draw the mask
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return georaster;
+
+        // 2. Draw Polygon
+        ctx.fillStyle = "white"; // Inside
+        ctx.beginPath();
+
+        const coords = getPolygonPositions(polygonGeoJson); // returns [lat, lng]
+        if (coords.length === 0) return georaster;
+
+        // Map [lat, lng] to [pixelX, pixelY]
+        // pixelX = (lng - xmin) / pixelWidth
+        // pixelY = (ymax - lat) / pixelHeight
+
+        coords.forEach((pos, i) => {
+            const lat = pos[0];
+            const lng = pos[1];
+
+            const x = (lng - xmin) / pixelWidth;
+            const y = (ymax - lat) / pixelHeight;
+
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        });
+
+        ctx.closePath();
+        ctx.fill();
+
+        // 3. Get Mask Data
+        // If pixel is alpha/white -> keep. If transparent/black -> mask.
+        // Since we didn't fill background, default is transparent (rgba(0,0,0,0)).
+        const imgData = ctx.getImageData(0, 0, width, height);
+        const data = imgData.data; // linear array rgba
+
+        // 4. Modify Georaster Values
+        // georaster.values is Array of Arrays (one per band).
+        // We modify band 0 (usually NDVI).
+        const band0 = georaster.values[0];
+
+        // Assuming georaster is row-major
+        for (let row = 0; row < height; row++) {
+            for (let col = 0; col < width; col++) {
+                const index = (row * width + col) * 4;
+                const alpha = data[index + 3]; // Alpha channel
+
+                // If alpha is 0 (outside polygon), set to NaN/NoData
+                // We use a specific generic "null" value for float arrays, mostly NaN implies nodata in JS processing
+                // But georaster might use a specific noDataValue.
+                if (alpha === 0) {
+                    // CAREFUL: accessing band0[row][col]
+                    if (band0[row] && typeof band0[row][col] !== 'undefined') {
+                        band0[row][col] = NaN;
+                    }
+                }
+            }
+        }
+
+        console.log("[InteractiveMap] Applied polygon mask to GeoTIFF.");
+        return georaster;
+
+    } catch (e) {
+        console.error("Error masking georaster:", e);
+        return georaster;
+    }
+};
+
 const currentScene = {
     productId: "S2B_MSIL2A_20240815",
     captureDate: "15/08/2024",
@@ -172,7 +288,13 @@ export default function InteractiveMap() {
 
         try {
             const arrayBuffer = await file.arrayBuffer();
-            const georaster = await parseGeoraster(arrayBuffer);
+            let georaster = await parseGeoraster(arrayBuffer);
+
+            // Apply Mask if property boundary exists
+            if (selectedPropertyDetails && selectedPropertyDetails.geojson) {
+                georaster = maskGeoraster(georaster, selectedPropertyDetails.geojson);
+            }
+
             setGeorasterData(georaster); // Save for TiffHoverHandler
             const rasterStats = getRasterStats(georaster);
 
@@ -213,6 +335,7 @@ export default function InteractiveMap() {
 
                     const value = values[0];
                     if (typeof value !== "number" || !Number.isFinite(value) || isNoDataValue(value, 0)) return null;
+                    if (value === 0) return null; // Hard filter for 0 values to remove artifacts
 
                     // Robust scaling for NDVI (usually -1 to 1)
                     // If metadata claims a Huge max (e.g. 24 or 255) but values are small float, ignore metadata
@@ -401,41 +524,7 @@ export default function InteractiveMap() {
     const selectedTalhao = useMemo(() => talhoes.find(t => t.id === selectedTalhaoId), [talhoes, selectedTalhaoId]);
 
     // Helper to extract polygon positions from GeoJSON
-    const getPolygonPositions = (feature: GeoJSONFeature | undefined): [number, number][] => {
-        if (!feature) {
-            return [];
-        }
 
-        // Handle case where feature IS the geometry (no geometry property)
-        const geometry = feature.geometry || feature;
-
-        if (!geometry || !geometry.coordinates) {
-            return [];
-        }
-
-        const { type, coordinates } = geometry as any;
-
-        try {
-            if (type === "MultiPolygon") {
-                const multiCoords = coordinates as unknown as number[][][][];
-                if (multiCoords.length > 0 && multiCoords[0].length > 0) {
-                    const outerRing = multiCoords[0][0];
-                    return outerRing.map((p) => [p[1], p[0]] as [number, number]);
-                }
-            } else {
-                const polygonCoords = coordinates as number[][][];
-                if (polygonCoords.length > 0) {
-                    const outerRing = polygonCoords[0];
-                    return outerRing.map((p) => [p[1], p[0]] as [number, number]);
-                }
-            }
-        } catch (e) {
-            console.error("Error parsing GeoJSON", e);
-            return [];
-        }
-
-        return [];
-    };
 
     // Calculate center of property to fly to
     useEffect(() => {
