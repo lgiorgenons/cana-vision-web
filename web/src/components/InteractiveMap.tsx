@@ -456,11 +456,18 @@ export default function InteractiveMap() {
             try {
                 // Check Cache First
                 const cachedTalhoes = dataCache.getTalhoes(selectedPropertyId);
-                if (cachedTalhoes) {
-                    console.log("[InteractiveMap] Using cached talhoes for:", selectedPropertyId);
+                const cacheHasGeoJson = cachedTalhoes && cachedTalhoes.length > 0 &&
+                    (cachedTalhoes[0].geojson && cachedTalhoes[0].geojson.type) ||
+                    (cachedTalhoes && cachedTalhoes.length === 0); // Empty list is valid cache
+
+                if (cachedTalhoes && cacheHasGeoJson) {
+                    console.log("[InteractiveMap] Using cached talhoes (verified GeoJSON) for:", selectedPropertyId);
                     setTalhoes(cachedTalhoes);
                     setIsLoadingTalhoes(false);
                 } else {
+                    if (cachedTalhoes && !cacheHasGeoJson) {
+                        console.log("[InteractiveMap] Cache hit but missing GeoJSON. Refetching details...");
+                    }
                     setIsLoadingTalhoes(true);
                     console.log("[InteractiveMap] Fetching talhoes for property:", selectedPropertyId);
                     // First get the list
