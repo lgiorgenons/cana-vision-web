@@ -18,7 +18,6 @@ import {
     Trash2,
     Loader2
 } from "lucide-react";
-import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
 import * as L from "leaflet";
 import proj4 from "proj4";
@@ -28,9 +27,9 @@ import { dataCache } from "@/services/dataCache";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-// @ts-ignore
+// @ts-expect-error georaster types missing
 import parseGeoraster from "georaster";
-// @ts-ignore
+
 import GeoRasterLayer from "georaster-layer-for-leaflet";
 
 // Dynamic import for Leaflet components to avoid SSR issues with them as well
@@ -55,6 +54,23 @@ type RasterStats = {
     numberOfRasters: number;
 };
 
+interface Georaster {
+    width: number;
+    height: number;
+    pixelWidth: number;
+    pixelHeight: number;
+    xmin: number;
+    ymax: number;
+    values: number[][][];
+    projection: number;
+    noDataValue: number | null;
+    numberOfRasters: number;
+    mins: number[];
+    maxs: number[];
+    ranges: number[];
+    toCanvas: (options: unknown) => HTMLCanvasElement;
+}
+
 const ensureProj4 = () => {
     if (typeof globalThis === "undefined") return;
     const globalAny = globalThis as typeof globalThis & { proj4?: typeof proj4 };
@@ -63,7 +79,7 @@ const ensureProj4 = () => {
     }
 };
 
-const getRasterStats = (georaster: any): RasterStats => {
+const getRasterStats = (georaster: Georaster): RasterStats => {
     const mins = Array.isArray(georaster?.mins) ? georaster.mins : [];
     const maxs = Array.isArray(georaster?.maxs) ? georaster.maxs : [];
     const ranges = Array.isArray(georaster?.ranges) ? georaster.ranges : [];
@@ -134,7 +150,7 @@ const getPolygonPositions = (feature: GeoJSONFeature | undefined): [number, numb
         return [];
     }
 
-    const { type, coordinates } = geometry as any;
+    const { type, coordinates } = geometry as { type: string; coordinates: number[][][] | number[][][][] };
 
     try {
         if (type === "MultiPolygon") {
@@ -159,7 +175,7 @@ const getPolygonPositions = (feature: GeoJSONFeature | undefined): [number, numb
 };
 
 // Helper to mask georaster values outside the polygon
-const maskGeoraster = (georaster: any, polygonGeoJson: GeoJSONFeature) => {
+const maskGeoraster = (georaster: Georaster, polygonGeoJson: GeoJSONFeature) => {
     if (!polygonGeoJson || !georaster) return georaster;
 
     try {
@@ -257,8 +273,6 @@ const currentScene = {
     resolution: "10 m",
     indices: ["NDVI", "EVI", "NDRE", "NDMI", "True Color"],
 };
-// Mock Type compatibility
-type Field = any;
 
 const layerOptions = ["NDVI", "EVI", "NDRE", "NDMI", "True Color"];
 
@@ -276,13 +290,13 @@ export default function InteractiveMap() {
     const [talhoes, setTalhoes] = useState<Talhao[]>([]);
     const [isLoadingTalhoes, setIsLoadingTalhoes] = useState(false);
     const [selectedTalhaoId, setSelectedTalhaoId] = useState<string | null>(null);
-    const [selectedTalhaoDetails, setSelectedTalhaoDetails] = useState<Talhao | null>(null);
+    // const [selectedTalhaoDetails, setSelectedTalhaoDetails] = useState<Talhao | null>(null);
 
     const [mapRef, setMapRef] = useState<L.Map | null>(null);
 
     // TIFF State
-    const [tiffLayer, setTiffLayer] = useState<any>(null);
-    const [georasterData, setGeorasterData] = useState<any>(null); // Store raw data for inspection
+    const [tiffLayer, setTiffLayer] = useState<L.Layer & { options?: { georaster?: Georaster } } | null>(null);
+    const [georasterData, setGeorasterData] = useState<Georaster | null>(null); // Store raw data for inspection
     const [isTiffLoading, setIsTiffLoading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -365,10 +379,10 @@ export default function InteractiveMap() {
                     const normalized = normalizeValue(value, min, max);
 
                     // DEBUG: Log first few pixels to debug color scale
-                    // @ts-ignore
+                    // @ts-expect-error window prop
                     if (!window.tiffDebugLogged) {
                         console.log("[TIFF Color Debug]", { value, min, max, normalized });
-                        // @ts-ignore
+                        // @ts-expect-error window prop
                         window.tiffDebugLogged = true;
                     }
 
@@ -515,22 +529,23 @@ export default function InteractiveMap() {
     }, [selectedPropertyId]);
 
     // Load selected talhao details (for GeoJSON)
+    /*
     useEffect(() => {
         async function fetchTalhaoDetails() {
             if (!selectedTalhaoId) {
-                setSelectedTalhaoDetails(null);
+                // setSelectedTalhaoDetails(null);
                 return;
             }
             try {
                 const cachedDetails = dataCache.getTalhaoDetails(selectedTalhaoId);
                 if (cachedDetails) {
                     console.log("[InteractiveMap] Using cached talhao details for:", selectedTalhaoId);
-                    setSelectedTalhaoDetails(cachedDetails);
+                    // setSelectedTalhaoDetails(cachedDetails);
                 } else {
                     const details = await getTalhao(selectedTalhaoId);
                     console.log("[InteractiveMap] Fetched Talhao Details:", JSON.stringify(details, null, 2));
                     dataCache.setTalhaoDetails(selectedTalhaoId, details); // Set cache
-                    setSelectedTalhaoDetails(details);
+                    // setSelectedTalhaoDetails(details);
                 }
             } catch (error) {
                 console.error("Failed to load talhao details", error);
@@ -538,9 +553,12 @@ export default function InteractiveMap() {
         }
         fetchTalhaoDetails();
     }, [selectedTalhaoId]);
+    */
 
     // Derived state
-    const selectedProperty = useMemo(() => properties.find(p => p.id === selectedPropertyId), [properties, selectedPropertyId]);
+    // selectedProperty is unused if we check cache only, but might be useful for titles?
+    // Actually selectedProperty variable was marked unused.
+    // const selectedProperty = useMemo(() => properties.find(p => p.id === selectedPropertyId), [properties, selectedPropertyId]);
     const selectedTalhao = useMemo(() => talhoes.find(t => t.id === selectedTalhaoId), [talhoes, selectedTalhaoId]);
 
     // Helper to extract polygon positions from GeoJSON
