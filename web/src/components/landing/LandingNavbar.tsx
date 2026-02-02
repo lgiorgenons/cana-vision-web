@@ -2,7 +2,7 @@ import type { MouseEvent } from "react";
 import Link from "next/link";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { landingImages, navLinks } from "./data";
 
 type LandingNavbarProps = {
@@ -48,7 +48,7 @@ const LandingNavbar = ({ isScrolled, isMenuOpen, setIsMenuOpen, onNavigate }: La
           <Link href="/login" className="hidden text-sm font-medium text-white transition hover:text-landing-brand lg:block">
             Entrar
           </Link>
-          <Link href="/registrar">
+          <Link href="/registrar" className="hidden lg:block">
             <Button className="h-10 rounded-full bg-landing-brand px-6 text-sm font-medium text-white hover:bg-landing-brand-dark">
               Começar Agora
             </Button>
@@ -66,7 +66,8 @@ const LandingNavbar = ({ isScrolled, isMenuOpen, setIsMenuOpen, onNavigate }: La
                   <Menu />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="bg-landing-ink border-l border-white/10">
+              <SheetContent side="right" className="bg-landing-ink border-l border-white/10 [&>button]:!text-white [&>button]:!opacity-100 [&>button]:!ring-0 [&>button]:!ring-offset-0 [&>button]:!outline-none [&>button]:!bg-transparent [&>button>svg]:!w-6 [&>button>svg]:!h-6">
+                <SheetTitle className="sr-only">Menu de Navegação</SheetTitle>
                 <div className="flex flex-col gap-6 pt-10">
                   {navLinks.map((link) => (
                     <a
@@ -81,6 +82,9 @@ const LandingNavbar = ({ isScrolled, isMenuOpen, setIsMenuOpen, onNavigate }: La
                   <hr className="border-white/10" />
                   <Link href="/login" onClick={() => setIsMenuOpen(false)} className="text-lg font-normal text-white hover:text-landing-brand">
                     Entrar
+                  </Link>
+                  <Link href="/registrar" onClick={() => setIsMenuOpen(false)} className="text-lg font-normal text-landing-brand hover:text-landing-brand-dark">
+                    Começar Agora
                   </Link>
                 </div>
               </SheetContent>
