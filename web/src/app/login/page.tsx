@@ -19,13 +19,9 @@ import { saveAuthSession } from "@/lib/auth-session";
 import { ApiError } from "@/lib/api-client";
 import AuthLayout from "@/components/auth/AuthLayout";
 import PasswordField from "@/components/auth/PasswordField";
+import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
 
-// Using standard img tags for social icons to avoid 'StaticImageData' type issues for now, can optimize later.
-const socialProviders = [
-  { label: "Facebook", icon: "/images/ic_facebook.svg" },
-  { label: "Apple", icon: "/images/ic_apple.svg" },
-  { label: "Google", icon: "/images/ic_google.svg" },
-];
+// const socialProviders = ... (Removed unused)
 
 const loginSchema = z.object({
   email: z.string().email("Digite um e-mail válido."),
@@ -214,16 +210,15 @@ export default function Login() {
           </div>
 
           <div className="flex justify-center gap-10">
-            {socialProviders.map(({ label, icon }) => (
-              <button
-                key={label}
-                type="button"
-                className="p-0 transition focus-visible:outline-none"
-                aria-label={`Entrar com ${label}`}
-              >
-                <img src={icon} alt={label} className="h-[42px] w-[42px]" draggable={false} />
-              </button>
-            ))}
+            <GoogleAuthButton label="Google" />
+            {/* 
+            <button type="button" className="p-0 transition focus-visible:outline-none opacity-50 cursor-not-allowed" aria-label="Entrar com Facebook">
+               <img src="/images/ic_facebook.svg" alt="Facebook" className="h-[42px] w-[42px]" draggable={false} />
+            </button>
+            <button type="button" className="p-0 transition focus-visible:outline-none opacity-50 cursor-not-allowed" aria-label="Entrar com Apple">
+               <img src="/images/ic_apple.svg" alt="Apple" className="h-[42px] w-[42px]" draggable={false} />
+            </button> 
+            */}
           </div>
         </div>
 

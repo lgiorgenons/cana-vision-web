@@ -17,6 +17,7 @@ import { ApiError } from "@/lib/api-client";
 import { registerUser } from "@/services/auth";
 import AuthLayout from "@/components/auth/AuthLayout";
 import PasswordField from "@/components/auth/PasswordField";
+import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
 
 const registerSchema = z
   .object({
@@ -204,18 +205,17 @@ export default function Register() {
           </form>
         </Form>
 
-        <div className="flex items-center gap-4 text-sm text-muted-foreground max-w-md py-4">
-             <div className="flex-1 h-px bg-auth-separator"></div>
-             <span>Ou continue com</span>
-             <div className="flex-1 h-px bg-auth-separator"></div>
-        </div>
+        <div className="space-y-6">
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <div className="flex-1 h-px bg-auth-separator"></div>
+            <span className="font-medium text-auth-muted">Ou continue com</span>
+            <div className="flex-1 h-px bg-auth-separator"></div>
+          </div>
 
-        {/* Removed social buttons block here if it was redundant or add it back if needed. 
-            Legacy had no social buttons in register? 
-            Wait, I'll check legacy code again. 
-            Legacy Register.tsx didn't have social buttons. Login did. 
-            I'll stick to legacy Register.tsx structure. 
-        */}
+          <div className="flex justify-center gap-10">
+            <GoogleAuthButton label="Google" />
+          </div>
+        </div>
 
         <p className="text-center text-sm text-auth-ink">
           Já tem uma conta?{" "}
