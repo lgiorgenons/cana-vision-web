@@ -1,40 +1,53 @@
 "use client";
 
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
-    Activity,
-    ArrowUpRight,
-    Droplets,
     Layers,
     Maximize2,
+    X,
+    Activity,
+    ArrowUpRight,
+    Thermometer,
+    Droplets,
     Sprout,
     Scan,
-    Thermometer,
-    X,
-    Minus,
+    Loader2,
     Plus,
-    Upload,
-    Trash2,
-    Loader2
+    Minus
 } from "lucide-react";
 import "leaflet/dist/leaflet.css";
 import * as L from "leaflet";
-import proj4 from "proj4";
-import { listPropriedades, getPropriedade, Propriedade } from "@/services/propriedades";
-import { Talhao, GeoJSONFeature, listTalhoes, getTalhao } from "@/services/talhoes";
-import { dataCache } from "@/services/dataCache";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-// @ts-expect-error georaster types missing
+import { MapContainer, TileLayer, Polygon, Tooltip } from "react-leaflet";
 import parseGeoraster from "georaster";
-
+// @ts-expect-error no types
 import GeoRasterLayer from "georaster-layer-for-leaflet";
+import { Card } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { Georaster } from "@/lib/tiff";
+import { normalizeValue, resolveBandMinMax, resolveNoDataValue, getRasterStats } from "@/lib/tiff";
+import proj4 from "proj4";
+import { Propriedade } from "@/services/propriedades";
+import { Talhao } from "@/services/talhoes";
+import { dataCache } from "@/services/dataCache";
+import { listPropriedades, getPropriedade } from "@/services/propriedades";
+import { listTalhoes, getTalhao } from "@/services/talhoes";
+import { listArtefatos, getTiffViewUrl, fetchTiffAsBuffer } from "@/services/tifs"; // CORRECAO DOS LINTS AQUI
+
+export interface GeoJSONFeature {
+    type: string;
+    properties?: Record<string, unknown>;
+    geometry?: {
+        type: string;
+        coordinates: number[][][] | number[][][][];
+    };
+    coordinates?: number[][][] | number[][][][];
+}
 
 // Dynamic import for Leaflet components to avoid SSR issues with them as well
 // Dynamic import for Leaflet components/hooks
-import { MapContainer, TileLayer, Polygon, Tooltip } from "react-leaflet";
+
 import { TiffInspector } from "./TiffInspector";
 
 // Dynamic import for MapZoomListener is fine as it's a separate component file, 
@@ -46,30 +59,6 @@ import { TiffInspector } from "./TiffInspector";
 // Safer to keep TiffInspector dynamic if unsure, but standard for react-leaflet components.
 
 
-type RasterStats = {
-    mins: number[];
-    maxs: number[];
-    ranges: number[];
-    noDataValue: unknown;
-    numberOfRasters: number;
-};
-
-interface Georaster {
-    width: number;
-    height: number;
-    pixelWidth: number;
-    pixelHeight: number;
-    xmin: number;
-    ymax: number;
-    values: number[][][];
-    projection: number;
-    noDataValue: number | null;
-    numberOfRasters: number;
-    mins: number[];
-    maxs: number[];
-    ranges: number[];
-    toCanvas: (options: unknown) => HTMLCanvasElement;
-}
 
 const ensureProj4 = () => {
     if (typeof globalThis === "undefined") return;
@@ -79,63 +68,7 @@ const ensureProj4 = () => {
     }
 };
 
-const getRasterStats = (georaster: Georaster): RasterStats => {
-    const mins = Array.isArray(georaster?.mins) ? georaster.mins : [];
-    const maxs = Array.isArray(georaster?.maxs) ? georaster.maxs : [];
-    const ranges = Array.isArray(georaster?.ranges) ? georaster.ranges : [];
-    const numberOfRasters = typeof georaster?.numberOfRasters === "number"
-        ? georaster.numberOfRasters
-        : Array.isArray(georaster?.values)
-            ? georaster.values.length
-            : 1;
 
-    return {
-        mins,
-        maxs,
-        ranges,
-        noDataValue: georaster?.noDataValue ?? null,
-        numberOfRasters,
-    };
-};
-
-const resolveNoDataValue = (noDataValue: unknown, bandIndex: number): number | null => {
-    if (Array.isArray(noDataValue)) {
-        const value = noDataValue[bandIndex];
-        return Number.isFinite(value) ? value : null;
-    }
-    return Number.isFinite(noDataValue as number) ? (noDataValue as number) : null;
-};
-
-const resolveBandMinMax = (stats: RasterStats, bandIndex: number) => {
-    const fallbackMin = Number.isFinite(stats.mins[0]) ? stats.mins[0] : 0;
-    const fallbackMax = Number.isFinite(stats.maxs[0])
-        ? stats.maxs[0]
-        : Number.isFinite(stats.ranges[0])
-            ? fallbackMin + stats.ranges[0]
-            : fallbackMin + 1;
-
-    const min = Number.isFinite(stats.mins[bandIndex]) ? stats.mins[bandIndex] : fallbackMin;
-    let max = Number.isFinite(stats.maxs[bandIndex]) ? stats.maxs[bandIndex] : fallbackMax;
-    if (!Number.isFinite(max)) {
-        const rangeCandidate = stats.ranges[bandIndex];
-        if (Number.isFinite(rangeCandidate)) {
-            max = min + rangeCandidate;
-        }
-    }
-    if (!Number.isFinite(max) || min === max) {
-        max = min + 1;
-    }
-
-    return { min, max };
-};
-
-const normalizeValue = (value: number, min: number, max: number) => {
-    if (!Number.isFinite(value)) return null;
-    const range = max - min;
-    if (!Number.isFinite(range) || range === 0) return 0;
-    const normalized = (value - min) / range;
-    return Math.min(1, Math.max(0, normalized));
-};
 
 // Helper to extract polygon positions from GeoJSON
 const getPolygonPositions = (feature: GeoJSONFeature | undefined): [number, number][] => {
@@ -298,23 +231,44 @@ export default function InteractiveMap() {
     const [tiffLayer, setTiffLayer] = useState<L.Layer & { options?: { georaster?: Georaster } } | null>(null);
     const [georasterData, setGeorasterData] = useState<Georaster | null>(null); // Store raw data for inspection
     const [isTiffLoading, setIsTiffLoading] = useState(false);
-    const fileInputRef = useRef<HTMLInputElement>(null);
+    // REMOVIDO: const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Inspector State
     const [hoverValue, setHoverValue] = useState<number | null>(null);
     const [hoverPos, setHoverPos] = useState<{ x: number, y: number } | null>(null);
 
 
-    // TIFF Handlers
-    const handleTiffUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file || !mapRef) return;
+    // TIFF Handlers - Agora automatizado consumindo Cloud Run
+    const loadTiffFromApi = async (propertyId: string) => {
+        if (!mapRef || !propertyId) return;
 
         setIsTiffLoading(true);
+        clearTiff(); // Limpa imagens anteriores
         ensureProj4();
 
         try {
-            const arrayBuffer = await file.arrayBuffer();
+            console.log("[InteractiveMap] Buscando lista de artefatos da API GCP para a propriedade:", propertyId);
+            const artefatos = await listArtefatos(propertyId, "geotiff");
+            
+            if (!artefatos || artefatos.length === 0) {
+                console.log("[InteractiveMap] Nenhum GeoTIFF encontrado no Cloud Storage para esta propriedade.");
+                return;
+            }
+
+            // Pega o artefato mais recente (Simplificação: pegamos o primeiro da lista que seja geotiff)
+            const latestTiff = artefatos[0];
+            console.log(`[InteractiveMap] Tiff selecionado: ${latestTiff.nome}. Requisitando URL Assinada de Download...`);
+            
+            // Pega a Signed URL (Proxy GCS)
+            const viewData = await getTiffViewUrl(latestTiff.id);
+            if (!viewData?.url) {
+                throw new Error("API não retornou a URL assinada para o GeoTIFF.");
+            }
+
+            console.log(`[InteractiveMap] Baixando Tiff do GCS (Signed URL):`, viewData.url.substring(0, 100) + '...');
+            
+            // Realiza o Download Nativo do Buffer
+            const arrayBuffer = await fetchTiffAsBuffer(viewData.url);
             let georaster = await parseGeoraster(arrayBuffer);
 
             // Apply Mask if property boundary exists
@@ -340,11 +294,6 @@ export default function InteractiveMap() {
                 return Math.round(normalized * 255);
             };
 
-            // Remove previous layer if exists
-            if (tiffLayer) {
-                mapRef.removeLayer(tiffLayer);
-            }
-
             const layer = new GeoRasterLayer({
                 georaster: georaster,
                 opacity: 0.7,
@@ -364,13 +313,9 @@ export default function InteractiveMap() {
                     if (typeof value !== "number" || !Number.isFinite(value) || isNoDataValue(value, 0)) return null;
                     if (value === 0) return null; // Hard filter for 0 values to remove background artifacts
 
-                    // Robust scaling for NDVI (usually -1 to 1)
-                    // If metadata claims a Huge max (e.g. 24 or 255) but values are small float, ignore metadata
                     let { min, max } = resolveBandMinMax(rasterStats, 0);
 
-                    // Heuristic: If max is > 1.2 but our value is small (< 1.2), and it's a float, 
-                    // it's likely an NDVI with bad metadata or outlier pixels.
-                    // We force the scale to be roughly 0 to 1 for better contrast.
+                    // Força escala 0 a 1 p/ NDVI se for distorcido
                     if (max > 1.5 && value >= -1.0 && value <= 1.0) {
                         min = 0;
                         max = 1;
@@ -399,14 +344,12 @@ export default function InteractiveMap() {
             layer.addTo(mapRef);
             setTiffLayer(layer);
             mapRef.fitBounds(layer.getBounds());
+            
         } catch (error) {
-            console.error("Error loading GeoTIFF:", error);
-            alert("Erro ao carregar o arquivo GeoTIFF. Verifique se o formato é válido.");
+            console.error("[InteractiveMap] Error loading GeoTIFF from API:", error);
+            // Removido o alert no fluxo automático pra evitar ruído no mount
         } finally {
             setIsTiffLoading(false);
-            if (fileInputRef.current) {
-                fileInputRef.current.value = "";
-            }
         }
     };
 
@@ -518,6 +461,14 @@ export default function InteractiveMap() {
 
                 setSelectedTalhaoId(null);
                 setDetailPanelOpen(false);
+                
+                // --- INÍCIO DA AUTOMAÇÃO ---
+                // Depois de carregar a propriedade, vamos buscar as imagens de satélite
+                if (selectedPropertyId) {
+                    loadTiffFromApi(selectedPropertyId);
+                }
+                // -----------------------------
+
             } catch (error) {
                 console.error("Failed to load talhoes", error);
                 setTalhoes([]);
@@ -526,7 +477,8 @@ export default function InteractiveMap() {
             }
         }
         fetchData();
-    }, [selectedPropertyId]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedPropertyId, mapRef]); // <- Adicionado mapRef pq loadTiffFromApi precisa que o mapa exista
 
     // Load selected talhao details (for GeoJSON)
     /*
@@ -889,35 +841,27 @@ export default function InteractiveMap() {
                         )}
                     </div>
 
-                    {/* TIFF Upload Control */}
+                    {/* TIFF Loader Indicador Visual (Botão Manual Removido) */}
                     <div className="relative pointer-events-auto">
-                        <input
-                            type="file"
-                            accept=".tiff,.tif"
-                            ref={fileInputRef}
-                            onChange={handleTiffUpload}
-                            className="hidden"
-                        />
                         <button
                             className={`flex h-12 w-12 items-center justify-center rounded-2xl backdrop-blur-md ring-1 ring-white/10 transition pointer-events-auto ${tiffLayer
-                                ? "bg-blue-600/80 text-white hover:bg-blue-700/80"
+                                ? "bg-emerald-600/80 text-white hover:bg-emerald-700/80"
                                 : "bg-slate-900/60 text-white hover:bg-slate-900/80"
                                 }`}
                             onClick={() => {
-                                if (tiffLayer) {
-                                    clearTiff();
-                                } else {
-                                    fileInputRef.current?.click();
+                                // Pode adicionar funcionalidade de reload do TIFF aqui depois se necessário
+                                if (selectedPropertyId) {
+                                    loadTiffFromApi(selectedPropertyId);
                                 }
                             }}
                             disabled={isTiffLoading}
-                            aria-label="Carregar GeoTIFF"
-                            title={tiffLayer ? "Remover TIFF" : "Carregar GeoTIFF"}
+                            aria-label="Atualizar Imagens de Satélite (TIFF)"
+                            title="Atualizar Imagens de Satélite (TIFF)"
                         >
                             {isTiffLoading ? (
                                 <Loader2 className="h-5 w-5 animate-spin" />
                             ) : (
-                                tiffLayer ? <Trash2 className="h-5 w-5" /> : <Upload className="h-5 w-5" />
+                                <Layers className="h-5 w-5" />
                             )}
                         </button>
                     </div>
