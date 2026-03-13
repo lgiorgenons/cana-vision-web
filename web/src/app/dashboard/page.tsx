@@ -7,11 +7,15 @@ import FarmWeatherWidget from "@/components/dashboard/FarmWeatherWidget";
 import FieldListWidget from "@/components/dashboard/FieldListWidget";
 import HealthScoreCard from "@/components/dashboard/HealthScoreCard";
 import MetricCard from "@/components/dashboard/MetricCard";
+import { getAuthSession } from "@/lib/auth-session";
 
 export default function DashboardPage() {
+  const user = getAuthSession();
+  const firstName = user?.nome?.split(" ")[0] ?? "Usuário";
+
   return (
     <Layout
-      title="Dashboard de Monitoramento"
+      title={`Olá, ${firstName}!`}
       description="Visão geral da saúde das suas lavouras com detecção inteligente de hotspots"
     >
       <div className="flex flex-col gap-6">

@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { useMemo, useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { LogOut, ChevronDown, ChevronLeft } from "lucide-react";
 import {
   DropdownMenu,
@@ -12,6 +12,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { logoutUser } from "@/services/auth";
+import { clearAuthSession, clearSessionCookie, getAuthSession } from "@/lib/auth-session";
 
 type LayoutProps = {
   title?: string;
@@ -71,7 +73,20 @@ const utilityItems = [
 
 export const Layout = ({ title, description, headerActions, headerBackLink, children, hideChrome }: LayoutProps) => {
   const pathname = usePathname();
+  const router = useRouter();
+  const currentUser = getAuthSession();
   const [themeMode, setThemeMode] = useState<"light" | "dark">("light");
+
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+    } catch {
+      // proceed even if logout request fails
+    }
+    clearAuthSession();
+    clearSessionCookie();
+    router.push("/login");
+  };
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>(() =>
     navSections.reduce<Record<string, boolean>>((acc, section) => {
@@ -337,18 +352,19 @@ export const Layout = ({ title, description, headerActions, headerBackLink, chil
                     <button className="flex items-center gap-3 rounded-full border border-slate-200 px-3 py-1.5 transition hover:bg-slate-50 outline-none">
                       <Image src="/images/ic_perfil.svg" alt="Usuario" width={32} height={32} className="h-8 w-8 rounded-full" />
                       <div className="text-left">
-                        <p className="text-sm font-semibold">Andrew Smith</p>
-                        <p className="text-xs text-slate-500">Administrador</p>
+                        <p className="text-sm font-semibold">{currentUser?.nome ?? "Usuário"}</p>
+                        <p className="text-xs text-slate-500">{currentUser?.role ?? "—"}</p>
                       </div>
                       <ChevronDown className="h-4 w-4 text-slate-500" />
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuItem asChild className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer">
-                      <Link href="/login" className="flex w-full items-center">
-                        <LogOut className="mr-2 h-4 w-4" />
-                        <span>Sair da conta</span>
-                      </Link>
+                    <DropdownMenuItem
+                      className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer"
+                      onSelect={handleLogout}
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Sair da conta</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

@@ -14,12 +14,26 @@ export class ApiError extends Error {
 
 type ApiFetchOptions = RequestInit & {
   skipJson?: boolean;
+  _isRetry?: boolean;
 };
 
 function isJsonLike(body: BodyInit | null | undefined) {
   if (!body) return false;
   if (body instanceof FormData || body instanceof Blob) return false;
   return true;
+}
+
+async function tryRefreshToken(): Promise<boolean> {
+  try {
+    const url = `${API_BASE_URL}/auth/refresh-token`;
+    const res = await fetch(url, {
+      method: "POST",
+      credentials: "include",
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
 }
 
 export async function apiFetch<TResponse>(path: string, options: ApiFetchOptions = {}): Promise<TResponse> {
@@ -30,12 +44,15 @@ export async function apiFetch<TResponse>(path: string, options: ApiFetchOptions
     headers.set("Content-Type", "application/json");
   }
 
+  const { skipJson, _isRetry, ...fetchOptions } = options;
+
   const response = await fetch(url, {
-    ...options,
+    ...fetchOptions,
     headers,
+    credentials: "include",
   });
 
-  if (options.skipJson) {
+  if (skipJson) {
     if (!response.ok) {
       throw new Error(`Erro ao chamar API (${response.status})`);
     }
@@ -46,7 +63,11 @@ export async function apiFetch<TResponse>(path: string, options: ApiFetchOptions
   const parsed = text ? safeParseJson(text) : null;
 
   if (!response.ok) {
-    if (response.status === 401 && typeof window !== 'undefined') {
+    if (response.status === 401 && typeof window !== "undefined" && !_isRetry) {
+      const refreshed = await tryRefreshToken();
+      if (refreshed) {
+        return apiFetch<TResponse>(path, { ...options, _isRetry: true });
+      }
       window.location.href = "/login";
     }
     const message = parsed?.message || parsed?.detail || `Erro ao chamar API (${response.status})`;

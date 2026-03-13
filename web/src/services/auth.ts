@@ -45,3 +45,16 @@ export async function loginUser(payload: LoginPayload) {
     body: JSON.stringify(payload),
   });
 }
+
+export async function logoutUser() {
+  return apiFetch<void>("/auth/logout", {
+    method: "POST",
+    skipJson: true,
+  });
+}
+
+export async function refreshAuthToken() {
+  return apiFetch<AuthResponse>("/auth/refresh-token", {
+    method: "POST",
+  });
+}

@@ -90,10 +90,7 @@ export default function NewPropertyPage() {
         setIsSubmitting(true);
         try {
             const session = getAuthSession();
-            // console.log("Session User:", session?.user); // Debug log
-
-            const user = session?.user;
-            const clienteId = user?.clienteId;
+            const clienteId = session?.clienteId;
 
             if (!clienteId) {
                 toast({

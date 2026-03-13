@@ -15,7 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { loginUser } from "@/services/auth";
-import { saveAuthSession } from "@/lib/auth-session";
+import { saveAuthSession, setSessionCookie } from "@/lib/auth-session";
 import { ApiError } from "@/lib/api-client";
 import AuthLayout from "@/components/auth/AuthLayout";
 import PasswordField from "@/components/auth/PasswordField";
@@ -60,7 +60,8 @@ export default function Login() {
       //   return;
       // }
 
-      saveAuthSession(data, variables.remember);
+      saveAuthSession(data.user, variables.remember);
+      setSessionCookie(variables.remember);
       toast({ title: "Bem-vindo de volta", description: `Olá, ${data.user.nome.split(" ")[0]}!` });
       router.push("/dashboard");
     },
