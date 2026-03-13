@@ -266,14 +266,6 @@ const maskGeoraster = (georaster: Georaster, polygonGeoJson: GeoJSONFeature) => 
     }
 };
 
-const currentScene = {
-    productId: "S2B_MSIL2A_20240815",
-    captureDate: "15/08/2024",
-    cloudCover: "8%",
-    resolution: "10 m",
-    indices: ["NDVI", "EVI", "NDRE", "NDMI", "True Color"],
-};
-
 const layerOptions = ["NDVI", "EVI", "NDRE", "NDMI", "True Color"];
 
 export default function InteractiveMap() {
@@ -625,24 +617,15 @@ export default function InteractiveMap() {
                         <div className="space-y-6">
                             {/* Overall Health */}
                             <div>
-                                <p className="text-sm font-medium text-slate-500">Saude geral (indices)</p>
-                                <div className="mt-1 flex items-end gap-4">
-                                    <span className="text-6xl font-light text-slate-800">
-                                        92
-                                        <span className="text-4xl text-slate-400">%</span>
-                                    </span>
-                                    <div className="mb-2">
-                                        <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-full px-3 py-0.5 text-xs font-normal">
-                                            NDVI alto
-                                        </Badge>
-                                        <p className="mt-1 w-40 text-[10px] leading-tight text-slate-400">
-                                            Dados Sentinel-2 (canasat) com {currentScene.cloudCover} de nuvem.
-                                        </p>
-                                    </div>
+                                <p className="text-sm font-medium text-slate-500">Saúde geral (índices)</p>
+                                <div className="mt-2 flex items-center gap-3">
+                                    <Badge className="bg-slate-200 hover:bg-slate-200 text-slate-500 rounded-full px-3 py-1 text-xs font-normal">
+                                        Sem dados de satélite
+                                    </Badge>
                                 </div>
-                                <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
+                                <div className="mt-2 flex items-center gap-2 text-xs text-slate-400">
                                     <Scan className="h-3.5 w-3.5" />
-                                    Produto {currentScene.productId} • {currentScene.captureDate} • {currentScene.resolution}
+                                    Faça upload de um TIFF para análise
                                 </div>
                             </div>
                             {/* Fields List */}
@@ -690,26 +673,17 @@ export default function InteractiveMap() {
                                                 <div className="absolute left-0 top-0 h-full w-1.5 bg-emerald-500" />
                                             )}
                                             <div className="flex items-center justify-between">
-                                                <div className="pl-2">
-                                                    <p className="font-semibold text-slate-900">{talhao.nome || talhao.codigo}</p>
-                                                    <p className="text-xs text-slate-400">{talhao.cultura} • {talhao.variedade || "N/A"}</p>
+                                                <div className="pl-2 flex-1 min-w-0">
+                                                    <p className="font-semibold text-slate-900 truncate">{talhao.nome || talhao.codigo}</p>
+                                                    <p className="text-xs text-slate-400">{talhao.cultura}{talhao.variedade ? ` • ${talhao.variedade}` : ""}</p>
                                                     <div className="mt-1 flex items-center gap-1 text-[11px] text-slate-500">
-                                                        <span>NDVI</span>
-                                                        <span className="text-slate-300">•</span>
-                                                        <span>15/08/2024</span>
+                                                        <span>Safra:</span>
+                                                        <span className="font-medium text-slate-700">{talhao.safra}</span>
                                                     </div>
                                                     <div className="mt-1 flex items-center gap-2">
-                                                        <span className={`rounded-full border px-2 py-[2px] text-[10px] font-semibold bg-emerald-100 text-emerald-700 border-emerald-200`}>
-                                                            Risco SMC: Baixo
+                                                        <span className="rounded-full border px-2 py-[2px] text-[10px] font-semibold bg-slate-100 text-slate-500 border-slate-200">
+                                                            {talhao.areaHectares} ha • {talhao.codigo}
                                                         </span>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-3">
-                                                    <div
-                                                        className={`flex items-center gap-1.5 text-sm font-medium text-emerald-500`}
-                                                    >
-                                                        <Activity className="h-4 w-4" />
-                                                        98%
                                                     </div>
                                                 </div>
                                             </div>
@@ -941,121 +915,87 @@ export default function InteractiveMap() {
                             </div>
 
                             <div className="mt-6 space-y-4">
-                                {/* Row 1: Saude & Area */}
-                                <div className="grid grid-cols-2 gap-3 rounded-xl bg-slate-50 p-3">
-                                    <div>
-                                        <p className="text-xs text-slate-400">Saude (NDVI)</p>
-                                        <div className="flex items-center gap-2 text-emerald-500">
-                                            <span className="text-lg font-semibold">98%</span>
-                                            <span className="text-sm font-medium">• Good</span>
+                                {/* Dados cadastrais reais */}
+                                <div className="rounded-xl bg-slate-50 p-3 space-y-2">
+                                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Dados Cadastrais</p>
+                                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                                        <div>
+                                            <p className="text-[10px] text-slate-400">Código</p>
+                                            <p className="font-semibold text-slate-900">{selectedTalhao.codigo}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] text-slate-400">Área</p>
+                                            <p className="font-semibold text-slate-900">{selectedTalhao.areaHectares} ha</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] text-slate-400">Safra</p>
+                                            <p className="font-semibold text-slate-900">{selectedTalhao.safra}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] text-slate-400">Variedade</p>
+                                            <p className="font-semibold text-slate-900">{selectedTalhao.variedade || "—"}</p>
                                         </div>
                                     </div>
-                                    <div>
-                                        <p className="text-xs text-slate-400">Area</p>
-                                        <p className="text-base font-medium text-slate-900">{selectedTalhao.areaHectares} ha</p>
-                                        <p className="text-[10px] text-slate-400">Camada ativa: NDVI</p>
+                                </div>
+
+                                {/* Análise de satélite — aguardando dados */}
+                                <div className="rounded-xl border border-slate-200 bg-white p-3">
+                                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-3">Análise de Satélite</p>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {[
+                                            { label: "Saúde (NDVI)", icon: <Activity className="h-3 w-3" /> },
+                                            { label: "Risco SMC", icon: <Droplets className="h-3 w-3" /> },
+                                            { label: "NDVI", icon: <Sprout className="h-3 w-3" /> },
+                                            { label: "EVI", icon: <Layers className="h-3 w-3" /> },
+                                        ].map(({ label, icon }) => (
+                                            <div key={label} className="rounded-lg bg-slate-50 px-3 py-2 space-y-1">
+                                                <div className="flex items-center gap-1 text-[10px] text-slate-400">
+                                                    {icon} {label}
+                                                </div>
+                                                <p className="text-xs font-semibold text-slate-400">Sem dados</p>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
 
-                                {/* Row 2: Risco SMC & Confianca */}
-                                <div className="grid grid-cols-2 gap-3 text-sm">
-                                    <div className="rounded-xl border border-slate-200 p-3 space-y-1">
-                                        <p className="text-xs text-slate-400">Risco SMC</p>
-                                        <span className="inline-flex w-fit rounded-full border px-3 py-1 text-xs font-semibold bg-emerald-100 text-emerald-700 border-emerald-200">
-                                            Baixo
-                                        </span>
-                                        <p className="text-[11px] text-slate-500">Baseado em NDWI/NDMI e NDRE (Sentinel-2).</p>
-                                    </div>
-                                    <div className="rounded-xl border border-slate-200 p-3 space-y-1">
-                                        <p className="text-xs text-slate-400">Confianca</p>
-                                        <p className="text-sm font-semibold text-slate-900">Baixa</p>
-                                        <p className="text-[11px] text-slate-500">Cruza indice + clima</p>
-                                    </div>
-                                </div>
-
-                                {/* Row 3: Ultima Imagem & Indices */}
-                                <div className="grid grid-cols-2 gap-3 text-sm">
-                                    <div className="rounded-xl border border-slate-200 p-3 space-y-1">
-                                        <p className="text-xs text-slate-400">Ultima imagem</p>
-                                        <p className="text-sm font-bold text-slate-900">15/08/2024</p>
-                                        <div className="text-[11px] text-slate-500 space-y-0.5">
-                                            <p>Produto S2B_MSIL2A...</p>
-                                            <p>Nuvem 8%</p>
-                                        </div>
-                                    </div>
-                                    <div className="rounded-xl border border-slate-200 p-3 space-y-1">
-                                        <div className="flex justify-between text-xs"><span>NDVI</span><span className="font-semibold text-slate-900">0.78</span></div>
-                                        <div className="flex justify-between text-xs"><span>NDWI</span><span className="font-semibold text-slate-900">0.38</span></div>
-                                        <div className="flex justify-between text-xs"><span>NDRE</span><span className="font-semibold text-slate-900">0.58</span></div>
-                                        <div className="flex justify-between text-xs"><span>EVI</span><span className="font-semibold text-slate-900">0.63</span></div>
-                                    </div>
-                                </div>
-
-                                {/* Row 4: Diagnostic Assistant */}
-                                <div className="rounded-xl border p-3 text-emerald-600 bg-emerald-50 border-emerald-200">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <Activity className="h-4 w-4" />
-                                        <p className="text-xs font-bold uppercase tracking-wider">Assistente de Diagnóstico</p>
-                                    </div>
-                                    <p className="text-sm font-bold">Condições Normais</p>
-                                    <p className="text-xs mt-1 opacity-80">Ação sugerida: Manter monitoramento padrão</p>
-                                </div>
-
-                                {/* Row 5: Weather/Soil Data (Grid of 4) */}
+                                {/* Clima & Solo — aguardando dados */}
                                 <div className="grid grid-cols-4 gap-2 text-sm">
-                                    <div className="rounded-xl bg-slate-50 p-2 space-y-1">
-                                        <div className="flex items-center gap-1">
-                                            <Thermometer className="h-3 w-3 text-orange-500" />
-                                            <p className="text-slate-500 text-[10px]">LST</p>
+                                    {[
+                                        { label: "LST", icon: <Thermometer className="h-3 w-3 text-orange-400" /> },
+                                        { label: "Chuva", icon: <Droplets className="h-3 w-3 text-sky-400" /> },
+                                        { label: "Produt.", icon: <Activity className="h-3 w-3 text-emerald-400" /> },
+                                        { label: "Umidade", icon: <Droplets className="h-3 w-3 text-blue-400" /> },
+                                    ].map(({ label, icon }) => (
+                                        <div key={label} className="rounded-xl bg-slate-50 p-2 space-y-1">
+                                            <div className="flex items-center gap-1">
+                                                {icon}
+                                                <p className="text-slate-500 text-[10px]">{label}</p>
+                                            </div>
+                                            <p className="text-xs font-semibold text-slate-400">—</p>
                                         </div>
-                                        <p className="text-sm font-semibold text-slate-900">27°C</p>
-                                    </div>
-                                    <div className="rounded-xl bg-slate-50 p-2 space-y-1">
-                                        <div className="flex items-center gap-1">
-                                            <Droplets className="h-3 w-3 text-sky-500" />
-                                            <p className="text-slate-500 text-[10px]">Chuva</p>
-                                        </div>
-                                        <p className="text-sm font-semibold text-slate-900">50mm</p>
-                                    </div>
-                                    <div className="rounded-xl bg-slate-50 p-2 space-y-1">
-                                        <div className="flex items-center gap-1">
-                                            <Activity className="h-3 w-3 text-emerald-500" />
-                                            <p className="text-slate-500 text-[10px]">Produt.</p>
-                                        </div>
-                                        <p className="text-sm font-semibold text-slate-900">74 t/ha</p>
-                                    </div>
-                                    <div className="rounded-xl bg-slate-50 p-2 space-y-1">
-                                        <div className="flex items-center gap-1">
-                                            <Droplets className="h-3 w-3 text-blue-500" />
-                                            <p className="text-slate-500 text-[10px]">Umidade</p>
-                                        </div>
-                                        <p className="text-sm font-semibold text-slate-900">76%</p>
-                                    </div>
+                                    ))}
                                 </div>
 
-                                {/* Row 6: Tendencia & Proxima Colheita */}
+                                {/* Última imagem */}
                                 <div className="grid grid-cols-2 gap-3 text-sm">
                                     <div className="rounded-xl bg-slate-50 p-3 space-y-1">
-                                        <p className="text-xs text-slate-400">Tendencia</p>
-                                        <div className="flex items-center gap-1 text-emerald-600">
-                                            <ArrowUpRight className="h-4 w-4" />
-                                            <span className="text-sm font-semibold">+1.2% vs ultima captura</span>
-                                        </div>
+                                        <p className="text-[10px] text-slate-400">Última imagem</p>
+                                        <p className="text-xs font-semibold text-slate-400">Sem dados de satélite</p>
                                     </div>
                                     <div className="rounded-xl bg-slate-50 p-3 space-y-1">
-                                        <div className="flex items-center gap-1 text-xs text-slate-400">
-                                            <Sprout className="h-3 w-3 text-emerald-500" />
-                                            Proxima colheita
+                                        <div className="flex items-center gap-1 text-[10px] text-slate-400">
+                                            <Sprout className="h-3 w-3 text-emerald-400" />
+                                            Colheita prevista
                                         </div>
-                                        <p className="text-sm font-semibold text-slate-900">05/09/2024 <span className="text-slate-500 font-normal">• 21 dias</span></p>
+                                        <p className="text-xs font-semibold text-slate-700">{selectedTalhao.safra}</p>
                                     </div>
                                 </div>
 
-                                {/* Row 7: Alerts */}
+                                {/* Alertas */}
                                 <div className="space-y-2">
-                                    <p className="text-xs uppercase tracking-wide text-slate-500">Alertas agronomicos</p>
-                                    <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
-                                        Nenhum alerta para este talhao.
+                                    <p className="text-xs uppercase tracking-wide text-slate-500">Alertas agronômicos</p>
+                                    <div className="rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-xs text-slate-400">
+                                        Nenhum alerta disponível.
                                     </div>
                                 </div>
                             </div>
